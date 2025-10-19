@@ -1,0 +1,61 @@
+.termos-container {
+  display: flex;
+  justify-content: center;
+  padding: 4rem 1rem;
+  background: #f9fafb;
+  color: #222;
+  margin-top: 20px;
+}
+
+.termos-content {
+  max-width: 800px;
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+  padding: 3rem;
+  line-height: 1.7;
+
+  h1 {
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+  }
+
+  .update-date {
+    font-size: 0.9rem;
+    color: #666;
+    margin-bottom: 2rem;
+  }
+
+  section {
+    margin-bottom: 2rem;
+
+    h2 {
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+      color: #1e293b;
+    }
+
+    p {
+      font-size: 1rem;
+      color: #444;
+    }
+
+    a {
+      color: #3b82f6;
+      text-decoration: none;
+
+      &:hover {
+        text-decoration: underline;
+      }
+    }
+  }
+
+  .assinatura {
+    margin-top: 2rem;
+    text-align: center;
+    font-size: 0.9rem;
+    color: #555;
+  }
+}

@@ -1,0 +1,865 @@
+// Reset básico
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+  background-color: #f9fafb;
+  color: #1f2937;
+  line-height: 1.6;
+}
+
+// Variáveis SCSS
+$primary-color: #2563eb;
+$primary-hover: #1d4ed8;
+$secondary-color: #6b7280;
+$background-color: #f9fafb;
+$white: #ffffff;
+$gray-50: #f9fafb;
+$gray-100: #f3f4f6;
+$gray-200: #e5e7eb;
+$gray-300: #d1d5db;
+$gray-400: #9ca3af;
+$gray-500: #6b7280;
+$gray-600: #4b5563;
+$gray-700: #374151;
+$gray-800: #1f2937;
+$blue-50: #eff6ff;
+$blue-400: #60a5fa;
+$blue-500: #3b82f6;
+$blue-600: #2563eb;
+$blue-700: #1d4ed8;
+$border-radius: 0.5rem;
+$border-radius-lg: 0.75rem;
+$shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+$shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+$transition: all 0.2s ease-in-out;
+
+.dashboard {
+  display: flex;
+  height: 100vh;
+  // width: 100vw;  // <--- COMENTE OU REMOVA ESTA LINHA
+  overflow: hidden;
+}
+
+// Main Content Styles
+.main-content {
+  flex: 1;
+  padding: 2rem;
+  overflow-y: auto;
+
+  .header-title {
+    font-size: 2rem;
+    font-weight: 700;
+    color: $gray-600;
+    margin-bottom: 0.1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+
+    .title-icon {
+      color: $blue-600;
+      animation: sparkle-animation 2s infinite ease-in-out;
+    }
+  }
+
+  .header-subtitle {
+    font-size: 1rem;
+    color: $gray-500;
+    margin-bottom: 20px;
+  }
+}
+
+// Em Dashboard.scss
+
+// --- ESTILOS PARA O PLACEHOLDER DO RESUMO ---
+
+.summary-placeholder {
+  border: 1px solid $gray-200;
+  border-radius: $border-radius;
+  padding: 1.5rem;
+  margin-top: 1rem;
+
+  .placeholder-line {
+    height: 1rem;
+    background-color: $gray-200;
+    border-radius: $border-radius;
+    margin-bottom: 1rem;
+    animation: pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+
+    // A última linha é mais curta
+    &.short {
+      width: 60%;
+    }
+
+    // A última linha não tem margem embaixo
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+}
+
+// Animação de pulso para o placeholder
+@keyframes pulse {
+
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.5;
+  }
+}
+
+
+.simulado-card {
+  margin-top: 2rem;
+
+  .card-header,
+  .card-content {
+    padding: 0;
+  }
+
+  // Cabeçalho com fundo gradiente
+  .card-header-gradient {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.5rem;
+    background: linear-gradient(135deg, #4f46e5, #7c3aed); // Gradiente roxo/azul
+    color: $white;
+    border-top-left-radius: $border-radius-lg;
+    border-top-right-radius: $border-radius-lg;
+
+    .header-icon-wrapper {
+      background-color: rgba(255, 255, 255, 0.1);
+      padding: 0.75rem;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    h2 {
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin: 0;
+    }
+
+    p {
+      font-size: 0.875rem;
+      opacity: 0.8;
+      margin: 0;
+    }
+  }
+
+  // Ajusta o padding do conteúdo principal do card
+  .card-content .content-space {
+    padding: 1.5rem;
+  }
+}
+
+// Dentro do seu arquivo .scss para a página de resumo
+
+// Seletor principal da área de conteúdo do resumo.
+// Use a classe correta que envolve o texto do seu resumo.
+.container-do-resumo { // Troque por sua classe real, ex: .resumo-content, .study-area
+
+    // --- 1. MELHORANDO A FONTE E O TEXTO BASE ---
+    // Escolha uma fonte mais agradável para leitura. Se não quiser adicionar fontes externas,
+    // usar as fontes de sistema mais modernas já é uma grande melhoria.
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+    
+    // Cor do texto: Troque o preto puro por um cinza bem escuro. É mais suave para os olhos.
+    color: #333; // Um cinza escuro em vez de #000000
+
+    // Espaçamento entre linhas: Aumenta o "respiro" vertical entre as linhas de um parágrafo.
+    // 1.6 a 1.7 é ideal para leitura.
+    line-height: 1.7;
+
+    // Tamanho da fonte base para parágrafos.
+    font-size: 16px; // Ou 1rem, se você usar unidades relativas.
+
+    // Limita a largura do texto. Linhas muito longas são difíceis de acompanhar.
+    // 700px a 800px é considerado ideal para leiturabilidade.
+    max-width: 800px;
+    margin: 2rem auto; // Centraliza o container de texto com margens verticais.
+
+
+    // --- 2. CRIANDO HIERARQUIA VISUAL PARA TÍTULOS ---
+
+    // Título Principal (Ex: "Resumo: O que é Processamento de Linguagem Natural (PLN)?")
+    h2 {
+        font-size: 2.25rem; // 36px
+        font-weight: 700; // Negrito
+        color: #1a202c; // Um preto ainda mais escuro para destaque
+        line-height: 1.2; // Menor, para títulos é normal
+        margin-bottom: 1.5rem;
+        border-bottom: 2px solid #e2e8f0; // Uma linha sutil para separar o título
+        padding-bottom: 0.5rem;
+    }
+
+    // Títulos de Seção (Ex: "1. Definição e Contextualização")
+    h3 {
+        font-size: 1.75rem; // 28px
+        font-weight: 600; // Semi-negrito
+        color: #2d3748;
+        margin-top: 3rem; // Mais espaço ANTES de uma nova seção
+        margin-bottom: 1rem;
+    }
+
+    // Subtítulos (Ex: "Definição do Tema", "Contextualização Histórica")
+    h4 {
+        font-size: 1.25rem; // 20px
+        font-weight: 600;
+        color: #4a5568;
+        margin-top: 2rem;
+        margin-bottom: 0.75rem;
+    }
+
+
+    // --- 3. ESTILIZANDO ELEMENTOS DO TEXTO ---
+
+    // Parágrafos
+    p {
+        margin-bottom: 1.5rem; // Adiciona espaço DEPOIS de cada parágrafo.
+    }
+
+    // Listas (com marcadores ou números)
+    ul, ol {
+        padding-left: 1.5rem;
+        margin-bottom: 1.5rem;
+
+        li {
+            margin-bottom: 0.75rem; // Espaço entre os itens da lista
+        }
+    }
+
+    // Links
+    a {
+        color: #3182ce; // Um azul acessível e agradável
+        text-decoration: none; // Remove o sublinhado padrão
+        font-weight: 500;
+        transition: color 0.2s ease-in-out;
+
+        &:hover {
+            color: #2b6cb0;
+            text-decoration: underline; // Adiciona sublinhado no hover
+        }
+    }
+
+    // Negrito (se a IA usar a tag <strong> ou <b>)
+    strong, b {
+        font-weight: 600;
+        color: #2d3748;
+    }
+}
+
+
+// Card interno de configuração
+.config-card {
+  background-color: $gray-50;
+  border: 1px solid $gray-200;
+  border-radius: $border-radius;
+  padding: 1.5rem;
+
+  h4 {
+    font-weight: 600;
+    margin-top: 0;
+    margin-bottom: 1.5rem;
+  }
+
+  .slider-label {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+
+    strong {
+      font-size: 1.25rem;
+      color: $blue-600;
+      margin-left: 0.8rem;
+    }
+  }
+}
+
+// Botão de gerar simulado
+.btn-generate-quiz {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 1rem;
+  font-size: 1rem;
+  margin-top: 0.8rem;
+  gap: 0.5rem;
+
+  &:disabled {
+    cursor: not-allowed;
+    background-color: $gray-300; // Uma cor mais clara para indicar inatividade
+
+    &:hover {
+      background-color: $gray-300; // Garante que não mude de cor no hover
+    }
+  }
+}
+
+// Dica sobre os pontos
+.points-tip {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  text-align: center;
+  padding: 0.75rem;
+  background-color: $blue-50;
+  color: $blue-700;
+  border-radius: $border-radius;
+  font-size: 0.875rem;
+
+  strong {
+    font-weight: 600;
+  }
+}
+
+// Em Dashboard.scss, dentro do .quiz-container ou em um local apropriado
+
+.question-card.placeholder {
+  .placeholder-glow {
+    background-color: #e0e0e0;
+    border-radius: 4px;
+    animation: placeholder-glow 1.5s ease-in-out infinite;
+  }
+
+  .question-number.placeholder-glow {
+    width: 30px;
+    height: 30px;
+  }
+
+  .question-text.placeholder-glow {
+    height: 20px;
+    width: 80%;
+    margin-left: 10px;
+  }
+
+  .option-label.placeholder-glow {
+    height: 24px;
+    width: 100%;
+    margin-bottom: 8px;
+  }
+}
+
+@keyframes placeholder-glow {
+  0% {
+    opacity: 0.6;
+  }
+
+  50% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0.6;
+  }
+}
+
+
+// Form Styles
+.form-group {
+  display: flex;
+  flex-direction: column;
+
+  .form-label {
+    display: block;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: $gray-700;
+    margin-bottom: 0.75rem;
+  }
+
+  .form-textarea {
+    width: 100%;
+    min-height: 7.5rem;
+    padding: 0.75rem;
+    border: 1px solid $gray-200;
+    border-radius: $border-radius;
+    font-family: inherit;
+    font-size: 1rem;
+    resize: none;
+    transition: $transition;
+
+    &:focus {
+      outline: none;
+      border-color: $blue-500;
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+
+    &::placeholder {
+      color: $gray-400;
+    }
+  }
+}
+
+// Upload Area Styles
+.upload-area {
+  margin-top: 0.8rem;
+  border: 2px dashed $gray-300;
+  border-radius: $border-radius-lg;
+  padding: 2rem;
+  text-align: center;
+  transition: $transition;
+  cursor: pointer;
+
+  &:hover {
+    border-color: $blue-400;
+    background-color: $gray-50;
+  }
+
+  &.drag-over {
+    border-color: $blue-400;
+    background-color: $blue-50;
+  }
+
+  .upload-icon {
+    width: 2rem;
+    height: 2rem;
+    color: $gray-400;
+    margin: 0 auto 0.75rem auto;
+  }
+
+  .upload-text {
+    color: $gray-600;
+    margin-bottom: 0.5rem;
+  }
+
+  .upload-link {
+    color: $blue-600;
+    font-weight: 500;
+    cursor: pointer;
+
+    &:hover {
+      color: $blue-700;
+    }
+  }
+
+  .file-input {
+    display: none;
+  }
+}
+
+// Button Styles
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem 1rem;
+  border: none;
+  background-color: $blue-600;
+  border-radius: $border-radius-lg;
+  font-size: 1rem;
+  font-weight: 500;
+  text-decoration: none;
+  cursor: pointer;
+  transition: $transition;
+  margin-top: 0.8rem;
+  width: 100%;
+  gap: 0.5rem;
+
+  &.btn-primary {
+    background-color: $blue-600;
+    color: $white;
+
+    &:hover {
+      background-color: $blue-700;
+    }
+
+    &:focus {
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
+    }
+  }
+}
+
+// Slider Styles
+.slider-container {
+  .slider-label {
+    display: block;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: $gray-700;
+    margin-bottom: 1rem;
+  }
+
+  .slider-wrapper {
+    padding: 0 0.5rem;
+
+    .slider {
+      width: 100%;
+      height: 6px;
+      border-radius: 3px;
+      background: $gray-200;
+      outline: none;
+      -webkit-appearance: none;
+      appearance: none;
+      cursor: pointer;
+
+      &::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        background: $blue-600;
+        border: 2px solid $white;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        cursor: pointer;
+      }
+
+      &::-moz-range-thumb {
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        background: $blue-600;
+        border: 2px solid $white;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        cursor: pointer;
+        border: none;
+      }
+    }
+
+    .slider-labels {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.75rem;
+      color: $gray-500;
+      margin-top: 0.5rem;
+    }
+  }
+}
+
+// Em Dashboard.scss
+
+.markdown-content {
+
+  // Estilo para os títulos gerados (###)
+  h3 {
+    font-size: 1.5rem;
+    margin-top: 1.5rem;
+    margin-bottom: 0.5rem;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 0.5rem;
+  }
+
+  // Estilo para o texto em negrito (**)
+  strong {
+    color: #0056b3; // Um azul escuro, por exemplo
+    font-weight: 600;
+  }
+
+  // Estilo para listas (*)
+  ul {
+    padding-left: 20px;
+    margin-top: 1rem;
+  }
+
+  li {
+    margin-bottom: 0.5rem;
+  }
+
+  // Estilo para blocos de código (`)
+  code {
+    background-color: #f0f0f0;
+    padding: 2px 5px;
+    border-radius: 4px;
+    font-family: 'Courier New', Courier, monospace;
+  }
+}
+
+
+.quiz-container {
+  margin-top: 2rem;
+}
+
+.question-card {
+  background-color: #f9f9f9;
+  border: 1px solid #e0e0e0;
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+
+  .question-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    gap: 1rem;
+  }
+
+  .question-number {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 42px;
+    height: 42px;
+    background: linear-gradient(135deg, #4a6bff, #6d8eff);
+    color: white;
+    border-radius: 50%;
+    font-weight: 700;
+    font-size: 1.1rem;
+    box-shadow: 0 2px 4px rgba(74, 107, 255, 0.3);
+    flex-shrink: 0;
+  }
+
+  .question-text {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #333333ce;
+    margin: 0;
+    line-height: 1.4;
+  }
+
+  .options-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .option-label {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    padding: 1rem;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    border: 2px solid #e0e0e0;
+    background-color: white;
+
+    &:hover {
+      border-color: #4a6bff;
+      background-color: #f8faff;
+    }
+
+    input[type="radio"] {
+      margin-right: 12px;
+      width: 18px;
+      height: 18px;
+      cursor: pointer;
+
+      &:disabled {
+        cursor: not-allowed;
+      }
+    }
+
+    &.correct {
+      background-color: #e9f7ef;
+      border-color: #28a745;
+      color: #155724;
+
+      .option-text {
+        color: #155724;
+        font-weight: 600;
+      }
+    }
+
+    &.incorrect {
+      background-color: #f8d7da;
+      border-color: #dc3545;
+      color: #721c24;
+
+      .option-text {
+        color: #721c24;
+      }
+    }
+  }
+}
+
+// Card de Resultado Final
+.final-result-card {
+  background-color: #f0fff4;
+  border: 1px solid #c3e6cb;
+  border-radius: 8px;
+  padding: 2rem;
+  margin-top: 2rem;
+  text-align: center;
+
+  .result-header {
+    .result-icon {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+    }
+
+    h3 {
+      font-size: 1.75rem;
+      color: #155724;
+    }
+
+    p {
+      color: #6c757d;
+    }
+  }
+
+  .result-stats {
+    display: flex;
+    justify-content: space-around;
+    margin-top: 2rem;
+    gap: 1rem;
+  }
+
+  .stat-item {
+    background-color: white;
+    border-radius: 8px;
+    padding: 1rem;
+    flex-grow: 1;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+
+    .stat-label {
+      display: block;
+      font-size: 0.8rem;
+      color: #6c757d;
+      margin-bottom: 0.5rem;
+      font-weight: 600;
+    }
+
+    .stat-value {
+      font-size: 2rem;
+      font-weight: 700;
+
+      &.blue {
+        color: #007bff;
+      }
+
+      &.green {
+        color: #28a745;
+      }
+
+      &.red {
+        color: #dc3545;
+      }
+    }
+  }
+}
+
+.btn-success {
+  background-color: #28a745;
+  color: white;
+
+  &:hover {
+    background-color: #218838;
+  }
+}
+
+::-webkit-scrollbar {
+  width: 0;
+  /* Remove a largura da barra de scroll vertical */
+  height: 0;
+  /* Remove a altura da barra de scroll horizontal */
+}
+
+/* Opcional: Para navegadores mais antigos, você pode precisar disso */
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: transparent;
+}
+
+/* Para Firefox */
+/* Isso funciona para as duas áreas de rolagem que criamos */
+.main-page-content,
+.main-content,
+.resumos-sidebar {
+  scrollbar-width: none;
+  /* Esconde a barra de scroll, mas mantém a funcionalidade */
+  -ms-overflow-style: none;
+  /* Para Internet Explorer e Edge legado */
+}
+
+// Animações
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.fade-in {
+  animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes sparkle-animation {
+
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+
+  50% {
+    transform: scale(1.2);
+    opacity: 0.8;
+  }
+}
+
+// Responsive Design
+@media (max-width: 768px) {
+  .dashboard {
+    flex-direction: column;
+  }
+
+  .sidebar {
+    width: 100%;
+    height: auto;
+
+    .sidebar-nav {
+      .nav-list {
+        flex-direction: row;
+        overflow-x: auto;
+        padding: 0.5rem 0;
+
+        .nav-item {
+          flex-shrink: 0;
+
+          .nav-link {
+            padding: 0.5rem 0.75rem;
+            white-space: nowrap;
+          }
+        }
+      }
+    }
+  }
+
+  .main-content {
+    padding: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .main-content {
+    padding: 0.75rem;
+
+    .header {
+      .header-title {
+        font-size: 1.5rem;
+      }
+    }
+  }
+
+  .card {
+
+    .card-header,
+    .card-content {
+      padding: 1rem;
+    }
+  }
+}

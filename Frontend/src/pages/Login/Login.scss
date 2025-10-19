@@ -1,0 +1,367 @@
+// Supondo que você tenha um arquivo de variáveis, senão, defina a cor aqui.
+// Ex: $primary-color: #3b82f6;
+
+// Animação para os ícones flutuantes
+@keyframes float {
+    0% {
+        transform: translateY(0px) rotate(0deg);
+        opacity: 0.8;
+    }
+
+    50% {
+        transform: translateY(-25px) rotate(8deg);
+        opacity: 1;
+    }
+
+    100% {
+        transform: translateY(0px) rotate(0deg);
+        opacity: 0.8;
+    }
+}
+
+.auth-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background: #f0f4f8; // Um fundo off-white mais suave
+    overflow: hidden;
+    position: relative;
+    padding: 20px;
+}
+
+// No arquivo AuthPage.scss
+
+// --- Defina sua paleta de cores "Aurora" ---
+$aurora-color-1: #4f46e5; // Índigo/Roxo
+$aurora-color-2: #10b981; // Verde Esmeralda
+$aurora-color-3: #f59e0b; // Âmbar/Dourado
+
+// --- MUDANÇA 1: Atualize a animação 'float' ---
+// Agora ela também controla a opacidade para um efeito de "pulso"
+@keyframes float {
+    0% {
+        transform: translateY(0px) rotate(0deg);
+        opacity: 0.1; // Começa quase invisível
+    }
+
+    50% {
+        transform: translateY(-20px) rotate(8deg);
+        opacity: 0.25; // Fica um pouco mais visível no pico
+    }
+
+    100% {
+        transform: translateY(0px) rotate(0deg);
+        opacity: 0.1; // Volta a ser quase invisível
+    }
+}
+
+// --- Novas Animações ---
+@keyframes rotate {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+
+// Agora ela também controla a opacidade para um efeito de "pulso"
+@keyframes float {
+    0% {
+        transform: translateY(0px) rotate(0deg);
+        opacity: 0.1; // Começa quase invisível
+    }
+
+    50% {
+        transform: translateY(-20px) rotate(8deg);
+        opacity: 0.25; // Fica um pouco mais visível no pico
+    }
+
+    100% {
+        transform: translateY(0px) rotate(0deg);
+        opacity: 0.1; // Volta a ser quase invisível
+    }
+}
+
+// --- MUDANÇA 2: Substitua todo o bloco .floating-elements ---
+.floating-elements {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 2; // Fica na frente do fundo aurora
+
+    .float-icon {
+        position: absolute;
+        animation: float 8s ease-in-out infinite;
+
+        // Posicionamento e animações individuais
+        &.icon-1 {
+            // Book
+            top: 10%;
+            left: 15%;
+            animation-delay: 0s;
+            color: $aurora-color-1; // Cor roxa
+        }
+
+        &.icon-2 {
+            // Brain
+            top: 20%;
+            right: 10%;
+            animation-delay: -2s;
+            animation-duration: 10s;
+            color: $aurora-color-3; // Cor dourada
+        }
+
+        &.icon-3 {
+            // Target
+            bottom: 15%;
+            left: 25%;
+            animation-delay: -4s;
+            animation-duration: 7s;
+            color: $aurora-color-2; // Cor verde
+        }
+
+        &.icon-4 {
+            // FlaskConical
+            bottom: 25%;
+            right: 20%;
+            animation-delay: -6s;
+            animation-duration: 9s;
+            color: $aurora-color-1; // Cor roxa
+        }
+
+        &.icon-5 {
+            // Lightbulb
+            top: 60%;
+            left: 5%;
+            animation-delay: -1s;
+            color: $aurora-color-3; // Cor dourada
+        }
+    }
+}
+
+// --- Estilo do Container Principal (Pequeno ajuste) ---
+.auth-container {
+    background-color: #f0f4f8; // Mantenha uma cor de fundo base
+    position: relative; // Garante que os elementos absolutos fiquem contidos
+    overflow: hidden; // Essencial para as bolhas não vazarem
+
+}
+
+// --- Estilo do Fundo Aurora ---
+.aurora-background {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0; // Fica atrás de tudo
+    filter: blur(100px); // O segredo da mágica: desfoque extremo
+    opacity: 0.4; // Deixa as cores suaves
+}
+
+.aurora-blob {
+    position: absolute;
+    border-radius: 50%;
+    animation: rotate 20s linear infinite; // Animação de rotação lenta
+
+    &.blob-1 {
+        width: 400px;
+        height: 400px;
+        top: -150px;
+        left: -100px;
+        background: radial-gradient(circle, $aurora-color-1, transparent 70%);
+        animation-duration: 25s;
+    }
+
+    &.blob-2 {
+        width: 500px;
+        height: 500px;
+        bottom: -200px;
+        right: -150px;
+        background: radial-gradient(circle, $aurora-color-2, transparent 70%);
+        animation-duration: 30s;
+        animation-delay: -5s;
+    }
+
+    &.blob-3 {
+        width: 300px;
+        height: 300px;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: radial-gradient(circle, $aurora-color-3, transparent 70%);
+        animation-duration: 20s;
+    }
+}
+
+
+.floating-elements {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 2;
+
+    .float-icon {
+        position: absolute;
+        color: rgba(13, 37, 85, 0.06);
+        animation: float 8s ease-in-out infinite;
+
+        &.icon-1 {
+            top: 10%;
+            left: 15%;
+            animation-delay: 0s;
+        }
+
+        &.icon-2 {
+            top: 20%;
+            right: 10%;
+            animation-delay: -2s;
+            animation-duration: 10s;
+        }
+
+        &.icon-3 {
+            bottom: 15%;
+            left: 25%;
+            animation-delay: -4s;
+            animation-duration: 7s;
+        }
+
+        &.icon-4 {
+            bottom: 25%;
+            right: 20%;
+            animation-delay: -6s;
+            animation-duration: 9s;
+        }
+
+        &.icon-5 {
+            top: 60%;
+            left: 5%;
+            animation-delay: -1s;
+        }
+    }
+}
+
+.auth-card {
+    background: #ffffff;
+    border-radius: 20px;
+    padding: 40px;
+    width: 100%;
+    max-width: 620px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.05);
+    border: 1px solid #e5e7eb;
+    z-index: 3;
+    text-align: center;
+    margin-top: 5rem;
+
+    .auth-header {
+        margin-bottom: 30px;
+
+        .brand-name {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #2563eb; // Cor primária
+            margin-bottom: 10px;
+        }
+
+        h2 {
+            font-size: 1.75rem;
+            color: #1f2937;
+            margin-bottom: 5px;
+        }
+
+        p {
+            color: #6b7280;
+        }
+    }
+
+    .form-group {
+        text-align: left;
+        margin-bottom: 20px;
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #4b5563;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px 15px;
+            border-radius: 8px;
+            border: 1px solid #d1d5db;
+            background-color: #f9fafb;
+            transition: all 0.3s ease;
+
+            &:focus {
+                outline: none;
+                border-color: #2563eb;
+                box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+            }
+        }
+
+        &.password-group {
+            position: relative;
+
+            .password-toggle-icon {
+                position: absolute;
+                top: 50%;
+                right: 15px;
+                transform: translateY(-50%);
+                cursor: pointer;
+                color: #9ca3af; // Cor cinza para o ícone
+                top: 60px; // Ajuste fino da posição vertical do ícone
+
+                &:hover {
+                    color: #4b5563;
+                }
+            }
+        }
+    }
+
+    .auth-message {
+        margin-bottom: 15px;
+        font-weight: 500;
+        color: #4b5563;
+    }
+
+    .auth-button {
+        width: 100%;
+        padding: 15px;
+        border: none;
+        border-radius: 8px;
+        background-color: #2563eb;
+        color: white;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+
+        &:hover {
+            background-color: #1d4ed8;
+        }
+    }
+
+    .auth-footer {
+        margin-top: 25px;
+        color: #6b7280;
+
+        a {
+            color: #2563eb;
+            text-decoration: none;
+            font-weight: 600;
+
+            &:hover {
+                text-decoration: underline;
+            }
+        }
+    }
+}

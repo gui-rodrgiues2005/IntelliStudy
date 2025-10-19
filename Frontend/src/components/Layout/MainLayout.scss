@@ -1,0 +1,279 @@
+// --- VARIÁVEIS GLOBAIS DE ESTILO ---
+$primary-color: #2563eb;
+$primary-hover: #1d4ed8;
+$gold-color: #ca8a04;
+$gold-background-light: #fefce8;
+$gold-background-hover: #fef9c3;
+$background-color: #f9fafb;
+$white: #ffffff;
+$gray-100: #f3f4f6;
+$gray-200: #e5e7eb;
+$gray-500: #6b7280;
+$gray-600: #4b5563;
+$gray-700: #374151;
+$gray-800: #1f2937;
+$border-radius-lg: 0.75rem;
+$shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+$transition: all 0.2s ease-in-out;
+$shadow-sm: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+
+// --- ESTILOS DO LAYOUT PRINCIPAL ---
+
+// O contêiner que segura a sidebar e o conteúdo da página
+.layout-container {
+  display: flex;
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+  background-color: $background-color;
+  transition: padding-left 0.3s ease-in-out; // Anima a transição do conteúdo
+}
+
+
+// A área de conteúdo principal à direita
+.main-page-content {
+  flex-grow: 1;
+  overflow-y: auto; // A barra de rolagem fica aqui
+  padding: 2rem;
+
+  // Esconde a barra de rolagem de forma limpa
+  scrollbar-width: none;
+  /* Firefox */
+  -ms-overflow-style: none;
+
+  /* IE e Edge */
+  &::-webkit-scrollbar {
+    display: none;
+    /* Chrome, Safari, e Opera */
+  }
+}
+
+
+// --- ESTILOS DA SIDEBAR PRINCIPAL ---
+.main-sidebar {
+  width: 16rem; // Largura quando expandida
+  background-color: $white;
+  box-shadow: $shadow-lg;
+  border-right: 1px solid $gray-200;
+  display: flex;
+  flex-direction: column;
+  padding: 1rem;
+  transition: width 0.3s ease-in-out; // Anima a largura
+  position: relative; // Para o botão de toggle
+}
+
+.sidebar-header {
+  .logo-container {
+    padding: 1rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    .logo-icon{
+      width: 40px; // Ajuste o tamanho conforme necessário
+      height: auto;
+    }
+
+    .logo-full {
+      width: 150px; // Ajuste o tamanho conforme necessário
+      height: auto;
+    }
+  }
+
+  &.collapsed {
+    .logo-container {
+    
+    }
+  }
+}
+
+.sidebar-toggle-btn {
+  position: absolute;
+  top: 1.75rem;
+  right: -12px; // Fica "para fora" da sidebar
+  width: 24px;
+  height: 24px;
+  background-color: $white;
+  border: 1px solid $gray-200;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: $gray-500;
+  box-shadow: $shadow-sm;
+  transition: transform 0.3s ease-in-out;
+
+  &:hover {
+    background-color: $gray-100;
+    color: $primary-color;
+  }
+}
+
+// Corpo da Navegação (ocupa o espaço restante)
+.sidebar-nav {
+  flex-grow: 1; // Faz a navegação ocupar o espaço disponível
+  overflow-y: auto; // Adiciona scroll se o menu for muito grande
+
+  // Esconde a barra de rolagem
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+// Estilo para todos os links de navegação
+.nav-link {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  border-radius: $border-radius-lg;
+  color: $gray-600;
+  text-decoration: none;
+  font-weight: 500;
+  transition: $transition;
+  cursor: pointer;
+  border: 1px solid transparent;
+
+  // --- MUDANÇA 1: Adicionar overflow: hidden ---
+  // Isso garante que o texto não "vaze" durante a animação
+  overflow: hidden;
+
+  &:hover {
+    background-color: $gray-100;
+    color: $gray-800;
+  }
+
+  &.active {
+    background-color: $primary-color;
+    color: $white;
+    font-weight: 600;
+  }
+
+  .nav-icon {
+    width: 1.25rem;
+    height: 1.25rem;
+
+    // --- MUDANÇA 2: Garantir que o ícone não encolha ---
+    flex-shrink: 0; // MUITO IMPORTANTE! Impede que o ícone seja espremido.
+    transition: margin 0.3s ease-in-out; // Anima a margem do ícone
+  }
+}
+
+// Estilo para o botão de ação principal "Criar Estudo"
+.primary-action {
+  background-color: $primary-color;
+  color: $white;
+  font-weight: 600;
+  margin-bottom: 1rem; // Espaçamento abaixo
+
+  &:hover {
+    background-color: $primary-hover;
+    color: $white;
+  }
+}
+
+// Esconde o texto e o título da categoria
+.nav-text,
+.logo-text,
+.nav-category-title .nav-text {
+  transition: opacity 0.2s ease, visibility 0.2s ease;
+  opacity: 1;
+  visibility: visible;
+  white-space: nowrap; // Impede que o texto quebre a linha durante a animação
+}
+
+// --- ESTADO RECOLHIDO ---
+// Quando o container principal tem a classe .sidebar-collapsed
+.sidebar-collapsed {
+  .main-sidebar {
+    width: 5rem;
+  }
+
+  .nav-text,
+  .logo-text {
+    opacity: 0;
+    visibility: hidden;
+    width: 0;
+    margin-left: -10px; // Ajuda a animação a ser mais suave
+  }
+
+  .nav-link {
+    justify-content: center;
+    padding: 0.75rem; // Padding igual em todos os lados
+  }
+
+  // --- MUDANÇA 3: Centralizar o ícone do logo ---
+  .logo {
+    justify-content: center;
+  }
+
+  .nav-category-title {
+    height: 0;
+    padding: 0;
+    margin: 0;
+    overflow: hidden;
+    border: none; // Remove qualquer borda que possa ter
+  }
+
+  .sidebar-toggle-btn {
+    transform: rotate(180deg);
+  }
+}
+
+// Lista de navegação principal
+.nav-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+// Títulos de categoria (ex: "Sua Biblioteca")
+.nav-category-title {
+  padding: 1.5rem 1rem 0.5rem 1rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: $gray-500;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+// Rodapé da Sidebar
+.sidebar-footer {
+  padding-top: 1rem;
+  border-top: 1px solid $gray-200;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+
+  // Link de Upgrade para Premium
+  .upgrade-link {
+    background-color: $gold-background-light;
+    color: $gold-color;
+    font-weight: 600;
+
+    &:hover {
+      background-color: $gold-background-hover;
+    }
+  }
+
+  // Botão de Logout
+  .logout-button {
+    width: 100%;
+    background: none;
+    border: none;
+    text-align: left;
+    color: $gray-500;
+
+    &:hover {
+      background-color: $gray-100;
+      color: $gray-700;
+    }
+  }
+}

@@ -1,0 +1,49 @@
+.historico-page {
+  // Estilos gerais da página
+  .lista-historico {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+    margin-top: 2rem;
+  }
+
+  .historico-card {
+    background-color: #fff;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    padding: 24px;
+    border-left: 5px solid #4caf50; // Verde para sucesso
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+    &:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+    }
+
+    .card-data {
+      font-size: 0.8rem;
+      color: #888;
+      margin-bottom: 8px;
+      display: block;
+    }
+
+    .card-meta {
+      font-size: 1.2rem;
+      margin-bottom: 4px;
+      color: #333;
+    }
+
+    .card-sessoes {
+      font-size: 0.9rem;
+      color: #666;
+    }
+  }
+
+  .placeholder-historico {
+    text-align: center;
+    margin-top: 4rem;
+    padding: 2rem;
+    background-color: #f9f9f9;
+    border-radius: 12px;
+  }
+}

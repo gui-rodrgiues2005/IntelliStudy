@@ -1,0 +1,265 @@
+// --- VARIÁVEIS DE COR (ajuste conforme sua paleta) ---
+$primary-color: #2563eb;
+$success-color: #10b981;
+$error-color: #ef4444;
+$white: #ffffff;
+$gray-100: #f3f4f6;
+$gray-200: #e5e7eb;
+$gray-400: #9ca3af;
+$gray-500: #6b7280;
+$gray-700: #374151;
+$gray-800: #1f2937;
+$blue-50: #eff6ff;
+$green-50: #ecfdf5;
+$red-50: #fff1f2;
+$green-800: #065f46;
+$red-800: #9f1239;
+
+// --- LAYOUT PRINCIPAL DA PÁGINA ---
+.meus-simulados-page {
+  display: flex;
+  height: 100%;
+  background-color: $gray-100;
+}
+
+// --- SIDEBAR DA LISTA DE SIMULADOS ---
+.simulados-sidebar {
+  width: 320px;
+  flex-shrink: 0;
+  background-color: $white;
+  border-right: 1px solid $gray-200;
+  display: flex;
+  flex-direction: column;
+  padding: 1.5rem;
+
+  h3 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: $gray-800;
+    margin: 0 0 1.5rem 0;
+  }
+
+  .simulados-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    overflow-y: auto;
+
+    li {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.85rem 1rem;
+      border-radius: 8px;
+      cursor: pointer;
+      margin-bottom: 0.5rem;
+      transition: background-color 0.2s ease;
+
+      &:hover {
+        background-color: $gray-100;
+
+        .delete-btn {
+          opacity: 1;
+        }
+      }
+
+      &.active {
+        background-color: $blue-50;
+
+        .topico-titulo {
+          color: $primary-color;
+          font-weight: 600;
+        }
+      }
+
+      .item-content {
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+      }
+
+      .topico-titulo {
+        font-size: 1rem;
+        font-weight: 500;
+        color: var(--text-color);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 200px;
+      }
+
+      .topico-data {
+        font-size: 0.8rem;
+        color: $gray-500;
+      }
+
+      .delete-btn {
+        background: none;
+        border: none;
+        cursor: pointer;
+        color: $gray-400;
+        padding: 0.5rem;
+        border-radius: 50%;
+        opacity: 0; // Escondido por padrão
+        transition: all 0.2s;
+        flex-shrink: 0;
+
+        &:hover {
+          color: $error-color;
+          background-color: $red-50;
+        }
+      }
+    }
+  }
+}
+
+// --- ÁREA DE CONTEÚDO PRINCIPAL ---
+.simulado-content {
+  flex-grow: 1;
+  padding: 2rem;
+  overflow-y: auto;
+
+  .placeholder-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    text-align: center;
+    color: $gray-400;
+
+    h2 {
+      font-size: 1.5rem;
+      color: $gray-500;
+      margin-top: 1rem;
+    }
+
+    p {
+      color: $gray-500;
+    }
+  }
+}
+
+// --- ESTILOS DO QUIZ ---
+.quiz-review-container {
+  max-width: 800px;
+  margin: 0 auto;
+
+  h1 {
+    font-size: 2rem;
+    font-weight: 700;
+    color: $gray-800;
+  }
+
+  h2 {
+    font-size: 1.5rem;
+    color: $primary-color;
+    margin-bottom: 2.5rem;
+    font-weight: 500;
+  }
+}
+
+.questao-card {
+  background-color: $white;
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  border: 1px solid $gray-200;
+
+  .pergunta-texto {
+    font-size: 1.1rem;
+    color: $gray-800;
+    margin: 0 0 1.5rem 0;
+    line-height: 1.6;
+  }
+}
+
+.alternativas-container {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.75rem;
+}
+
+.alternativa-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  border: 1px solid $gray-200;
+  border-radius: 0.5rem;
+  background-color: $white;
+  cursor: pointer;
+  text-align: left;
+  font-size: 1rem;
+  color: $gray-700;
+  transition: all 0.2s ease;
+
+  &:hover:not(:disabled) {
+    border-color: $primary-color;
+    background-color: $blue-50;
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+  }
+
+  .alternativa-letra {
+    flex-shrink: 0;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    border: 1px solid $gray-200;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 0.9rem;
+    transition: all 0.2s ease;
+  }
+
+  &.correta {
+    background-color: $green-50;
+    border-color: $success-color;
+    color: $green-800;
+    font-weight: 500;
+
+    .alternativa-letra {
+      background-color: $success-color;
+      color: $white;
+      border-color: $success-color;
+    }
+  }
+
+  &.incorreta {
+    background-color: $red-50;
+    border-color: $error-color;
+    color: $red-800;
+
+    .alternativa-letra {
+      background-color: $error-color;
+      color: $white;
+      border-color: $error-color;
+    }
+  }
+}
+
+.feedback-correto,
+.feedback-incorreto {
+  margin-top: 1rem;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.feedback-correto {
+  background-color: $green-50;
+  color: $green-800;
+}
+
+.feedback-incorreto {
+  background-color: $red-50;
+  color: $red-800;
+}

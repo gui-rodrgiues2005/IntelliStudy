@@ -1,0 +1,503 @@
+.container-sobre {
+    background-color: #f9fafb;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-family: 'Inter', sans-serif;
+}
+
+.sobre {
+    max-width: 900px;
+    margin: 120px auto 60px;
+    text-align: center;
+    padding: 0 20px;
+
+    h1 {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: #111827;
+
+        span {
+            background: linear-gradient(90deg, #6366f1, #8b5cf6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+    }
+
+    p {
+        color: #4b5563;
+        font-size: 1.1rem;
+        margin-top: 16px;
+        line-height: 1.7;
+    }
+
+    .buttons-action {
+        margin-top: 32px;
+        display: flex;
+        justify-content: center;
+        gap: 16px;
+
+        .btn-primary,
+        .btn-secondary {
+            padding: 12px 28px;
+            border-radius: 10px;
+            font-weight: 500;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: 0.3s ease;
+        }
+
+        .btn-primary {
+            background: linear-gradient(90deg, #6366f1, #8b5cf6);
+            border: none;
+            color: #fff;
+
+            &:hover {
+                opacity: 0.9;
+            }
+        }
+
+        .btn-secondary {
+            background: transparent;
+            border: 1.5px solid #6366f1;
+            color: #6366f1;
+
+            &:hover {
+                background-color: #eef2ff;
+            }
+        }
+    }
+}
+
+.historia {
+    display: flex;
+    justify-content: center;
+    padding: 40px 20px;
+    width: 100%;
+
+    .card {
+        max-width: 900px;
+        background-color: #fff;
+        border-radius: 14px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        padding: 40px;
+        line-height: 1.7;
+
+        h2 {
+            font-size: 1.6rem;
+            color: #111827;
+            margin-bottom: 20px;
+        }
+
+        p {
+            color: #4b5563;
+            margin-bottom: 16px;
+            font-size: 1.05rem;
+        }
+    }
+}
+
+@media (max-width: 768px) {
+    .sobre {
+        h1 {
+            font-size: 2rem;
+        }
+
+        p {
+            font-size: 1rem;
+        }
+    }
+
+    .historia .card {
+        padding: 28px;
+    }
+}
+
+// ... (código anterior mantido igual)
+
+.valores {
+    padding: 4rem 2rem;
+    text-align: center;
+    background-color: #f9f9fc;
+    width: 100%;
+    box-sizing: border-box;
+
+    h1 {
+        font-size: 2rem;
+        margin-bottom: 2.5rem;
+        color: #111827;
+    }
+
+    &__cards {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 2rem;
+        justify-items: center;
+        max-width: 1400px;
+        margin: 0 auto;
+    }
+
+    &__card {
+        background-color: #fff;
+        border-radius: 0.75rem;
+        padding: 2rem 1.5rem;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        max-width: 300px;
+        width: 100%;
+        text-align: center;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        box-sizing: border-box;
+
+        &:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        h3 {
+            margin-top: 1rem;
+            margin-bottom: 0.75rem;
+            font-size: 1.25rem;
+            color: #111827;
+        }
+
+        p {
+            font-size: 0.95rem;
+            color: #6b7280;
+            line-height: 1.5;
+        }
+    }
+
+    &__icon {
+        background-color: #e0e7ff;
+        border-radius: 0.75rem;
+        width: 3rem;
+        height: 3rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto;
+        color: #4f46e5;
+
+        svg {
+            width: 1.5rem;
+            height: 1.5rem;
+        }
+    }
+}
+
+// RESPONSIVIDADE PARA VALORES
+@media (max-width: 1200px) {
+    .valores {
+        &__cards {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.5rem;
+        }
+        
+        &__card {
+            max-width: 400px;
+        }
+    }
+}
+
+@media (max-width: 768px) {
+    .valores {
+        padding: 3rem 1.5rem;
+        
+        h1 {
+            font-size: 1.75rem;
+            margin-bottom: 2rem;
+        }
+
+        &__cards {
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+        }
+
+        &__card {
+            max-width: 500px;
+            padding: 1.5rem 1rem;
+            
+            h3 {
+                font-size: 1.2rem;
+            }
+            
+            p {
+                font-size: 0.9rem;
+            }
+        }
+
+        &__icon {
+            width: 2.5rem;
+            height: 2.5rem;
+            
+            svg {
+                width: 1.25rem;
+                height: 1.25rem;
+            }
+        }
+    }
+}
+
+@media (max-width: 480px) {
+    .valores {
+        padding: 2rem 1rem;
+        
+        h1 {
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        &__cards {
+            gap: 1rem;
+        }
+
+        &__card {
+            padding: 1.25rem 0.875rem;
+            
+            h3 {
+                font-size: 1.1rem;
+                margin-top: 0.75rem;
+                margin-bottom: 0.5rem;
+            }
+            
+            p {
+                font-size: 0.85rem;
+                line-height: 1.4;
+            }
+        }
+
+        &__icon {
+            width: 2.25rem;
+            height: 2.25rem;
+            
+            svg {
+                width: 1.1rem;
+                height: 1.1rem;
+            }
+        }
+    }
+}
+
+// ... (código do desenvolvedor mantido igual)
+
+
+.desenvolvedor {
+    padding: 5rem 2rem;
+    background-color: #f8f9fa;
+    color: #333;
+
+    &-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        display: flex;
+        flex-direction: column;
+        gap: 3rem;
+    }
+
+    &-foto {
+        display: flex;
+        align-items: flex-start;
+        gap: 3rem;
+
+        .img-criador {
+            flex-shrink: 0;
+            width: 300px;
+
+            .foto-criador {
+                width: 100%;
+                height: 350px;
+                border-radius: 12px;
+                box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+                object-fit: cover;
+            }
+        }
+
+        .desenvolvedor-header {
+            flex: 1;
+
+            h1 {
+                font-size: 2.5rem;
+                margin-bottom: 1.5rem;
+                color: #2c3e50;
+                font-weight: 700;
+            }
+
+            p {
+                font-size: 1.1rem;
+                line-height: 1.7;
+                color: #555;
+                margin-bottom: 1.2rem;
+
+                &:last-of-type {
+                    margin-bottom: 0;
+                }
+            }
+        }
+    }
+
+    &-stats {
+        display: flex;
+        justify-content: center;
+        gap: 4rem;
+        flex-wrap: wrap;
+
+        .stat-item {
+            text-align: center;
+
+            .stat-value {
+                font-size: 3rem;
+                font-weight: 700;
+                color: #3498db;
+                margin-bottom: 0.5rem;
+            }
+
+            .stat-label {
+                font-size: 1.1rem;
+                color: #7f8c8d;
+                font-weight: 500;
+            }
+        }
+    }
+
+    &-skills {
+        display: flex;
+        justify-content: center;
+        gap: 1.5rem;
+        flex-wrap: wrap;
+
+        .skill-tag {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+            padding: 0.8rem 1.5rem;
+            border-radius: 50px;
+            font-weight: 600;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+
+            &:hover {
+                transform: translateY(-3px);
+                box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+                background: linear-gradient(135deg, #2980b9, #3498db);
+            }
+        }
+    }
+
+    &-quote {
+        text-align: center;
+        max-width: 800px;
+        margin: 0 auto;
+
+        blockquote {
+            font-size: 1rem;
+            font-style: italic;
+            color: #2c3e50;
+            line-height: 1.6;
+            padding: 2rem;
+            border-left: 4px solid #3498db;
+            background-color: white;
+            border-radius: 0 12px 12px 0;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+            position: relative;
+
+            &::before {
+                content: '"';
+                font-size: 4rem;
+                color: #3498db;
+                position: absolute;
+                left: 10px;
+                top: -10px;
+                opacity: 0.3;
+            }
+        }
+    }
+}
+
+// Responsividade
+@media (max-width: 768px) {
+    .desenvolvedor {
+        padding: 3rem 1rem;
+
+        &-foto {
+            flex-direction: column;
+            gap: 2rem;
+            text-align: center;
+
+            .img-criador {
+                width: 250px;
+                margin: 0 auto;
+
+                .foto-criador {
+                    height: 300px;
+                }
+            }
+
+            .desenvolvedor-header {
+                h1 {
+                    font-size: 2rem;
+                }
+
+                p {
+                    font-size: 1rem;
+                    text-align: left;
+                }
+            }
+        }
+
+        &-stats {
+            gap: 2rem;
+
+            .stat-item {
+                .stat-value {
+                    font-size: 2.5rem;
+                }
+            }
+        }
+
+        &-skills {
+            gap: 1rem;
+
+            .skill-tag {
+                padding: 0.6rem 1.2rem;
+                font-size: 0.9rem;
+            }
+        }
+
+        &-quote {
+            blockquote {
+                font-size: 1.2rem;
+                padding: 1.5rem;
+
+                &::before {
+                    font-size: 3rem;
+                }
+            }
+        }
+    }
+}
+
+@media (max-width: 480px) {
+    .desenvolvedor {
+        &-foto {
+            .img-criador {
+                width: 200px;
+
+                .foto-criador {
+                    height: 250px;
+                }
+            }
+        }
+
+        &-stats {
+            .stat-item {
+                .stat-value {
+                    font-size: 2rem;
+                }
+
+                .stat-label {
+                    font-size: 1rem;
+                }
+            }
+        }
+    }
+}

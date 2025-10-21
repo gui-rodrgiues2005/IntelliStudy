@@ -4,24 +4,30 @@ using Microsoft.IdentityModel.Tokens;
 using Backend.Data;
 using System.Text;
 using Microsoft.OpenApi.Models;
-using Backend.Services; 
-
+using Backend.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// --- Serviços customizados ---
 builder.Services.AddHostedService<GeminiWorker>();
 builder.Services.AddSingleton<EfiPixService>();
 builder.Services.AddScoped<PlanoService>();
 
-// Chave da Gemini
-var geminiApiKey = builder.Configuration["Gemini:ApiKey"];
-builder.Services.AddSingleton(new GeminiService(geminiApiKey));
+// --- HttpClient para GeminiService ---
+builder.Services.AddHttpClient();
 
-// Configurar PostgreSQL
+var geminiApiKey = builder.Configuration["Gemini:ApiKey"];
+builder.Services.AddSingleton<GeminiService>(sp =>
+{
+    var httpClient = sp.GetRequiredService<HttpClient>();
+    return new GeminiService(httpClient, geminiApiKey);
+});
+
+// --- PostgreSQL ---
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// Configurar JWT
+// --- JWT ---
 var jwtSettings = builder.Configuration.GetSection("Jwt");
 var key = Encoding.ASCII.GetBytes(jwtSettings["Key"]);
 
@@ -30,10 +36,9 @@ builder.Services.AddAuthentication(options =>
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
     options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
 })
-
 .AddJwtBearer(options =>
 {
-    options.RequireHttpsMetadata = false; // true em produção
+    options.RequireHttpsMetadata = false;
     options.SaveToken = true;
     options.TokenValidationParameters = new TokenValidationParameters
     {
@@ -47,7 +52,7 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
-// Adicionar CORS
+// --- CORS ---
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAll", policy =>
@@ -58,10 +63,10 @@ builder.Services.AddCors(options =>
     });
 });
 
-// Adicionar Controllers
+// --- Controllers ---
 builder.Services.AddControllers();
 
-// Swagger com suporte a JWT
+// --- Swagger ---
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
@@ -91,11 +96,12 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
-// Health check
+// --- Health check ---
 builder.Services.AddHealthChecks();
+
 var app = builder.Build();
 
-// Middleware
+// --- Middleware ---
 if (app.Environment.IsDevelopment())
 {
     app.UseDeveloperExceptionPage();
@@ -117,8 +123,11 @@ app.UseAuthorization();
 app.MapControllers();
 app.MapHealthChecks("/health");
 
-// Listar modelos da Gemini ao iniciar (apenas console)
-var gemini = app.Services.GetRequiredService<GeminiService>();
-// await gemini.ListModelsAsync();
+// // --- Listar modelos Gemini ao iniciar ---
+// using (var scope = app.Services.CreateScope())
+// {
+//     var gemini = scope.ServiceProvider.GetRequiredService<GeminiService>();
+//     await gemini.ListModelsAsync();
+// }
 
 app.Run();

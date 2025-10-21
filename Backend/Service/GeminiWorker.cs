@@ -60,10 +60,17 @@ namespace Backend.Services
                 if (pedidoParaProcessar.Tipo == GenerationType.Resumo)
                 {
                     string conteudoParaResumo;
+                    string topicoOriginal; // <- Variável para o tópico
 
                     if (!string.IsNullOrEmpty(pedidoParaProcessar.InputTexto))
                     {
                         conteudoParaResumo = pedidoParaProcessar.InputTexto;
+
+                        // Se o InputContextoId foi fornecido (ex: nome do arquivo), use-o como tópico.
+                        // Se não, use o comportamento antigo (pegar o começo do texto).
+                        topicoOriginal = !string.IsNullOrEmpty(pedidoParaProcessar.InputContextoId)
+                            ? pedidoParaProcessar.InputContextoId
+                            : (conteudoParaResumo.Length > 100 ? conteudoParaResumo.Substring(0, 100) + "..." : conteudoParaResumo);
                     }
                     else
                     {
@@ -74,7 +81,7 @@ namespace Backend.Services
 
                     var novoResumo = new Resumo
                     {
-                        TopicoOriginal = conteudoParaResumo,
+                        TopicoOriginal = topicoOriginal, // <-- AQUI ESTÁ A MUDANÇA
                         ResumoTexto = resultadoIA,
                         UserId = pedidoParaProcessar.UserId,
                         CreatedAt = DateTime.UtcNow

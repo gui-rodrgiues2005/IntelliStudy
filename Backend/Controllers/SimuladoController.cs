@@ -100,7 +100,59 @@ public class SimuladoController : ControllerBase
         );
     }
 
+    [HttpPost("gerar-direto")]
+    public async Task<IActionResult> GerarSimuladoDireto([FromBody] GerarSimuladoRequestDto request)
+    {
+        try
+        {
+            var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+            var resumo = await _context.Resumos
+                .FirstOrDefaultAsync(r => r.Id == request.ResumoId && r.UserId == userId);
 
+            if (resumo == null)
+                return NotFound(new { message = "Resumo não encontrado" });
+
+            // --- INÍCIO DA CORREÇÃO ---
+            // 1. Este endpoint ('gerar-direto') é usado pelo seu fluxo de ARQUIVOS.
+            //    Portanto, 'resumo.ResumoTexto' contém o TEXTO BRUTO do PDF.
+            // 2. A IA não consegue gerar um simulado de um texto bruto.
+            //    Precisamos *primeiro* pedir à IA para resumir esse texto.
+
+            // Você já tem o _geminiService.GerarResumoAsync disponível aqui.
+            string textoResumidoPelaIA = await _geminiService.GerarResumoAsync(resumo.ResumoTexto);
+
+            // --- FIM DA CORREÇÃO ---
+
+            // 3. Agora, usamos esse 'textoResumidoPelaIA' (que é limpo e curto)
+            //    para gerar o simulado, em vez do 'resumo.ResumoTexto'.
+            var respostaBrutaDaIA = await _geminiService.GerarSimuladoAsync(textoResumidoPelaIA, request.NumeroDeQuestoes);
+
+            // 4. O resto do seu código permanece idêntico
+            var inicio = respostaBrutaDaIA.IndexOf('[');
+            var fim = respostaBrutaDaIA.LastIndexOf(']');
+            string jsonLimpo = (inicio != -1 && fim != -1)
+                ? respostaBrutaDaIA.Substring(inicio, fim - inicio + 1)
+                : "[]";
+
+            // 5. Cria e salva o Simulado
+            var simulado = new Simulado
+            {
+                ResumoId = resumo.Id,
+                QuestoesJson = jsonLimpo,
+                CreatedAt = DateTime.UtcNow
+            };
+
+            _context.Simulados.Add(simulado);
+            await _context.SaveChangesAsync();
+
+            // 6. Retorna o simulado gerado
+            return Ok(simulado);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { message = ex.Message });
+        }
+    }
     // GET: api/simulado
     [HttpGet]
     [Authorize] // Garante que só usuários logados podem acessar

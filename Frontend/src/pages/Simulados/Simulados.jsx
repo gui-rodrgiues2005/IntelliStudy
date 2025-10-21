@@ -25,8 +25,8 @@ const Questao = ({ questao, numero }) => {
                         else if (alt === respostaSelecionada) itemClass += ' incorreta';
                     }
                     return (
-                        <button 
-                            key={index} 
+                        <button
+                            key={index}
                             className={itemClass}
                             onClick={() => handleResposta(alt)}
                             disabled={respostaSelecionada !== null}
@@ -58,7 +58,7 @@ function Simulados() {
                 const token = localStorage.getItem("token");
                 const res = await fetch('http://localhost:5051/api/Simulado', {
                     headers: { 'Authorization': `Bearer ${token}` }
-                } );
+                });
                 if (!res.ok) throw new Error("Falha ao buscar lista de simulados.");
                 const data = await res.json();
                 setListaSimulados(data);
@@ -76,22 +76,60 @@ function Simulados() {
         setSimuladoSelecionado(null);
         setParsedQuiz([]);
         setIsFetchingDetails(true);
+
         try {
             const token = localStorage.getItem("token");
             const res = await fetch(`http://localhost:5051/api/Simulado/${simuladoId}`, {
                 headers: { 'Authorization': `Bearer ${token}` }
-            } );
+            });
+
             if (!res.ok) throw new Error("Falha ao buscar o simulado.");
+
             const data = await res.json();
+
+            console.group("🧩 DEBUG SIMULADO RECEBIDO");
+            console.log("📘 Simulado bruto recebido:", data);
+            console.log("📗 Tipo de data.questoesJson:", typeof data.questoesJson);
+            console.log("📘 Valor literal de data.questoesJson:", data.questoesJson);
+            console.groupEnd();
+
+            let parsed = [];
+
+            // 🧠 Tentativa segura de parse
+            try {
+                if (typeof data.questoesJson === "string") {
+                    // Caso tenha JSON duplo (ex: "\"[{\\\"pergunta\\\":...}]\"")
+                    const cleaned = data.questoesJson
+                        .replace(/^"+|"+$/g, "") // remove aspas duplas externas
+                        .replace(/\\"/g, '"');   // remove escapes
+                    console.log("🧹 JSON limpo para parse:", cleaned);
+                    parsed = JSON.parse(cleaned);
+                } else {
+                    console.warn("⚠️ questoesJson não é string, usando direto:", data.questoesJson);
+                    parsed = data.questoesJson;
+                }
+            } catch (parseError) {
+                console.error("❌ Erro ao fazer JSON.parse em questoesJson:", parseError);
+                console.log("❌ Conteúdo que falhou:", data.questoesJson);
+                alert("Erro ao interpretar o JSON do simulado. Verifique o console.");
+            }
+
+            // Log do resultado final
+            console.group("✅ RESULTADO DO PARSE");
+            console.log("🧩 parsedQuiz:", parsed);
+            console.log("📋 Estrutura da primeira questão:", parsed?.[0]);
+            console.groupEnd();
+
             setSimuladoSelecionado(data);
-            setParsedQuiz(JSON.parse(data.questoesJson || '[]'));
+            setParsedQuiz(Array.isArray(parsed) ? parsed : []);
         } catch (error) {
-            console.error(error);
+            console.error("🚨 Erro geral em handleSelecionarSimulado:", error);
             alert(error.message);
         } finally {
             setIsFetchingDetails(false);
         }
     };
+
 
     const handleDeleteSimulado = async (simuladoId, event) => {
         event.stopPropagation();
@@ -102,13 +140,16 @@ function Simulados() {
             const res = await fetch(`http://localhost:5051/api/Simulado/${simuladoId}`, {
                 method: 'DELETE',
                 headers: { 'Authorization': `Bearer ${token}` }
-            } );
+            });
             if (!res.ok) throw new Error("Falha ao deletar o simulado.");
-            
+
             setListaSimulados(prevList => prevList.filter(s => s.id !== simuladoId));
             if (simuladoSelecionado?.id === simuladoId) {
                 setSimuladoSelecionado(null);
                 setParsedQuiz([]);
+                console.log("🧩 parsedQuiz:", JSON.parse(data.questoesJson));
+                console.log("📋 Estrutura da primeira questão:", JSON.parse(data.questoesJson)[0]);
+
             }
         } catch (error) {
             console.error(error);
@@ -158,7 +199,7 @@ function Simulados() {
                     <div className="quiz-review-container">
                         <h1>Revisão do Simulado</h1>
                         <h2>{simuladoSelecionado.resumo?.topicoOriginal}</h2>
-                        
+
                         {parsedQuiz.map((question, qIndex) => (
                             <Questao key={qIndex} questao={question} numero={qIndex + 1} />
                         ))}

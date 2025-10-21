@@ -158,3 +158,4 @@ C:\Users\guilh\Documents\StudyAI\Backend\bin\Debug\net9.0\itext.svg.dll
 C:\Users\guilh\Documents\StudyAI\Backend\bin\Debug\net9.0\itext.commons.dll
 C:\Users\guilh\Documents\StudyAI\Backend\bin\Debug\net9.0\Microsoft.DotNet.PlatformAbstractions.dll
 C:\Users\guilh\Documents\StudyAI\Backend\bin\Debug\net9.0\System.IO.Packaging.dll
+C:\Users\guilh\Documents\StudyAI\Backend\obj\Debug\net9.0\Backend.sourcelink.json

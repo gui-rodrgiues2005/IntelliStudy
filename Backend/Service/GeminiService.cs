@@ -12,25 +12,33 @@ using System.IO;
 
 public class GeminiService
 {
-    private readonly string _apiKey;
     private readonly HttpClient _http;
+    private readonly string _apiKey;
     // URL base para os modelos Gemini mais recentes
-    private const string GeminiApiUrl = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-pro:generateContent";
+    // private const string GeminiApiUrl = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-pro:generateContent";
+    private const string GeminiApiUrl = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent";
+
 
     // public async Task ListModelsAsync()
     // {
-    //     var url = "https://generativelanguage.googleapis.com/v1beta/models?key=" + _apiKey;
+    //     var url = $"https://generativelanguage.googleapis.com/v1beta/models?key={_apiKey}";
     //     var response = await _http.GetAsync(url);
     //     var result = await response.Content.ReadAsStringAsync();
+
+    //     if (!response.IsSuccessStatusCode)
+    //     {
+    //         Console.WriteLine($"Erro ao listar modelos: {response.StatusCode} - {result}");
+    //         return;
+    //     }
+
+    //     Console.WriteLine("Modelos disponíveis:");
     //     Console.WriteLine(result);
     // }
 
-    public GeminiService(string apiKey)
+    public GeminiService(HttpClient http, string apiKey)
     {
+        _http = http;
         _apiKey = apiKey;
-        _http = new HttpClient();
-        // A API do Gemini usa x-goog-api-key no header em vez de Bearer token
-        // _http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _apiKey );
     }
 
     private async Task<string> GenerateContentAsync(string prompt)
@@ -85,18 +93,23 @@ public class GeminiService
 
     public async Task<string> GerarResumoAsync(string conteudo)
     {
-        // --- PROMPT AJUSTADO ---
-        // Removemos a parte "Faça um resumo..." e fomos mais diretos.
-        // Adicionamos uma instrução explícita para não incluir introduções.
+        // 🧠 PROMPT ATUALIZADO — “modo professor”
         var prompt = $"""
-        Você é um especialista que cria resumos técnicos. Sua única tarefa é gerar o conteúdo do resumo.
-        NÃO inclua frases introdutórias como "Claro, aqui está seu resumo" ou qualquer outra forma de saudação ou comentário.
-        Vá direto ao ponto.
+    Você é um professor experiente e especializado em diferentes faixas etárias de alunos.
+    Sua tarefa é **gerar resumos educativos e precisos** a partir de textos fornecidos por estudantes.
 
-        Gere um resumo conciso e bem estruturado sobre o seguinte tópico, destacando os conceitos e termos mais importantes: "{conteudo}"
-        """;
+    Instruções importantes:
+    - Resuma **apenas** as informações que estão presentes no conteúdo.
+    - **Não adicione** explicações extras nem assuntos que não estejam no texto.
+    - Use uma linguagem **clara, didática e direta**, adequada para estudo.
+    - **Não inclua** introduções como "Aqui está seu resumo" ou qualquer tipo de saudação.
+    - O objetivo é ensinar e explicar o conteúdo de forma organizada e fiel ao material.
 
-        // O resto do método continua igual...
+    Gere um **resumo completo, coerente e bem estruturado** com base no conteúdo abaixo:
+
+    "{conteudo}"
+    """;
+
         int maxRetries = 3;
         int delayMs = 2000;
 
@@ -118,52 +131,147 @@ public class GeminiService
         throw new InvalidOperationException("Falha inesperada ao gerar resumo.");
     }
 
+
     public async Task<string> ExtractTextAsync(IFormFile file)
     {
         string extension = Path.GetExtension(file.FileName).ToLower();
         string text = "";
 
-        if (extension == ".pdf")
+        try
         {
-            using var reader = new PdfReader(file.OpenReadStream());
-            using var pdf = new PdfDocument(reader);
-            for (int i = 1; i <= pdf.GetNumberOfPages(); i++)
-                text += PdfTextExtractor.GetTextFromPage(pdf.GetPage(i));
+            switch (extension)
+            {
+                // 🧾 PDF
+                case ".pdf":
+                    using (var reader = new PdfReader(file.OpenReadStream()))
+                    using (var pdf = new PdfDocument(reader))
+                    {
+                        StringBuilder pdfText = new StringBuilder();
+                        for (int i = 1; i <= pdf.GetNumberOfPages(); i++)
+                            pdfText.Append(PdfTextExtractor.GetTextFromPage(pdf.GetPage(i)));
+                        text = pdfText.ToString();
+                    }
+                    break;
+
+                // 📝 DOCX
+                case ".docx":
+                    using (var doc = WordprocessingDocument.Open(file.OpenReadStream(), false))
+                    {
+                        text = doc.MainDocumentPart.Document.Body.InnerText;
+                    }
+                    break;
+
+                // 💬 TXT, MD, CSV — leitura simples como texto
+                case ".txt":
+                case ".md":
+                case ".csv":
+                    using (var reader = new StreamReader(file.OpenReadStream(), Encoding.UTF8))
+                    {
+                        text = await reader.ReadToEndAsync();
+                    }
+                    break;
+
+                // 🖼️ PPTX (slides do PowerPoint)
+                case ".pptx":
+                    using (var ppt = PresentationDocument.Open(file.OpenReadStream(), false))
+                    {
+                        var sb = new StringBuilder();
+
+                        foreach (var slidePart in ppt.PresentationPart.SlideParts)
+                        {
+                            var texts = slidePart.Slide.Descendants<DocumentFormat.OpenXml.Drawing.Text>();
+                            foreach (var t in texts)
+                                sb.AppendLine(t.Text);
+                        }
+
+                        text = sb.ToString();
+                    }
+                    break;
+
+                // // 🧠 RTF (Rich Text Format)
+                // case ".rtf":
+                //     using (var reader = new StreamReader(file.OpenReadStream(), Encoding.UTF8))
+                //     {
+                //         string rawRtf = await reader.ReadToEndAsync();
+
+                //         // Converter RTF para texto puro (forma simples, sem precisar de pacote extra)
+                //         System.Windows.Forms.RichTextBox rtb = new System.Windows.Forms.RichTextBox();
+                //         rtb.Rtf = rawRtf;
+                //         text = rtb.Text;
+                //     }
+                //     break;
+
+                default:
+                    throw new NotSupportedException($"Tipo de arquivo '{extension}' não é suportado.");
+            }
         }
-        else if (extension == ".docx")
+        catch (Exception ex)
         {
-            using var doc = WordprocessingDocument.Open(file.OpenReadStream(), false);
-            text = doc.MainDocumentPart.Document.Body.InnerText;
+            throw new InvalidOperationException($"Erro ao extrair texto do arquivo ({file.FileName}): {ex.Message}", ex);
         }
 
-        return text;
+        return text.Trim();
     }
+
 
     public async Task<string> GenerateSummaryAsync(string text)
     {
-        var client = new HttpClient();
-        client.DefaultRequestHeaders.Add("Authorization", $"Bearer {_apiKey}");
+        // 🔹 Prompt padronizado — mesmo estilo do GerarResumoAsync
+        var prompt = $"""
+    Você é um professor experiente e especializado em ensinar alunos de diferentes idades.
+    Sua função é gerar **resumos claros, objetivos e educativos** a partir de materiais enviados pelos alunos.
+
+    Instruções:
+    - Resuma **apenas** o conteúdo fornecido, seja qual for, mais a sua obrigação é resumir ele, explicar e deixar conciso.
+    - **Não adicione** informações que não estejam no texto.
+    - Organize o resumo de forma didática e coerente.
+    - **Não escreva** introduções, cumprimentos ou frases como "Aqui está seu resumo".
+    - Vá direto ao ponto, explicando de maneira fiel ao texto.
+
+    Gere o resumo com base no conteúdo abaixo:
+
+    "{text}"
+    """;
+
+        // 🔹 Corpo da requisição para a API do Gemini
+        var requestUrl = $"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key={_apiKey}";
 
         var body = new
         {
             contents = new[]
             {
-        new
-        {
-            parts = new[]
+            new
             {
-                new { text = "Resuma o texto de forma clara e organizada:\n\n" + text }
+                parts = new[]
+                {
+                    new { text = prompt }
+                }
             }
         }
-    }
         };
 
-        var response = await client.PostAsJsonAsync("https://api.openai.com/v1/chat/completions", body);
-        var result = await response.Content.ReadFromJsonAsync<JsonElement>();
+        var json = new StringContent(JsonSerializer.Serialize(body), Encoding.UTF8, "application/json");
+        var response = await _http.PostAsync(requestUrl, json);
 
-        return result.GetProperty("choices")[0].GetProperty("message").GetProperty("content").GetString();
+        if (!response.IsSuccessStatusCode)
+        {
+            var error = await response.Content.ReadAsStringAsync();
+            throw new HttpRequestException($"Erro ao gerar resumo com Gemini: {response.StatusCode} - {error}");
+        }
+
+        var resultJson = await response.Content.ReadAsStringAsync();
+
+        try
+        {
+            var jsonNode = JsonNode.Parse(resultJson);
+            var generatedText = jsonNode["candidates"]?[0]?["content"]?["parts"]?[0]?["text"]?.GetValue<string>();
+            return generatedText ?? "Não foi possível extrair o resumo do resultado.";
+        }
+        catch (Exception ex)
+        {
+            throw new InvalidOperationException($"Erro ao processar resposta do Gemini: {ex.Message}\nResposta bruta: {resultJson}");
+        }
     }
-
 
 
     // Em Services/GeminiService.cs

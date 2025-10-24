@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "sbI+7rq4hTk=",
+  "dgSpecHash": "0YtwoEkoeBQ=",
   "success": true,
-  "projectFilePath": "C:\\Users\\guilh\\Documents\\StudyAI\\backend\\Backend.csproj",
+  "projectFilePath": "C:\\Users\\guilh\\Documents\\StudyAI\\Backend\\Backend.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\guilh\\.nuget\\packages\\bcrypt.net-next\\4.0.3\\bcrypt.net-next.4.0.3.nupkg.sha512",
     "C:\\Users\\guilh\\.nuget\\packages\\documentformat.openxml\\3.3.0\\documentformat.openxml.3.3.0.nupkg.sha512",

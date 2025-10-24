@@ -22,6 +22,10 @@ WORKDIR /app
 # Copia os arquivos publicados do build
 COPY --from=build /app/publish .
 
+# Copia arquivos de configuração necessários
+COPY --from=build /src/Backend/appsettings.json .
+COPY --from=build /src/Backend/appsettings.Development.json .
+
 # Expõe a porta 80
 EXPOSE 80
 

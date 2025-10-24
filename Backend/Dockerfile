@@ -10,12 +10,10 @@ COPY global.json .
 # 2. RESTAURA as dependências
 RUN dotnet restore
 
-# 3. Copia o restante do código. O arquivo global.json já está copiado.
+# 3. Copia o restante do código.
 COPY . .
 
 # 4. PUBLICA A APLICAÇÃO
-# Removemos o '--no-restore' para que o publish use o cache do restore anterior (passo 2)
-# E especificamos o projeto para evitar ambiguidade.
 RUN dotnet publish Backend.csproj -c Release -o /app/publish
 
 # ETAPA 2: RUNTIME/FINAL - Roda a aplicação com o SDK (necessário para o EF Core e migração)
@@ -26,5 +24,12 @@ WORKDIR /app
 COPY --from=build /app/publish .
 
 # Comando de entrada principal:
-# Garante que o banco de dados seja atualizado antes de iniciar a API
-ENTRYPOINT ["/bin/bash", "-c", "dotnet tool install --global dotnet-ef --version 8.0.6 && dotnet ef database update && dotnet Backend.dll"]
+# 1. Instala a ferramenta 'dotnet ef' globalmente.
+# 2. **ATUALIZA O PATH** para que o 'dotnet ef' possa ser encontrado.
+# 3. Roda a migração do banco de dados (database update).
+# 4. Inicia o seu aplicativo Backend.dll.
+ENTRYPOINT ["/bin/bash", "-c", "\
+    dotnet tool install --global dotnet-ef --version 8.0.6 && \
+    export PATH=\"$PATH:/root/.dotnet/tools\" && \
+    dotnet ef database update && \
+    dotnet Backend.dll"]

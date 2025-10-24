@@ -5,30 +5,22 @@
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
 
-# IGNORAR CACHE DE PACOTES LOCAIS DO WINDOWS
-# Força o NuGet a não procurar pastas de cache globais do Windows.
-ENV NUGET_FALLBACK_PACKAGE_FOLDERS=""
+# **CORREÇÃO: REMOVEMOS A VARIÁVEL DE AMBIENTE E SIMPLIFICAMOS O FLUXO**
 
 # 1. COPIA OS ARQUIVOS DE PROJETO
 COPY Backend.csproj .
 COPY global.json .
 
-# 2. LIMPEZA E RESTAURAÇÃO das dependências
-# Remove qualquer arquivo de configuração NuGet poluído antes de restaurar.
-# Isso resolve o problema de cache do Windows sem o erro /dev/null.
-RUN rm -f /root/.nuget/NuGet.Config
+# 2. RESTAURAÇÃO das dependências
+# Apenas restaura, sem tentar limpar o NuGet.Config, pois a variável de ambiente não é mais necessária.
 RUN dotnet restore
 
 # 3. Copia o restante do código.
 COPY . .
 
-# 4. CONSTRÓI A APLICAÇÃO (Build)
-# Constrói o projeto limpo (sem restaurar novamente)
-RUN dotnet build -c Release --no-restore
-
-# 5. PUBLICA A APLICAÇÃO (Publish)
-# Publica usando os binários já construídos (sem construir novamente)
-RUN dotnet publish -c Release -o /app/publish --no-build
+# 4. PUBLICA A APLICAÇÃO (Publish) - **ESTE PASSO FAZ O BUILD E PUBLICAÇÃO**
+# O comando 'publish' faz o 'build' e resolve o problema de assets de forma mais limpa.
+RUN dotnet publish -c Release -o /app/publish
 
 # ETAPA 2: RUNTIME/FINAL - Roda a aplicação com o SDK (Necessário para o EF Core)
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS final

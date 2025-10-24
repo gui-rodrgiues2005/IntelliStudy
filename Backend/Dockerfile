@@ -9,7 +9,7 @@ WORKDIR /src
 # Este é o fix crucial para o erro MSB4018 'Unable to find fallback package folder C:\...'
 ENV NUGET_FALLBACK_PACKAGE_FOLDERS=""
 
-# 1. COPIA O PROJETO
+# 1. COPIA O PROJETO para garantir o cache do restore
 COPY Backend.csproj .
 COPY global.json .
 
@@ -19,9 +19,13 @@ RUN dotnet restore
 # 3. Copia o restante do código.
 COPY . .
 
-# 4. PUBLICA A APLICAÇÃO
-# O --no-restore agora deve funcionar sem o erro de cache, pois o fallback foi desativado.
-RUN dotnet publish Backend.csproj -c Release -o /app/publish --no-restore
+# 4. CONSTRÓI A APLICAÇÃO (Build)
+# Isso é mais limpo que o publish para evitar o erro de cache
+RUN dotnet build -c Release --no-restore
+
+# 5. PUBLICA A APLICAÇÃO (Publish)
+# Agora só copiamos os binários do resultado do build, o que é mais seguro
+RUN dotnet publish Backend.csproj -c Release -o /app/publish --no-build
 
 # ETAPA 2: RUNTIME/FINAL - Roda a aplicação com o SDK
 # Usamos o SDK na fase final para que o 'dotnet ef' funcione.

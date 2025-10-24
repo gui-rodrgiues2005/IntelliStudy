@@ -88,34 +88,117 @@ namespace Backend.Services
                     };
 
                     dbContext.Resumos.Add(novoResumo);
+                    await dbContext.SaveChangesAsync(); // Salva para obter o ID
 
-                    pedidoParaProcessar.OutputTexto = resultadoIA;
+                    // Seta OutputTexto diretamente para o JSON do Resumo, garantindo que o front receba o ID correto
+                    pedidoParaProcessar.OutputTexto = JsonSerializer.Serialize(novoResumo, new JsonSerializerOptions { ReferenceHandler = ReferenceHandler.IgnoreCycles });
                     resultadoFinal = novoResumo;
                 }
 
                 // ======= 2️⃣ GERAÇÃO DE SIMULADO =======
                 else if (pedidoParaProcessar.Tipo == GenerationType.Simulado)
                 {
+                    const int MAX_TRIES = 3;
+                    bool sucesso = false;
+
+                    // 🔹 Loga informações iniciais do pedido
+                    _logger.LogInformation("📘 [Worker] Iniciando geração de simulado | RequestId: {Id} | ContextoId: {CtxId} | TextoEntrada: {Texto}",
+                        pedidoParaProcessar.Id, pedidoParaProcessar.InputContextoId, pedidoParaProcessar.InputTexto);
+
                     var resumoPai = await dbContext.Resumos.FindAsync(int.Parse(pedidoParaProcessar.InputContextoId!));
-                    if (resumoPai == null) throw new InvalidOperationException("Resumo pai para o simulado não foi encontrado.");
+                    if (resumoPai == null)
+                        throw new InvalidOperationException("Resumo pai para o simulado não foi encontrado.");
+
+                    _logger.LogInformation("📄 [Worker] Texto do resumo pai encontrado (ID {Id}): {Texto}",
+                        resumoPai.Id, resumoPai.ResumoTexto);
 
                     int numeroDeQuestoes = int.TryParse(pedidoParaProcessar.InputTexto, out int n) ? n : 5;
 
-                    string respostaBrutaDaIA = await geminiService.GerarSimuladoAsync(resumoPai.ResumoTexto, numeroDeQuestoes);
-                    var inicio = respostaBrutaDaIA.IndexOf('[');
-                    var fim = respostaBrutaDaIA.LastIndexOf(']');
-                    string jsonLimpo = (inicio != -1 && fim != -1) ? respostaBrutaDaIA.Substring(inicio, fim - inicio + 1) : "[]";
-
-                    var novoSimulado = new Simulado
+                    for (int attempt = 1; attempt <= MAX_TRIES; attempt++)
                     {
-                        ResumoId = resumoPai.Id,
-                        QuestoesJson = jsonLimpo,
-                        CreatedAt = DateTime.UtcNow
-                    };
+                        try
+                        {
+                            _logger.LogInformation("🚀 [Worker] Tentativa {Attempt}/{Max} - Chamando GeminiService.GerarSimuladoAsync...", attempt, MAX_TRIES);
 
-                    dbContext.Simulados.Add(novoSimulado);
-                    resultadoFinal = novoSimulado;
+                            // 1️⃣ CHAMA A API DO GEMINI
+                            string respostaBrutaDaIA = await geminiService.GerarSimuladoAsync(resumoPai.ResumoTexto, numeroDeQuestoes);
+
+                            // 🔍 Log da resposta bruta
+                            _logger.LogInformation("🧠 [Worker] Resposta bruta do Gemini (tentativa {Attempt}): {Resposta}", attempt, respostaBrutaDaIA);
+
+                            // 2️⃣ LIMPEZA E VALIDAÇÃO DO JSON
+                            var inicio = respostaBrutaDaIA.IndexOf('[');
+                            var fim = respostaBrutaDaIA.LastIndexOf(']');
+                            string jsonLimpo = (inicio != -1 && fim != -1)
+                                ? respostaBrutaDaIA.Substring(inicio, fim - inicio + 1)
+                                : "[]";
+
+                            // 🔍 Log do JSON limpo
+                            _logger.LogInformation("📦 [Worker] JSON limpo extraído (tentativa {Attempt}): {Json}", attempt, jsonLimpo);
+
+                            if (jsonLimpo.Length <= 5)
+                            {
+                                throw new InvalidOperationException($"API Gemini retornou resposta vazia ou inválida. Tentativa {attempt}.");
+                            }
+
+                            // 3️⃣ SALVA NO BANCO
+                            var novoSimulado = new Simulado
+                            {
+                                ResumoId = resumoPai.Id,
+                                QuestoesJson = jsonLimpo,
+                                CreatedAt = DateTime.UtcNow
+                            };
+
+                            dbContext.Simulados.Add(novoSimulado);
+                            await dbContext.SaveChangesAsync(); // ✅ SALVA no banco
+
+                            // 4️⃣ Atualiza status do pedido
+                            pedidoParaProcessar.Status = RequestStatus.Concluido;
+                            pedidoParaProcessar.OutputTexto = JsonSerializer.Serialize(novoSimulado); // ✅ usa o campo correto
+                            pedidoParaProcessar.ProcessedAt = DateTime.UtcNow;
+                            await dbContext.SaveChangesAsync();
+
+                            resultadoFinal = novoSimulado;
+                            sucesso = true;
+
+                            _logger.LogInformation("✅ [Worker] Simulado gerado e salvo com sucesso. ID: {Id}", novoSimulado.Id);
+                            break; // Sai do loop
+                        }
+                        catch (System.Net.Http.HttpRequestException ex)
+                        {
+                            // Falhas de rede (ex: erro 503)
+                            pedidoParaProcessar.MensagemErro = $"Falha na Tentativa {attempt}: {ex.Message}";
+                            await dbContext.SaveChangesAsync();
+
+                            _logger.LogWarning("🌐 [Worker] Falha HTTP ({Attempt}/{Max}): {Erro}", attempt, MAX_TRIES, ex.Message);
+
+                            if (attempt < MAX_TRIES)
+                            {
+                                await Task.Delay(TimeSpan.FromSeconds(5 * attempt));
+                            }
+                            else
+                            {
+                                throw new Exception($"Geração de Simulado falhou após {MAX_TRIES} tentativas. Último erro: {ex.Message}", ex);
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            // Erros lógicos (JSON inválido, etc.)
+                            _logger.LogError(ex, "❌ [Worker] Erro permanente ao gerar simulado (Tentativa {Attempt}/{Max})", attempt, MAX_TRIES);
+                            pedidoParaProcessar.Status = RequestStatus.Falhou;
+                            pedidoParaProcessar.MensagemErro = ex.Message;
+                            pedidoParaProcessar.ProcessedAt = DateTime.UtcNow;
+                            await dbContext.SaveChangesAsync();
+                            throw;
+                        }
+                    }
+
+                    if (!sucesso)
+                    {
+                        throw new Exception("Lógica de repetição falhou inesperadamente.");
+                    }
                 }
+
 
                 // ======= 3️⃣ GERAÇÃO DE PLANO DE ESTUDO =======
                 else if (pedidoParaProcessar.Tipo == GenerationType.PlanoDeEstudo)

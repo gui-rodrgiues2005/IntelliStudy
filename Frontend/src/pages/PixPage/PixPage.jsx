@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
-import { Copy, Check, Brain,Rocket  } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { Copy, Check, Brain, Rocket } from "lucide-react";
 import { QRCodeCanvas } from "qrcode.react";
 import './PixPage.scss';
 
 const PixPage = () => {
+    const navigate = useNavigate();
     const [pix, setPix] = useState(null);
     const [copied, setCopied] = useState(false);
 
@@ -18,6 +20,33 @@ const PixPage = () => {
         }
         fetchPix();
     }, []);
+
+    useEffect(() => {
+        if (!pix) return;
+
+        const interval = setInterval(async () => {
+            try {
+                const res = await fetch("http://localhost:5051/api/Pagamento/verificar-pagamento", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${localStorage.getItem("token")}`
+                    },
+                    body: JSON.stringify({ txid: pix.txid })
+                });
+                const data = await res.json();
+                if (data.pago) {
+                    clearInterval(interval);
+                    navigate("/dashboard");
+                }
+            } catch (err) {
+                console.error("Erro ao verificar pagamento:", err);
+            }
+        }, 3000);
+
+        return () => clearInterval(interval);
+    }, [pix]);
+
 
     const copiarCodigo = () => {
         navigator.clipboard.writeText(pix.pixCopiaECola);
@@ -41,8 +70,9 @@ const PixPage = () => {
             </header>
 
             {/* Aviso importante */}
+            {/* Aviso importante */}
             <section className="pix-disclaimer">
-                <h4>Aviso Importante</h4>
+                <h4>Aviso Importante e Informações de Pagamento</h4>
                 <p>
                     Todos os pagamentos são administrados pelo desenvolvedor e proprietário da plataforma,{" "}
                     <strong>Guilherme Rodrigues Costa</strong>. Para segurança, transparência e suporte, entre em contato:
@@ -58,10 +88,16 @@ const PixPage = () => {
                         </a>
                     </li>
                 </ul>
+
                 <p>
-                    Após o pagamento, o acesso à plataforma será liberado automaticamente.
+                    <strong>Detalhe Importante:</strong> Seu pagamento garante acesso **não-recorrente** à plataforma por **30 dias**. Não se trata de uma assinatura automática; para continuar utilizando, um novo pagamento será necessário após o período.
                 </p>
-                <em>Obrigado pela confiança! Aproveite ao máximo sua experiência com a IntelliStudy  <Rocket  className="rocket_icon"/></em>
+
+                <p>
+                    **Acesso Imediato:** Após a confirmação do pagamento, **recarregue esta página** para que o seu plano Premium seja ativado e liberado corretamente.
+                </p>
+
+                <em>Obrigado pela confiança! Aproveite ao máximo sua experiência com a IntelliStudy <Rocket className="rocket_icon" /></em>
             </section>
 
             {/* Área de pagamento */}

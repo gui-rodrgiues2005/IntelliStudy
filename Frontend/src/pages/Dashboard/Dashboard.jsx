@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useNavigate, NavLink } from 'react-router-dom'; // Para a função de logout
 import ReactMarkdown from 'react-markdown';
 import { toast } from "react-toastify";
+
 import {
   BookOpen,
   FileText,
@@ -29,9 +30,7 @@ function Dashboard() {
     isGeneratingSummary,
     setIsGeneratingSummary,
     isGeneratingQuiz,
-    setIsGeneratingQuiz,
-    topicoInicial,
-    setTopicoInicial
+    setIsGeneratingQuiz
   } = useStudy();
 
   // --- ESTADOS DO COMPONENTE ---
@@ -48,6 +47,7 @@ function Dashboard() {
   const quizContainerRef = useRef(null);
   const [resumoId, setResumoId] = useState(null)
   const [isResumoDeArquivo, setIsResumoDeArquivo] = useState(false);
+  const hasGeneratedFromLocalStorage = useRef(false);
 
   useEffect(() => {
     const fetchUserName = async () => {
@@ -101,7 +101,9 @@ function Dashboard() {
   };
   const handleSliderChange = (e) => { setNumQuestions(parseInt(e.target.value)); };
 
-  const handleGenerateSummary = async (topicToGenerate, fileInput) => {
+  const handleGenerateSummary = async (topicToGenerate, fileInput, text) => {
+    console.log("⚠️ handleGenerateSummary disparado!", { text });
+
     const topic = topicToGenerate || content;
     const fileToSend = fileInput || uploadedFile;
 
@@ -179,7 +181,30 @@ function Dashboard() {
         body: JSON.stringify({ Topico: topic })
       });
 
-      if (!res.ok) throw new Error(await res.text());
+      if (!res.ok) {
+        let errorMessage = "Erro ao gerar resumo.";
+
+        try {
+          const data = await res.json();
+          errorMessage = data.mensagem || errorMessage;
+
+          // Se tiver sugestão, dá pra exibir junto:
+          if (data.sugestao) {
+            toast.info(data.sugestao, { autoClose: 8000 });
+          }
+
+        } catch {
+          // fallback se o backend não retornar JSON
+          const text = await res.text();
+          errorMessage = text || errorMessage;
+        }
+
+        toast.error(errorMessage);
+        clearInterval(messageInterval);
+        setIsGeneratingSummary(false);
+        return;
+      }
+
       const { requestId, resumoId: resumoIdBackend } = await res.json();
       setActiveRequestId(requestId);
 
@@ -208,16 +233,18 @@ function Dashboard() {
               parsedResultado = { texto: statusData.resultado };
             }
 
-            const resumoFinalId = requestId || statusData.resumoId || parsedResultado.id;
+            const resumoFinalId = statusData.resumoId || parsedResultado.id || parsedResultado.Id || requestId;
             const resumoTexto = parsedResultado.texto || parsedResultado.ResumoTexto || parsedResultado.resumo || parsedResultado;
 
-            // console.log('ResumoFinalId', resumoFinalId)
-            // console.log('resumoTexto', resumoTexto)
+            console.log('ResumoFinalId', resumoFinalId);
+            console.log('resumoTexto', resumoTexto);
+
             setResumoGerado({
               texto: typeof resumoTexto === "string" ? resumoTexto : JSON.stringify(resumoTexto),
               id: resumoFinalId
             });
             setResumoId(resumoFinalId);
+            console.log('Resumo id final guardado', resumoFinalId)
 
             toast.success("Resumo gerado com sucesso!");
           } else if (statusData.status === 3) {
@@ -241,6 +268,21 @@ function Dashboard() {
   };
 
   useEffect(() => {
+    const topicoFromLocalStorage = localStorage.getItem('topicoInicial');
+    if (!topicoFromLocalStorage || hasGeneratedFromLocalStorage.current) return;
+
+    hasGeneratedFromLocalStorage.current = true;
+    const gerarResumo = async () => {
+      setContent(topicoFromLocalStorage);
+      await handleGenerateSummary(topicoFromLocalStorage);
+      localStorage.removeItem('topicoInicial');
+    };
+
+    gerarResumo();
+  }, []);
+
+
+  useEffect(() => {
     const fetchUserName = async () => {
       try {
         const token = localStorage.getItem("token");
@@ -255,34 +297,35 @@ function Dashboard() {
         console.error("Falha ao buscar nome do usuário", error);
       }
     };
+
     fetchUserName();
+  }, []); // <-- vazio: roda apenas uma vez
 
-    if (topicoInicial) {
-      setContent(topicoInicial);
-      handleGenerateSummary(topicoInicial);
-      setTopicoInicial('');
+
+  // --- FUNÇÕES DO QUIZ ---
+  // Em src/pages/Dashboard/Dashboard.jsx
+  const parseQuestoesJson = (jsonString) => {
+    if (!jsonString) return [];
+    // Remove possíveis ```json e ``` que o backend pode ter incluído
+    let cleaned = jsonString.replace(/```json/g, "").replace(/```/g, "").trim();
+    // Escapa backslashes para evitar erros de parsing em LaTeX
+    cleaned = cleaned.replace(/\\/g, '\\\\');
+    try {
+      return JSON.parse(cleaned);
+    } catch (err) {
+      console.error("Erro ao parsear JSON das questões:", err, jsonString);
+      // Tenta limpar caracteres de escape problemáticos (ex: aspas não escapadas)
+      try {
+        const fixed = cleaned.replace(/([^\\])"([^"]*)"([^,}\]]*)/g, '$1"$2\\"$3'); // Exemplo simples, pode precisar ajuste
+        return JSON.parse(fixed);
+      } catch (fixErr) {
+        console.error("Falha ao corrigir JSON:", fixErr);
+        return [];
+      }
     }
-  }, [topicoInicial, setTopicoInicial]);
-
-  // // --- FUNÇÕES DO QUIZ ---
-  // // Em src/pages/Dashboard/Dashboard.jsx
-  // const parseQuestoesJson = (jsonString) => {
-  //   if (!jsonString) return [];
-  //   try {
-  //     // Remove possíveis ```json e ``` que o backend pode ter incluído
-  //     const cleaned = jsonString.replace(/```json/g, "").replace(/```/g, "").trim();
-  //     return JSON.parse(cleaned);
-  //   } catch (err) {
-  //     console.error("Erro ao parsear JSON das questões:", err, jsonString);
-  //     return [];
-  //   }
-  // };
+  };
 
   const handleGenerateQuiz = async () => {
-    // É ESSENCIAL que 'isResumoDeArquivo' seja um state no seu componente:
-    // const [isResumoDeArquivo, setIsResumoDeArquivo] = useState(false);
-    // e seja setado como 'true' no fluxo de upload de arquivo (resumo-file)
-    // e como 'false' no fluxo de texto (Resumo/gerar).
     if (!resumoGerado) {
       toast.info('Você precisa gerar um resumo primeiro!');
       return;
@@ -298,10 +341,13 @@ function Dashboard() {
       const token = localStorage.getItem("token");
       let res, data;
 
-      // 🚨 CORREÇÃO: Usamos o state 'isResumoDeArquivo' para decidir o fluxo.
-      // Se é um arquivo, chamamos o endpoint direto (que agora o Backend vai corrigir).
+      // --- FLUXO DE ARQUIVO (direto) ---
       if (isResumoDeArquivo) {
-        // ➡️ FLUXO DE ARQUIVO (Direto: sem fila)
+        console.log("📤 Enviando simulado (Direto):", {
+          resumoId: resumoGerado.id,
+          numeroDeQuestoes: numQuestions
+        });
+
         res = await fetch("http://localhost:5051/api/Simulado/gerar-direto", {
           method: "POST",
           headers: {
@@ -314,49 +360,52 @@ function Dashboard() {
           })
         });
 
-        console.log("📤 Enviando simulado (Direto):", {
-          resumoId: resumoGerado.id,
-          numeroDeQuestoes: numQuestions
-        });
-
-        if (!res.ok) throw new Error(await res.text());
         data = await res.json();
 
-        let questoesRaw = data.QuestoesJson || data.questoesJson;
-        if (!questoesRaw) throw new Error("Questões do simulado estão vazias");
+        if (!res.ok) {
+          toast.error(data.mensagem || "Ocorreu um erro ao gerar o resumo");
+          return;
+        }
 
-        // Remove ```json ... ``` do JSON
-        const questoesClean = questoesRaw
-          .replace(/^```json\s*/, '')
-          .replace(/\s*```$/, '');
+        let questoesJson = data.QuestoesJson || data.questoesJson;
+        if (!questoesJson) throw new Error("Questões do simulado estão vazias");
 
-        setQuiz(JSON.parse(questoesClean));
+        // ✅ Backend agora retorna JSON puro
+        const questoesArray = parseQuestoesJson(questoesJson);
+
+        if (!Array.isArray(questoesArray)) throw new Error("Formato inválido de questões");
+
+        setQuiz(questoesArray);
         setSimuladoGerado(data);
-
         toast.success("Simulado gerado com sucesso!");
         setIsGeneratingQuiz(false);
-        return; // 🎯 Sai da função após o fluxo direto
+        return;
       }
 
-      // 🔁 FLUXO DE TEXTO (Fila: com requestId)
-      res = await fetch("http://localhost:5051/api/Simulado/gerar", {
+      // --- FLUXO DE TEXTO (com fila) ---
+      console.log('Simulado pra criar', resumoGerado.id)
+      const response = await fetch("http://localhost:5051/api/Simulado/gerar", {
         method: "POST",
         headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json"
         },
         body: JSON.stringify({
-          resumoId: resumoGerado.id || resumoGerado.Id,
+          resumoId: resumoGerado?.id || resumoGerado?.Id,
           numeroDeQuestoes: numQuestions
         })
+
+      });
+      console.log("📦 Enviando simulado com payload:", {
+        resumoId: resumoGerado?.id || resumoGerado?.Id,
+        numeroDeQuestoes: numQuestions
       });
 
+      if (!response.ok) throw new Error(await response.text());
+      const { requestId } = await response.json();
+      console.log('🧩 Simulado enviado para fila. Request ID:', requestId);
 
-      if (!res.ok) throw new Error(await res.text());
-      const { requestId } = await res.json();
-      console.log('Simulado enviado para fila. Request ID:', requestId);
-
-      // Polling para pegar resultado do simulado
+      // Polling
       const pollInterval = setInterval(async () => {
         try {
           const statusRes = await fetch(`http://localhost:5051/api/generation/status/${requestId}`, {
@@ -371,15 +420,24 @@ function Dashboard() {
 
             if (!statusData.resultado) throw new Error("Simulado gerado mas resultado vazio");
 
-            let questoesRaw = statusData.resultado.QuestoesJson || statusData.resultado.questoesJson;
+            // ✅ Resultado vem como string JSON — converter
+            let resultadoParsed = statusData.resultado;
+            if (typeof resultadoParsed === "string") {
+              try {
+                resultadoParsed = JSON.parse(resultadoParsed);
+              } catch (err) {
+                console.warn("⚠️ Resultado não era JSON válido:", resultadoParsed);
+              }
+            }
 
-            // Limpa ```json ... ```
-            const questoesClean = questoesRaw
-              .replace(/^```json\s*/, '')
-              .replace(/\s*```$/, '');
+            let questoesJson = resultadoParsed.QuestoesJson || resultadoParsed.questoesJson;
+            if (!questoesJson) throw new Error("Questões do simulado ausentes no resultado");
 
-            setQuiz(JSON.parse(questoesClean));
-            setSimuladoGerado(statusData.resultado);
+            const questoesArray = parseQuestoesJson(questoesJson);
+            if (!Array.isArray(questoesArray)) throw new Error("Formato inválido de questões");
+
+            setQuiz(questoesArray);
+            setSimuladoGerado(resultadoParsed);
 
             toast.success("Simulado gerado com sucesso!");
             setIsGeneratingQuiz(false);
@@ -390,47 +448,99 @@ function Dashboard() {
           }
         } catch (pollError) {
           console.error("Erro durante o polling:", pollError);
-          clearInterval(pollInterval); // Parar o polling em caso de erro grave
+          clearInterval(pollInterval);
           setIsGeneratingQuiz(false);
         }
-      }, 3000);
+      }, 5000);
 
     } catch (err) {
-      console.error(err);
-      toast.error("Erro ao gerar simulado: " + err.message);
+      console.error("Erro geral no handleGenerateQuiz:", err);
+      toast.error('Erro: ' + err.message);
       setIsGeneratingQuiz(false);
     }
   };
-  
+
+
   const handleSubmitQuiz = async () => {
-    if (!simuladoGerado || !simuladoGerado.id) {
-      alert("ID do simulado não encontrado. Não é possível finalizar.");
+    console.log("📘 Submetendo simulado:", simuladoGerado);
+
+    // ✅ Garante que existe algum identificador
+    const simuladoId = simuladoGerado?.id || simuladoGerado?.Id;
+    const requestId = simuladoGerado?.requestId || simuladoGerado?.RequestId;
+
+    if (!simuladoId && !requestId) {
+      alert("Nenhum identificador de simulado encontrado (nem id nem requestId).");
       return;
     }
 
     try {
       const token = localStorage.getItem("token");
-      const res = await fetch(`http://localhost:5051/api/Simulado/${simuladoGerado.id}/finalizar`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-        body: JSON.stringify(userAnswers)
-      });
 
-      if (!res.ok) {
-        const errorText = await res.text();
-        throw new Error(`Falha ao finalizar o simulado: ${errorText}`);
+      // 🔹 Se houver ID direto do simulado (gerado ou vindo do backend)
+      if (simuladoId) {
+        console.log("🎯 Enviando respostas para simulado ID:", simuladoId);
+        const res = await fetch(`http://localhost:5051/api/Simulado/${simuladoId}/finalizar`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify(userAnswers)
+        });
+
+        if (!res.ok) {
+          const errorText = await res.text();
+          throw new Error(`Falha ao finalizar o simulado: ${errorText}`);
+        }
+
+        const resultado = await res.json();
+        const finalScore = (resultado.acertos / resultado.totalQuestoes) * 100;
+        setScore(finalScore);
+        toast.success("Simulado finalizado com sucesso!");
+        return;
       }
 
-      const resultado = await res.json();
-      const finalScore = (resultado.acertos / resultado.totalQuestoes) * 100;
-      setScore(finalScore);
+      // 🔹 Se ainda não tem ID, tenta buscar pelo requestId
+      if (requestId) {
+        console.log("⏳ Buscando simulado criado a partir do request ID:", requestId);
+        const resBusca = await fetch(`http://localhost:5051/api/Simulado/por-request/${requestId}`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
 
-      toast.success("Simulado finalizado com sucesso!");
+        if (!resBusca.ok) throw new Error("Não foi possível localizar o simulado gerado.");
+
+        const simulado = await resBusca.json();
+
+        if (!simulado?.id) throw new Error("Simulado retornado não contém ID.");
+
+        console.log("🎯 Simulado encontrado:", simulado.id);
+
+        const resFinalizar = await fetch(`http://localhost:5051/api/Simulado/${simulado.id}/finalizar`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify(userAnswers)
+        });
+
+        if (!resFinalizar.ok) {
+          const errorText = await resFinalizar.text();
+          throw new Error(`Falha ao finalizar o simulado: ${errorText}`);
+        }
+
+        const resultado = await resFinalizar.json();
+        const finalScore = (resultado.acertos / resultado.totalQuestoes) * 100;
+        setScore(finalScore);
+        toast.success("Simulado finalizado com sucesso!");
+      }
+
     } catch (error) {
-      console.error("Erro ao finalizar o simulado:", error);
-      alert(error.message);
+      console.error("❌ Erro ao finalizar o simulado:", error);
+      toast.error(error.message);
     }
   };
+
 
 
   const handleAnswerChange = (questionIndex, answer) => {
@@ -544,14 +654,14 @@ function Dashboard() {
                     <input
                       type="range"
                       min="2"
-                      max="10"
+                      max="20"
                       value={numQuestions}
                       onChange={handleSliderChange}
                       className="slider"
                     />
                     <div className="slider-labels">
-                      <span>2 questões</span>
-                      <span>10 questões</span>
+                      <span>2</span>
+                      <span>20</span>
                     </div>
                   </div>
                 </div>

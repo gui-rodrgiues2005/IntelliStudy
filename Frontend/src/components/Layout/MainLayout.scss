@@ -27,6 +27,58 @@ $shadow-sm: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.
   overflow: hidden;
   background-color: $background-color;
   transition: padding-left 0.3s ease-in-out; // Anima a transição do conteúdo
+
+  // Mobile styles
+  &.mobile {
+    .main-sidebar {
+      position: fixed;
+      top: 0;
+      left: -16rem; // Escondido por padrão
+      height: 100vh;
+      z-index: 1000;
+      transition: left 0.3s ease-in-out;
+      box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+    }
+
+    &.mobile-open {
+      .main-sidebar {
+        left: 0; // Aparece quando aberto
+      }
+    }
+
+    .main-page-content {
+      width: 100vw;
+      padding: 1rem;
+    }
+
+    .mobile-menu-btn {
+      position: fixed;
+      top: 1rem;
+      left: 1rem;
+      z-index: 1001;
+      background-color: $white;
+      border: 1px solid $gray-200;
+      border-radius: 8px;
+      padding: 0.5rem;
+      cursor: pointer;
+      box-shadow: $shadow-sm;
+      transition: all 0.2s ease;
+
+      &:hover {
+        background-color: $gray-100;
+      }
+    }
+
+    .mobile-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background-color: rgba(0, 0, 0, 0.5);
+      z-index: 999;
+    }
+  }
 }
 
 
@@ -45,6 +97,11 @@ $shadow-sm: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.
   &::-webkit-scrollbar {
     display: none;
     /* Chrome, Safari, e Opera */
+  }
+
+
+  @media (max-width: 768px) {
+    padding: 0%;
   }
 }
 
@@ -69,7 +126,7 @@ $shadow-sm: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.
     justify-content: center;
     align-items: center;
 
-    .logo-icon{
+    .logo-icon {
       width: 40px; // Ajuste o tamanho conforme necessário
       height: auto;
     }
@@ -81,9 +138,7 @@ $shadow-sm: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.
   }
 
   &.collapsed {
-    .logo-container {
-    
-    }
+    .logo-container {}
   }
 }
 

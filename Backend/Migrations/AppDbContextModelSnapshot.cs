@@ -90,16 +90,11 @@ namespace Backend.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("InputArquivo")
-                        .HasColumnType("text");
-
-                    b.Property<string>("InputArquivoOriginal")
-                        .HasColumnType("text");
-
                     b.Property<string>("InputContextoId")
                         .HasColumnType("text");
 
                     b.Property<string>("InputTexto")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("MensagemErro")
@@ -353,6 +348,9 @@ namespace Backend.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<DateTime?>("PlanoExpiraEm")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<int>("Pontos")
                         .HasColumnType("integer");
 
@@ -405,6 +403,9 @@ namespace Backend.Migrations
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<DateTime>("CriadoEm")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("DataPagamento")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<bool>("Pago")

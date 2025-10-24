@@ -27,18 +27,18 @@ $gold-color: #fbbf24;
 }
 
 .badge-atual {
-  position: absolute;
-  top: 16px;
-  right: 16px;
-  background: #10b981;
-  color: #fff;
-  font-size: 0.78rem;
-  font-weight: 700;
-  padding: 0.32em 0.9em;
-  border-radius: 12px;
-  box-shadow: 0 2px 8px 0 rgba(16,185,129,0.08);
-  z-index: 2;
-  letter-spacing: 0.02em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #10b981;
+    color: #fff;
+    font-size: 0.78rem;
+    font-weight: 700;
+    padding: 0.32em 0.9em;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px 0 rgba(16, 185, 129, 0.08);
+    z-index: 2;
+    letter-spacing: 0.02em;
 }
 
 .user-info {
@@ -144,6 +144,7 @@ $gold-color: #fbbf24;
     flex-direction: column;
     transition: all 0.3s ease;
     position: relative;
+    margin-bottom: 20px;
 
     &.premium {
         border-color: $primary-color;
@@ -174,6 +175,7 @@ $gold-color: #fbbf24;
         margin-bottom: 25px;
 
         h3 {
+            margin-top: 10px;
             font-size: 1.5rem;
             font-weight: 600;
             margin-bottom: 10px;

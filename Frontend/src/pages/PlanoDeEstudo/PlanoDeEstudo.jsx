@@ -20,9 +20,10 @@ function PlanoDeEstudo() {
     const [dataProva, setDataProva] = useState('');
     const [materias, setMaterias] = useState('');
     const [horasPorSemana, setHorasPorSemana] = useState(5);
-
+    
     const navigate = useNavigate();
-    const { iniciarEstudoComTopico } = useStudy();
+  
+    
 
     // --- FUNÇÃO GENÉRICA PARA FAZER FETCH COM JSON SEGURO ---
     const fetchJSON = async (url, options) => {
@@ -173,8 +174,8 @@ function PlanoDeEstudo() {
     };
 
     const handleGerarResumoDaSessao = (topico) => {
-        iniciarEstudoComTopico(topico);
-        navigate('/');
+        localStorage.setItem('topicoInicial', topico);
+        navigate('/dashboard');
     };
 
     const handleFecharCongrats = () => setShowCongratsModal(false);
@@ -303,15 +304,15 @@ function PlanoDeEstudo() {
                                     dia.sessoes.map((sessao) => (
                                         <div key={sessao.id} className={`sessao-card ${sessao.concluida ? "concluida" : ""}`}>
                                             <div className="sessao-header">
-                                                <input type="checkbox" checked={sessao.concluida} onChange={() => handleConcluirSessao(sessao.id)} />
+                                                <input type="checkbox"  className="ui-checkbox" checked={sessao.concluida} onChange={() => handleConcluirSessao(sessao.id)} />
                                                 <div className="sessao-titulo">
                                                     <span>{sessao.topico}</span>
                                                     <small>{sessao.duracaoMinutos} min</small>
                                                 </div>
                                             </div>
                                             <div className="sessao-actions">
-                                                <button className="action-btn" onClick={() => handleGerarResumoDaSessao(sessao.topico)}><FileText size={16} /> Resumo</button>
-                                                <button className="action-btn"><Target size={16} /> Simulado</button>
+                                                <button className="action-btn" onClick={() => handleGerarResumoDaSessao(sessao.topico)}><FileText size={16} /> Crie um Resumo </button>
+                                                {/* <button className="action-btn"><Target size={16} /> Simulado</button> */}
                                             </div>
                                         </div>
                                     ))

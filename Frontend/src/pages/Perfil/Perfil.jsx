@@ -211,9 +211,9 @@ function Perfil() {
                         <p className='emailUser'>{profileData.email} ・ Membro desde {new Date(profileData.membroDesde).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })}</p>
                         <div className="tags">
                             <span className="tag student">Estudante Ativo</span>
-                            <span className={`tag plan ${profileData.plano === 'Premium' ? 'premium' : 'free'}`}>
-                                {profileData.plano === 'Premium' ? '★ Plano Premium' : '○ Plano Gratuito'}
-                            </span>
+                            {/* <span className={`tag plan ${profileData.plano === 'Premium' ? 'premium' : 'free'}`}>
+                                {profileData.plano === 'Premium' ? '★ Plano Premium' : 'Plano Gratuito'}
+                            </span> */}
                         </div>
                     </div>
                 </div>
@@ -238,7 +238,7 @@ function Perfil() {
                                     <div className="avatar large">
                                         {profileData.nome.substring(0, 2).toUpperCase()}
                                     </div>
-                                    <span className="change-photo">Alterar foto de perfil</span>
+                                    <span className="change-photo">Alterar foto de perfil (Em Breve)</span>
                                     <input type="file" accept="image/*" />
                                 </label>
 
@@ -354,7 +354,7 @@ function Perfil() {
                                         />
                                         <span className="slider"></span>
                                         <span className="label-text">Receber Notificações no Email(Em breve)</span>
-                                        
+
                                     </label>
                                 </div>
                             </section>

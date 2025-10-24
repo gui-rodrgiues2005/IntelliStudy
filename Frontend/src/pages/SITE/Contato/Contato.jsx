@@ -129,8 +129,7 @@ Tenho uma ideia para melhorar..."
 
             <div className="contato-footer">
               <div className="footer-note">
-                <span>💌</span>
-                <p>Prometo ler cada mensagem pessoalmente e responder o mais breve possível!</p>
+                <p>Irei questionar sua ideia em breve !</p>
               </div>
             </div>
           </div>

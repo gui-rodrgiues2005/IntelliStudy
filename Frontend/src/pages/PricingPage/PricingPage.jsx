@@ -92,7 +92,7 @@ const PricingPage = () => {
                     Authorization: `Bearer ${token}`
                 },
                 body: JSON.stringify({
-                    valor: 12.0,
+                    valor: 12.00,
                     descricao: 'Plano Mestre'
                 })
             });
@@ -139,20 +139,16 @@ const PricingPage = () => {
                         <button className="plan-button disabled">Seu Plano Atual</button>
                     </div>
                     <ul className="features-list">
-                        <li><Check size={18} className="check-icon" /> 3 Resumos por dia</li>
-                        <li><Check size={18} className="check-icon" /> 3 Simulados por dia (5 questões)</li>
+                        <li><Check size={18} className="check-icon" /> 5 Resumos por dia</li>
+                        <li><Check size={18} className="check-icon" /> 5 Simulados por dia (5 questões)</li>
                         <li><Check size={18} className="check-icon" /> 1 Plano de Estudos por semana</li>
-                        <li className="disabled-feature"><X size={18} /> Acesso ao Ranking Global</li>
-                        <li className="disabled-feature"><X size={18} /> Conquistas Premium</li>
-                        <li className="disabled-feature"><X size={18} /> Histórico de Planos</li>
-                        <li className="disabled-feature"><X size={18} /> Exportar Resumos</li>
                     </ul>
                 </div>
 
                 {/* --- PLANO PREMIUM --- */}
                 <div className={`plan-card premium${plano === 'Premium' || plano === 'Mestre' ? ' atual' : ''}`}>
                     {(plano === 'Premium' || plano === 'Mestre') && (
-                        <span className="badge-atual">Plano Atual</span>
+                        <span className="badge-atual">Plano Atual Ativo</span>
                     )}
                     <div className="premium-badge">
                         <Star size={14} /> POPULAR
@@ -169,10 +165,9 @@ const PricingPage = () => {
                         <li className="premium-feature"><Crown size={18} /> Resumos e Simulados Ilimitados</li>
                         <li className="premium-feature"><Crown size={18} /> Planos de Estudo Ilimitados</li>
                         <li className="premium-feature"><Crown size={18} /> Simulados com até 20 questões</li>
-                        <li className="premium-feature"><Crown size={18} /> Acesso completo ao Ranking Global</li>
                         <li className="premium-feature"><Crown size={18} /> Desbloqueie todas as Conquistas</li>
-                        <li className="premium-feature"><Crown size={18} /> Histórico Completo de Estudos</li>
-                        <li className="premium-feature"><Crown size={18} /> Exporte seus resumos (PDF/DOCX)</li>
+                        <li className="premium-feature"><Crown size={18} /> Experiência única</li>
+                        {/* <li className="premium-feature"><Crown size={18} /> Exporte seus resumos (PDF/DOCX)</li> */}
                     </ul>
                 </div>
             </div>

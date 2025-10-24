@@ -310,7 +310,7 @@ public class GeminiService
     - **Objetivo Principal:** {request.Meta}
     - **Data da Prova:** {request.DataProva.ToString("dd/MM/yyyy")}
     - **Tópicos a Cobrir:** {string.Join(", ", request.Materias)}
-    - **Total de Horas de Estudo por Semana:** {request.HorasPorSemana}
+    - **Total de Horas de Estudo por Semana, exija que ele estude pelo menos 90 minutos por dia:** {request.HorasPorSemana}
 
     **Tarefa:**
     Com base nos dados do aluno, distribua os tópicos de forma equilibrada ao longo da semana. Gere o cronograma no formato de OBJETO JSON especificado.

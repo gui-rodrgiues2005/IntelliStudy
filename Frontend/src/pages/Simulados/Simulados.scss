@@ -20,6 +20,24 @@ $red-800: #9f1239;
   display: flex;
   height: 100%;
   background-color: $gray-100;
+  position: relative; // Para posicionar o botão mobile
+
+  // Botão de menu mobile
+  .simulados-mobile-menu-btn {
+    display: flex;
+    position: fixed;
+    top: 1rem; // Abaixo do header
+    left: 18rem;
+    z-index: 1001;
+    background-color: $primary-color;
+    color: white;
+    border-radius: 50%;
+    border: none;
+    padding: 0.75rem;
+    cursor: pointer;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: background-color 0.2s ease;
+  }
 }
 
 // --- SIDEBAR DA LISTA DE SIMULADOS ---
@@ -32,11 +50,40 @@ $red-800: #9f1239;
   flex-direction: column;
   padding: 1.5rem;
 
-  h3 {
-    font-size: 1.25rem;
+  .title-simulados {
+    font-size: 20px;
     font-weight: 600;
     color: $gray-800;
     margin: 0 0 1.5rem 0;
+    margin-top: 50px;
+  }
+
+  // Estados mobile
+  &.open {
+    transform: translateX(0);
+  }
+
+  &.closed {
+    transform: translateX(-100%);
+  }
+
+  // Responsividade mobile
+  @media (max-width: 767px) {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    z-index: 1000;
+    box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease;
+
+    &.open {
+      transform: translateX(0);
+    }
+
+    &.closed {
+      transform: translateX(-100%);
+    }
   }
 
   .simulados-list {
@@ -116,8 +163,9 @@ $red-800: #9f1239;
 // --- ÁREA DE CONTEÚDO PRINCIPAL ---
 .simulado-content {
   flex-grow: 1;
-  padding: 2rem;
+  padding: 1rem;
   overflow-y: auto;
+  margin-top: 25px;
 
   .placeholder-content {
     display: flex;

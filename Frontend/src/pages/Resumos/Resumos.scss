@@ -19,224 +19,335 @@ $sidebar-width: 320px;
   height: calc(100vh - 60px); // Ajuste '60px' para a altura do seu header
   background-color: $background-color;
   font-family: 'Inter', sans-serif; // Recomendo usar uma fonte como a Inter para um look moderno
-}
+  position: relative; // Para posicionar o botão mobile
+  margin-top: 40px;
 
-// --- Barra Lateral (Sidebar) ---
-.resumos-sidebar {
-  width: $sidebar-width;
-  flex-shrink: 0;
-  border-right: 1px solid $border-color;
-  padding: 1.5rem;
-  overflow-y: auto;
-  background-color: #ffffff;
-
-  h3 {
-    margin-top: 0;
-    margin-bottom: 1.5rem;
-    font-size: 1.5rem;
-    font-weight: 600;
-    color: $text-color;
-  }
-}
-
-// --- Lista de Resumos ---
-.resumos-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-
-  li {
-    padding: 1rem 1.25rem;
-    border-radius: $border-radius;
-    cursor: pointer;
-    margin-bottom: 0.75rem;
-    transition: background-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+  // Botão de menu mobile
+  .resumos-mobile-menu-btn {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border: 1px solid transparent;
+    position: fixed;
+    top: 1rem; // Abaixo do header
+    left: 18rem;
+    z-index: 1001;
+    background-color: $primary-color;
+    color: white;
+    border-radius: 50%;
+    border: none;
+    padding: 0.75rem;
+    cursor: pointer;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: background-color 0.2s ease;
+  }
 
-    &:hover {
-      background-color: $hover-bg;
-      border-color: #ddd;
-    }
+  // --- Barra Lateral (Sidebar) ---
+  .resumos-sidebar {
+    width: $sidebar-width;
+    flex-shrink: 0;
+    border-right: 1px solid $border-color;
+    padding: 1.5rem;
+    overflow-y: auto;
+    background-color: #ffffff;
+    position: relative; // Para mobile
 
-    &.active {
-      background-color: $primary-light;
-      color: $primary-color;
+
+    h3 {
+      margin-top: 60px;
+      margin-bottom: 1.5rem;
+      font-size: 1.5rem;
       font-weight: 600;
-      border-left: 4px solid $primary-color;
-      padding-left: calc(1.25rem - 4px); // Ajusta o padding para manter o alinhamento
+      color: $text-color;
+      margin-top: 50px;
     }
 
-    .item-content {
-      display: flex;
-      flex-direction: column;
-      gap: 0.25rem; // Espaçamento entre título e data
+    // Estados mobile
+    &.open {
+      transform: translateX(0);
     }
 
-    .topico-titulo {
-      font-size: 1rem;
-      font-weight: 500;
-      color: var(--text-color);
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      max-width: 200px;
+    &.closed {
+      transform: translateX(-100%);
     }
 
-    .topico-data {
-      font-size: 0.8rem;
-      color: $text-light;
-    }
+    // Responsividade mobile
+    @media (max-width: 767px) {
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 100vh;
+      z-index: 1000;
+      box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
+      transition: transform 0.3s ease;
 
-    &.active .topico-titulo {
-      color: $primary-color;
-    }
+      &.open {
+        transform: translateX(0);
+      }
 
-    .delete-btn {
-      background: none;
-      border: none;
+      &.closed {
+        transform: translateX(-100%);
+      }
+    }
+  }
+
+  // --- Lista de Resumos ---
+  .resumos-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+
+    li {
+      padding: 1rem 1.25rem;
+      border-radius: $border-radius;
       cursor: pointer;
-      color: #adb5bd;
-      padding: 0.5rem;
-      border-radius: 50%;
+      margin-bottom: 0.75rem;
+      transition: background-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
       display: flex;
+      justify-content: space-between;
       align-items: center;
-      justify-content: center;
-      opacity: 0; // Começa invisível
-      transform: scale(0.8);
-      transition: color 0.2s, background-color 0.2s, opacity 0.2s, transform 0.2s;
+      border: 1px solid transparent;
+
+      // Responsividade mobile
+      @media (max-width: 767px) {
+        padding: 1rem;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+      }
 
       &:hover {
-        color: $danger-color;
+        background-color: $hover-bg;
+        border-color: #ddd;
+      }
+
+      &.active {
+        background-color: $primary-light;
+        color: $primary-color;
+        font-weight: 600;
+        border-left: 4px solid $primary-color;
+        padding-left: calc(1.25rem - 4px); // Ajusta o padding para manter o alinhamento
+
+        // Responsividade mobile
+        @media (max-width: 767px) {
+          padding-left: calc(1rem - 4px);
+        }
+      }
+
+      .item-content {
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem; // Espaçamento entre título e data
+      }
+
+      .topico-titulo {
+        font-size: 1rem;
+        font-weight: 500;
+        color: var(--text-color);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 100px;
+
+        // Responsividade mobile
+        @media (max-width: 767px) {
+          max-width: none;
+          white-space: normal;
+        }
+      }
+
+      .topico-data {
+        font-size: 0.8rem;
+        color: $text-light;
+      }
+
+      &.active .topico-titulo {
+        color: $primary-color;
+      }
+
+      .actions-container {
+        display: flex;
+        align-items: center;
+        gap: 0.25rem; // Espaçamento entre os botões de ação
+        opacity: 0; // Começa invisível
+        transition: opacity 0.2s, transform 0.2s;
+        transform: translateX(10px); // Começa um pouco deslocado para a direita
+
+        // Responsividade mobile
+        @media (max-width: 767px) {
+          opacity: 1; // Sempre visível no mobile
+          transform: translateX(0);
+          align-self: flex-end;
+        }
+      }
+
+      &:hover .actions-container {
+        opacity: 1; // Fica visível no hover do item da lista
+        transform: translateX(0); // Volta à posição original
+      }
+
+      .download-btn,
+      .delete-btn {
+        background: none;
+        border: none;
+        cursor: pointer;
+        color: #adb5bd;
+        padding: 0.5rem;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transform: scale(0.9); // Levemente menor
+        transition: color 0.2s, background-color 0.2s, transform 0.2s;
+
+        &:hover {
+          // Estilos de hover específicos
+          // Para o download, use uma cor menos agressiva que o delete
+          // Ex: $primary-color
+        }
+      }
+
+      .download-btn:hover {
+        color: $primary-color; // Cor de ação principal
+        background-color: $primary-light;
+      }
+
+      .delete-btn:hover {
+        color: $danger-color; // Cor de deletar
         background-color: $danger-light;
       }
     }
+  }
 
-    &:hover .delete-btn {
-      opacity: 1; // Fica visível no hover do item da lista
-      transform: scale(1);
+  // --- Área de Conteúdo do Resumo ---
+  .resumo-content {
+    flex-grow: 1;
+    padding: 2.5rem;
+    overflow-y: auto;
+
+    // Responsividade mobile
+    @media (max-width: 767px) {
+      padding: 1.5rem;
+    }
+
+    .placeholder-content {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: 100%;
+      text-align: center;
+      color: $text-light;
+
+      .placeholder-icon {
+        margin-bottom: 1rem;
+        color: #ced4da;
+      }
+
+      h2 {
+        font-size: 1.5rem;
+        font-weight: 500;
+        margin: 0;
+
+        // Responsividade mobile
+        @media (max-width: 767px) {
+          font-size: 1.2rem;
+        }
+      }
+
+      p {
+        font-size: 1rem;
+      }
+    }
+
+    .resumo-header {
+      margin-bottom: 2rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid $border-color;
+
+      h1 {
+        font-size: 2rem;
+        font-weight: 700;
+        margin: 0 0 0.5rem 0;
+        color: $text-color;
+
+        // Responsividade mobile
+        @media (max-width: 767px) {
+          font-size: 1.5rem;
+        }
+      }
+
+      .data-criacao {
+        font-size: 0.9rem;
+        color: $text-light;
+      }
     }
   }
-}
 
-// --- Área de Conteúdo do Resumo ---
-.resumo-content {
-  flex-grow: 1;
-  padding: 2.5rem;
-  overflow-y: auto;
+  // --- Estilo para o conteúdo Markdown (reutilize ou copie) ---
+  .markdown-content {
+    line-height: 1.7;
+    color: $text-color;
 
-  .placeholder-content {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    height: 100%;
-    text-align: center;
-    color: $text-light;
-
-    .placeholder-icon {
-      margin-bottom: 1rem;
-      color: #ced4da;
-    }
-
-    h2 {
-      font-size: 1.5rem;
-      font-weight: 500;
-      margin: 0;
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6 {
+      font-weight: 600;
+      margin-top: 1.5em;
+      margin-bottom: 0.8em;
+      color: #111;
     }
 
     p {
-      font-size: 1rem;
-    }
-  }
-
-  .resumo-header {
-    margin-bottom: 2rem;
-    padding-bottom: 1rem;
-    border-bottom: 1px solid $border-color;
-
-    h1 {
-      font-size: 2rem;
-      font-weight: 700;
-      margin: 0 0 0.5rem 0;
-      color: $text-color;
+      margin-bottom: 1em;
     }
 
-    .data-criacao {
-      font-size: 0.9rem;
+    ul,
+    ol {
+      padding-left: 1.5em;
+      margin-bottom: 1em;
+    }
+
+    li {
+      margin-bottom: 0.5em;
+    }
+
+    code {
+      background-color: #e9ecef;
+      padding: 0.2em 0.4em;
+      border-radius: 4px;
+      font-size: 85%;
+    }
+
+    pre {
+      background-color: #2d2d2d;
+      color: #f8f8f2;
+      padding: 1em;
+      border-radius: $border-radius;
+      overflow-x: auto;
+
+      code {
+        background: none;
+        padding: 0;
+      }
+    }
+
+    blockquote {
+      border-left: 4px solid $border-color;
+      padding-left: 1em;
+      margin-left: 0;
       color: $text-light;
     }
   }
-}
 
-// --- Estilo para o conteúdo Markdown (reutilize ou copie) ---
-.markdown-content {
-  line-height: 1.7;
-  color: $text-color;
-
-  h1,
-  h2,
-  h3,
-  h4,
-  h5,
-  h6 {
-    font-weight: 600;
-    margin-top: 1.5em;
-    margin-bottom: 0.8em;
-    color: #111;
-  }
-
-  p {
-    margin-bottom: 1em;
-  }
-
-  ul,
-  ol {
-    padding-left: 1.5em;
-    margin-bottom: 1em;
-  }
-
-  li {
-    margin-bottom: 0.5em;
-  }
-
-  code {
-    background-color: #e9ecef;
-    padding: 0.2em 0.4em;
-    border-radius: 4px;
-    font-size: 85%;
-  }
-
-  pre {
-    background-color: #2d2d2d;
-    color: #f8f8f2;
-    padding: 1em;
-    border-radius: $border-radius;
-    overflow-x: auto;
-
-    code {
-      background: none;
-      padding: 0;
-    }
-  }
-
-  blockquote {
-    border-left: 4px solid $border-color;
-    padding-left: 1em;
-    margin-left: 0;
+  // --- Estilo para o estado de carregamento ---
+  .loading-spinner {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    // Adicione aqui seu spinner ou animação de carregamento
+    font-size: 1.2rem;
     color: $text-light;
   }
-}
-
-// --- Estilo para o estado de carregamento ---
-.loading-spinner {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100%;
-  // Adicione aqui seu spinner ou animação de carregamento
-  font-size: 1.2rem;
-  color: $text-light;
 }

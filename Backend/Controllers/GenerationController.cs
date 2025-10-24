@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
+using System.Text.Json;
 using Backend.Data;
 using Backend.Models;
 
@@ -37,6 +38,34 @@ namespace Backend.Controllers
             // Se o pedido estiver concluído, retornamos o resultado completo
             if (pedido.Status == RequestStatus.Concluido)
             {
+                // Para resumos, incluir o resumoId extraído do OutputTexto
+                if (pedido.Tipo == GenerationType.Resumo)
+                {
+                    try
+                    {
+                        var resumo = JsonSerializer.Deserialize<Resumo>(pedido.OutputTexto);
+                        return Ok(new
+                        {
+                            pedido.Id,
+                            pedido.Status,
+                            pedido.Tipo,
+                            Resultado = pedido.OutputTexto,
+                            resumoId = resumo?.Id
+                        });
+                    }
+                    catch
+                    {
+                        // Fallback se não conseguir desserializar
+                        return Ok(new
+                        {
+                            pedido.Id,
+                            pedido.Status,
+                            pedido.Tipo,
+                            Resultado = pedido.OutputTexto
+                        });
+                    }
+                }
+
                 return Ok(new
                 {
                     pedido.Id,

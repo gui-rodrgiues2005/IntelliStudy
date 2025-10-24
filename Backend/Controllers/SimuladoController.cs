@@ -69,11 +69,28 @@ public class SimuladoController : ControllerBase
 
         if (!_planoService.PodeGerarSimulado(user))
         {
-            return Forbid("Limite diário de simulados atingido para o plano atual.");
+            return StatusCode(StatusCodes.Status403Forbidden, new
+            {
+                success = false,
+                message = "Limite diário de simulados atingido para o plano atual.",
+                sugestao = "Assine o plano Premium e gere simulados ilimitados!",
+                planoAtual = user.Plano,
+                limiteDiario = 5
+            });
         }
 
         // Validação para garantir que o resumo existe e pertence ao usuário
-        var resumoExiste = await _context.Resumos.AnyAsync(r => r.Id == requestDto.ResumoId && r.UserId == userId);
+        Console.WriteLine($"ResumoId received: {requestDto.ResumoId}");
+        Console.WriteLine($"UserId: {userId}");
+        var resumo = await _context.Resumos.FirstOrDefaultAsync(r => r.Id == requestDto.ResumoId);
+        Console.WriteLine($"Resumo found: {resumo != null}");
+        if (resumo != null)
+        {
+            Console.WriteLine($"Resumo UserId: {resumo.UserId}, Matches: {resumo.UserId == userId}");
+        }
+        var resumoExiste = resumo != null && resumo.UserId == userId;
+
+        Console.WriteLine($"==============Resumo recebido==========: {resumoExiste}");
         if (!resumoExiste)
         {
             return NotFound("Resumo não encontrado ou não pertence ao usuário.");

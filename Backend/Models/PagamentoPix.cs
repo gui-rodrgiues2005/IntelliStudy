@@ -8,4 +8,7 @@ public class PagamentoPix
     public string QrCodeUrl { get; set; } = string.Empty;
     public DateTime CriadoEm { get; set; } = DateTime.UtcNow;
     public bool Pago { get; set; } = false;
+
+    // NOVA PROPRIEDADE
+    public DateTime? DataPagamento { get; set; }
 }

@@ -8,14 +8,7 @@ export function StudyProvider({ children }) {
     const [quiz, setQuiz] = useState([]);
     const [isGeneratingSummary, setIsGeneratingSummary] = useState(false);
     const [isGeneratingQuiz, setIsGeneratingQuiz] = useState(false);
-    const [topicoInicial, setTopicoInicial] = useState('');
-
-    const iniciarEstudoComTopico = (topico) => {
-        setTopicoInicial(topico);
-        setResumoGerado(null);
-        setSimuladoGerado(null);
-        setQuiz([]);
-    };
+    // Removido topicoInicial e iniciarEstudoComTopico para evitar duplicação de resumos
 
     const value = {
         resumoGerado,
@@ -27,10 +20,7 @@ export function StudyProvider({ children }) {
         isGeneratingSummary,
         setIsGeneratingSummary,
         isGeneratingQuiz,
-        setIsGeneratingQuiz,
-        topicoInicial,
-        setTopicoInicial,
-        iniciarEstudoComTopico
+        setIsGeneratingQuiz
     };
 
     return (
@@ -41,9 +31,9 @@ export function StudyProvider({ children }) {
 }
 
 export const useStudy = () => {
-  const context = useContext(StudyContext);
-  if (context === undefined) {
-    throw new Error('useStudy must be used within a StudyProvider');
-  }
-  return context;
+    const context = useContext(StudyContext);
+    if (context === undefined) {
+        throw new Error('useStudy must be used within a StudyProvider');
+    }
+    return context;
 };

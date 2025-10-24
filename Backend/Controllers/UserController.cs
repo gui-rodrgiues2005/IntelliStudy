@@ -53,16 +53,25 @@ namespace SaaS_Aluno.Controllers
             if (user == null || !BCrypt.Net.BCrypt.Verify(dto.Password, user.PasswordHash))
                 return Unauthorized("Email ou senha incorretos.");
 
+            // 🔹 Verifica se o plano expirou
+            if (user.PlanoExpiraEm.HasValue && user.PlanoExpiraEm.Value <= DateTime.UtcNow)
+            {
+                user.Plano = "Gratuito";
+                user.Ativo = false;
+                await _context.SaveChangesAsync();
+            }
+
+            // 🔹 Gera o token JWT normalmente
             var tokenHandler = new JwtSecurityTokenHandler();
             var key = Encoding.ASCII.GetBytes(_config["Jwt:Key"]);
             var tokenDescriptor = new SecurityTokenDescriptor
             {
                 Subject = new ClaimsIdentity(new[]
                 {
-                    new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-                    new Claim(ClaimTypes.Email, user.Email),
-                    new Claim(ClaimTypes.Role, user.Role)
-                }),
+            new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+            new Claim(ClaimTypes.Email, user.Email),
+            new Claim(ClaimTypes.Role, user.Role)
+        }),
                 Expires = DateTime.UtcNow.AddDays(7),
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature),
                 Issuer = _config["Jwt:Issuer"],
@@ -72,10 +81,20 @@ namespace SaaS_Aluno.Controllers
             var token = tokenHandler.CreateToken(tokenDescriptor);
             var tokenString = tokenHandler.WriteToken(token);
 
+            // 🔹 Retorna dados completos pro frontend
             return Ok(new
             {
                 token = tokenString,
-                user = new { user.Id, user.Name, user.Email, user.Role }
+                user = new
+                {
+                    user.Id,
+                    user.Name,
+                    user.Email,
+                    user.Role,
+                    user.Plano,
+                    user.Ativo,
+                    PlanoExpiraEm = user.PlanoExpiraEm?.ToString("yyyy-MM-ddTHH:mm:ssZ")
+                }
             });
         }
 

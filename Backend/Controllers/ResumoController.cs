@@ -35,26 +35,42 @@ namespace Backend.Controllers
 
             if (user == null)
             {
-                return Unauthorized("Usuário não encontrado.");
+                return Unauthorized(new
+                {
+                    success = false,
+                    message = "Usuário não encontrado. Faça login novamente."
+                });
             }
 
             if (!_planoService.PodeGerarResumo(user))
             {
-                return Forbid("Limite diário de resumos atingido para o plano atual.");
+                return StatusCode(StatusCodes.Status403Forbidden, new
+                {
+                    success = false,
+                    message = "Limite diário de resumos atingido para o plano atual.",
+                    sugestao = "Assine o plano Premium e gere resumos ilimitados!",
+                    planoAtual = user.Plano,
+                    limiteDiario = 5
+                });
             }
+
 
             if (string.IsNullOrWhiteSpace(requestDto.Topico))
             {
-                return BadRequest("O tópico não pode estar vazio.");
+                return BadRequest(new
+                {
+                    success = false,
+                    message = "O tópico não pode estar vazio."
+                });
             }
 
-            // 1. Criar o pedido para a fila
+            // ✅ Criar o pedido para a fila
             var novoPedido = new GenerationRequest
             {
                 UserId = userId,
-                Tipo = GenerationType.Resumo, // Define o tipo de geração
-                Status = RequestStatus.Pendente, // Status inicial
-                InputTexto = requestDto.Topico, // O tópico a ser resumido
+                Tipo = GenerationType.Resumo,
+                Status = RequestStatus.Pendente,
+                InputTexto = requestDto.Topico,
                 CreatedAt = DateTime.UtcNow
             };
 
@@ -65,9 +81,15 @@ namespace Backend.Controllers
                 actionName: "GetStatusDoPedido",
                 controllerName: "Generation",
                 routeValues: new { id = novoPedido.Id },
-                value: new { requestId = novoPedido.Id }
+                value: new
+                {
+                    success = true,
+                    message = "Resumo adicionado à fila com sucesso!",
+                    requestId = novoPedido.Id
+                }
             );
         }
+
 
         [HttpPost("resumo-file")]
         public async Task<IActionResult> ResumirArquivo(IFormFile file)

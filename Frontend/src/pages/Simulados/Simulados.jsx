@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Trash2, CheckCircle, XCircle, HelpCircle } from 'lucide-react';
+import { Trash2, CheckCircle, XCircle, HelpCircle, AlignHorizontalJustifyEnd, AlignStartVertical } from 'lucide-react';
 import './Simulados.scss';
 
 // --- COMPONENTE ISOLADO PARA CADA QUESTÃO ---
@@ -50,6 +50,28 @@ function Simulados() {
     const [isLoading, setIsLoading] = useState(true);
     const [isFetchingDetails, setIsFetchingDetails] = useState(false);
     const [parsedQuiz, setParsedQuiz] = useState([]);
+
+    // Estados para responsividade mobile
+    const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+    const [isMobileOpen, setIsMobileOpen] = useState(false);
+
+    // Efeito para detectar mudança de tamanho da tela
+    useEffect(() => {
+        const handleResize = () => {
+            setIsMobile(window.innerWidth < 768);
+            if (window.innerWidth >= 768) {
+                setIsMobileOpen(false); // Fecha sidebar mobile em telas grandes
+            }
+        };
+
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
+
+    // Função para alternar a sidebar mobile
+    const toggleSidebar = () => {
+        setIsMobileOpen(!isMobileOpen);
+    };
 
     useEffect(() => {
         const fetchListaSimulados = async () => {
@@ -159,8 +181,15 @@ function Simulados() {
 
     return (
         <div className="meus-simulados-page">
-            <aside className="simulados-sidebar">
-                <h3>Meus Simulados</h3>
+            {/* Botão de menu mobile */}
+            {isMobile && (
+                <button className="simulados-mobile-menu-btn" onClick={toggleSidebar}>
+                    {isMobileOpen ? <AlignHorizontalJustifyEnd size={24} /> : <AlignStartVertical size={24} />}
+                </button>
+            )}
+
+            <aside className={`simulados-sidebar ${isMobile ? (isMobileOpen ? 'open' : 'closed') : ''}`}>
+                <h3 className='title-simulados'>Meus Simulados</h3>
                 {isLoading ? <p>Carregando...</p> : (
                     <ul className="simulados-list">
                         {listaSimulados.map(simulado => (

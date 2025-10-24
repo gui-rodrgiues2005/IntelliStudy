@@ -5,6 +5,7 @@ using Backend.Data;
 using System.Text;
 using Microsoft.OpenApi.Models;
 using Backend.Services;
+using Backend.Middleware; 
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -118,16 +119,34 @@ app.UseCors("AllowAll");
 app.UseHttpsRedirection();
 
 app.UseAuthentication();
+app.UseMiddleware<PlanoMiddleware>();
 app.UseAuthorization();
 
 app.MapControllers();
 app.MapHealthChecks("/health");
 
-// // --- Listar modelos Gemini ao iniciar ---
-// using (var scope = app.Services.CreateScope())
-// {
-//     var gemini = scope.ServiceProvider.GetRequiredService<GeminiService>();
-//     await gemini.ListModelsAsync();
-// }
+// --- Registrar webhook Efi ao iniciar ---
+using (var scope = app.Services.CreateScope())
+{
+    var efiService = scope.ServiceProvider.GetRequiredService<EfiPixService>();
+    var ngrokUrl = builder.Configuration["Ngrok:Url"];
+
+    if (!string.IsNullOrEmpty(ngrokUrl))
+    {
+        try
+        {
+            await efiService.RegistrarWebhookAsync();
+            Console.WriteLine("✅ Webhook registrado com sucesso na EfiBank.");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"❌ Falha ao registrar webhook: {ex.Message}");
+        }
+    }
+    else
+    {
+        Console.WriteLine("⚠️ URL do Ngrok não configurada. Webhook não registrado.");
+    }
+}
 
 app.Run();

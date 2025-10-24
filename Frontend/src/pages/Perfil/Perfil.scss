@@ -110,7 +110,6 @@ $border-radius: 0.75rem;
   }
 
   .user-info {
-
     h2 {
       font-size: 1.75rem;
       font-weight: 700;
@@ -141,6 +140,13 @@ $border-radius: 0.75rem;
       }
 
       .student {
+        display: flex;
+        text-align: center;
+        align-items: center;
+        justify-content: center;
+        width: 200px;
+        padding: 2px;
+        border-radius: 20px;
         background-color: $blue-50;
         color: $blue-600;
       }
@@ -166,13 +172,14 @@ $border-radius: 0.75rem;
   justify-content: center;
   align-items: center;
   z-index: 5000; // mais alto que qualquer outro elemento
+  padding: 1rem;
 }
 
 .modalEdit {
   position: relative;
   width: 90%;
   max-width: 500px;
-  max-height: 80vh;
+  max-height: 90vh;
   background: #fff;
   border-radius: 16px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
@@ -237,7 +244,6 @@ $border-radius: 0.75rem;
       .change-photo {
         font-size: 0.85rem;
         color: #4b5563;
-        text-decoration: underline;
         transition: color 0.2s;
       }
 
@@ -324,6 +330,66 @@ $border-radius: 0.75rem;
       }
     }
   }
+
+  // Responsividade para mobile
+  @media (max-width: 768px) {
+    width: 95%;
+    max-width: none;
+    max-height: 95vh;
+    padding: 20px;
+    margin: 0.5rem;
+
+    h2 {
+      font-size: 1.2rem;
+      margin-bottom: 16px;
+    }
+
+    .edit-form {
+      gap: 12px;
+
+      .profile-picture {
+        .avatar.large {
+          width: 80px;
+          height: 80px;
+          font-size: 1.5rem;
+        }
+
+        .change-photo {
+          font-size: 0.8rem;
+        }
+      }
+
+      label {
+        font-size: 0.85rem;
+
+        input {
+          padding: 8px 10px;
+          font-size: 0.9rem;
+        }
+      }
+
+      .forgot-password {
+        font-size: 0.8rem;
+      }
+
+      p {
+        font-size: 0.85rem;
+      }
+
+      .buttons {
+        flex-direction: column;
+        gap: 8px;
+        margin-top: 16px;
+
+        .cancelar,
+        .salvar_alteracoes {
+          width: 100%;
+          padding: 12px;
+          font-size: 0.9rem;
+        }
+      }
+    }
+  }
 }
 
 @keyframes modalFadeIn {
@@ -339,20 +405,6 @@ $border-radius: 0.75rem;
 }
 
 
-/* Modal Overlay */
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.5); // Fundo semi-transparente
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
-}
-
 /* Modal Container */
 .modalConfig {
   background: #fff;
@@ -360,8 +412,20 @@ $border-radius: 0.75rem;
   padding: 2rem;
   width: 90%;
   max-width: 500px;
+  max-height: 90vh;
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
   animation: fadeIn 0.3s ease-in-out;
+  overflow-y: auto;
+
+  // Scroll interno personalizado
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background-color: rgba(0, 0, 0, 0.25);
+    border-radius: 4px;
+  }
 
   h2 {
     font-size: 1.2rem;
@@ -378,6 +442,7 @@ $border-radius: 0.75rem;
   .switch.disabled {
     opacity: 0.6;
     cursor: not-allowed;
+    pointer-events: none;
 
     .slider {
       background: #ccc;
@@ -411,7 +476,9 @@ $border-radius: 0.75rem;
       color: $gray-600;
       font-size: 0.9rem;
       align-items: center;
+      margin-bottom: 20px;  
       gap: 5px;
+
 
       .icon-tema {
         color: #1677ff;
@@ -441,6 +508,8 @@ $border-radius: 0.75rem;
         color: #333;
         cursor: pointer;
         display: flex;
+        justify-content: space-between;
+        align-items: center;
         gap: 5px;
         /* From Uiverse.io by Galahhad */
         /* checkbox settings 👇 */
@@ -480,8 +549,6 @@ $border-radius: 0.75rem;
           -o-transition: all 0.3s;
           transition: all 0.3s;
           cursor: pointer;
-          position: relative;
-          left: 25rem;
         }
 
         .ui-checkbox::after {

@@ -14,9 +14,18 @@ namespace Backend.Models
         public int Pontos { get; set; } = 0;
         public string? Cpf { get; set; }
         public string? Telefone { get; set; }
-        public string Plano { get; set; } = "Gratuito"; // ou premium
-        public DateTime? UltimoPagamento { get; set; } // Data do último pagamento
-        public bool Ativo { get; set; } = false;       // Se a assinatura está ativa
+
+        // "Gratuito" ou "Premium"
+        public string Plano { get; set; } = "Gratuito";
+
+        // Data do último pagamento confirmado
+        public DateTime? UltimoPagamento { get; set; }
+
+        // Quando o plano expira (30 dias após o pagamento, por exemplo)
+        public DateTime? PlanoExpiraEm { get; set; }
+
+        // Se a assinatura está ativa (premium válida)
+        public bool Ativo { get; set; } = false;
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 

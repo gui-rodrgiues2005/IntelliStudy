@@ -22,26 +22,34 @@ namespace Backend.Services
         // --- REGRAS DE PLANO ---
         public bool PodeGerarResumo(User user)
         {
-            if (user.Plano != "Gratuito") return true; // Premium pode tudo
+            // Premium tem acesso ilimitado
+            if (user.Plano.Equals("Premium", StringComparison.OrdinalIgnoreCase))
+                return true;
 
+            // Gratuito: até 5 resumos por dia
             var hoje = DateTime.UtcNow.Date;
 
-            // Conta quantos resumos o usuário fez hoje
-            var resumosHoje = _context.Resumos
-                .Count(r => r.UserId == user.Id && r.CreatedAt.Date == hoje);
+            int resumosHoje = _context.GenerationRequests
+                .Count(r => r.UserId == user.Id &&
+                            r.Tipo == GenerationType.Resumo &&
+                            r.CreatedAt.Date == hoje);
 
-            return resumosHoje < 3; // até 3 resumos por dia
+            return resumosHoje < 5;
         }
 
         public bool PodeGerarSimulado(User user)
         {
-            if (user.Plano != "Gratuito") return true;
+            // Premium tem acesso ilimitado
+            if (user.Plano.Equals("Premium", StringComparison.OrdinalIgnoreCase))
+                return true;
 
+            // Gratuito: até 3 simulados por dia
             var hoje = DateTime.UtcNow.Date;
-            var simuladosHoje = _context.Simulados
+
+            int simuladosHoje = _context.Simulados
                 .Count(s => s.Resumo.UserId == user.Id && s.CreatedAt.Date == hoje);
 
-            return simuladosHoje < 3; // 3 simulados/dia
+            return simuladosHoje < 5;
         }
 
         public bool PodeCriarPlanoDeEstudo(User user)

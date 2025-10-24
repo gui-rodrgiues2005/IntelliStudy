@@ -2,21 +2,23 @@
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
 
-# Copia o arquivo de projeto e restaura as dependências
+# 1. COPIA O PROJETO para restaurar e garantir que o NuGet use o cache do Docker, não do Windows.
 COPY Backend.csproj .
+# Copia o arquivo global.json, se existir, para controle da versão do SDK
+COPY global.json .
+
+# 2. RESTAURA as dependências
 RUN dotnet restore
 
-# Copia o resto do código da aplicação
+# 3. Copia o restante do código. O arquivo global.json já está copiado.
 COPY . .
 
-# Publica a aplicação
-# O /app/publish é o diretório que contém todos os binários
-RUN dotnet publish -c Release -o /app/publish --no-restore
+# 4. PUBLICA A APLICAÇÃO
+# Removemos o '--no-restore' para que o publish use o cache do restore anterior (passo 2)
+# E especificamos o projeto para evitar ambiguidade.
+RUN dotnet publish Backend.csproj -c Release -o /app/publish
 
-# ETAPA 2: RUNTIME/FINAL - Roda a aplicação com o SDK (necessário para o EF Core)
-
-# ATENÇÃO: Mudamos para a imagem 'sdk' AQUI para que o 'dotnet ef' funcione!
-# Se quiséssemos a imagem mais leve, teríamos que usar um script shell separado.
+# ETAPA 2: RUNTIME/FINAL - Roda a aplicação com o SDK (necessário para o EF Core e migração)
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS final
 WORKDIR /app
 
@@ -24,7 +26,5 @@ WORKDIR /app
 COPY --from=build /app/publish .
 
 # Comando de entrada principal:
-# 1. Instala a ferramenta 'dotnet ef' globalmente (é a forma mais simples no Docker)
-# 2. Roda a migração do banco de dados (database update)
-# 3. Inicia o seu aplicativo Backend.dll
+# Garante que o banco de dados seja atualizado antes de iniciar a API
 ENTRYPOINT ["/bin/bash", "-c", "dotnet tool install --global dotnet-ef --version 8.0.6 && dotnet ef database update && dotnet Backend.dll"]

@@ -31,20 +31,11 @@ COPY --from=build /app/publish .
 # Copia o arquivo .csproj para que o dotnet-ef possa encontrá-lo
 COPY Backend.csproj .
 
-# Copia as pastas necessárias para o Entity Framework Core (migrações e contexto)
-COPY --from=build /src/Data ./Data
-COPY --from=build /src/Migrations ./Migrations
-COPY --from=build /src/Models ./Models
-
-# Copia arquivos de configuração necessários
-COPY --from=build /src/appsettings.json .
-COPY --from=build /src/global.json .
-
 # Comando de entrada principal (ENTRYPOINT):
-# Executa os comandos em sequência: Instalação do EF > Atualização do PATH > Restore > Migração > Início da API
+# Executa 4 comandos em sequência: Instalação do EF > Atualização do PATH > Migração > Início da API
+# O 'exec' garante que o processo do dotnet seja o PID 1, para um gerenciamento de container correto.
 ENTRYPOINT ["/bin/bash", "-c", "\
     dotnet tool install --global dotnet-ef --version 8.0.6 --no-cache && \
     export PATH=\"$PATH:/root/.dotnet/tools\" && \
-    dotnet restore Backend.csproj && \
-    dotnet ef database update --project /app/Backend.csproj && \
+    dotnet ef database update --project Backend.csproj && \
     exec dotnet Backend.dll"]

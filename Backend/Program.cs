@@ -25,6 +25,7 @@ builder.Services.AddSingleton<GeminiService>(sp =>
 });
 
 var connectionString = Environment.GetEnvironmentVariable("DATABASE_URL");
+string finalConnectionString = connectionString;
 
 if (!string.IsNullOrEmpty(connectionString))
 {
@@ -34,24 +35,27 @@ if (!string.IsNullOrEmpty(connectionString))
         var uri = new Uri(connectionString);
         var userInfo = uri.UserInfo.Split(':');
 
-        connectionString = $"Host={uri.Host};Port={uri.Port};Database={uri.AbsolutePath.TrimStart('/')};Username={userInfo[0]};Password={userInfo[1]};SSL Mode=Require;Trust Server Certificate=true";
+        finalConnectionString = $"Host={uri.Host};Port={uri.Port};Database={uri.AbsolutePath.TrimStart('/')};Username={userInfo[0]};Password={userInfo[1]};SSL Mode=Require;Trust Server Certificate=true";
 
-        Console.WriteLine($"✅ Connection string convertida: {connectionString}");
+        Console.WriteLine($"✅ Connection string convertida (URL para Key-Value).");
     }
     catch (Exception ex)
     {
-        Console.WriteLine($"❌ Erro ao converter DATABASE_URL: {ex.Message}");
-        throw;
+        Console.WriteLine($"❌ Erro FATAL ao converter DATABASE_URL: {ex.Message}");
+        // Não é recomendado, mas vamos usar um fallback seguro se a conversão falhar.
+        // A exceção UnhandledException está vindo daqui se o try-catch falhar.
+        finalConnectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+        Console.WriteLine($"⚠️ Falha na conversão da URL. Usando fallback de appsettings.");
     }
 }
 else
 {
     Console.WriteLine("⚠️ DATABASE_URL não encontrada, usando appsettings.json");
-    connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+    finalConnectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 }
 
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseNpgsql(connectionString));
+    options.UseNpgsql(finalConnectionString)); 
 
 // --- JWT ---
 var jwtSettings = builder.Configuration.GetSection("Jwt");

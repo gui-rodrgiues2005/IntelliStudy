@@ -13,7 +13,7 @@ var builder = WebApplication.CreateBuilder(args);
 // 1. CONFIGURAÇÃO DO DbContext COM DATABASE_URL
 // ======================
 var databaseUrl = Environment.GetEnvironmentVariable("DATABASE_URL");
-
+Console.WriteLine($"DEBUG: DATABASE_URL = {(string.IsNullOrEmpty(databaseUrl) ? "não encontrada" : "encontrada")}");
 if (string.IsNullOrEmpty(databaseUrl))
 {
     throw new InvalidOperationException("DATABASE_URL não encontrada no ambiente.");

@@ -1,5 +1,5 @@
 // src/services/api.js
-const api = process.env.REACT_APP_API_URL || "http://localhost:5051";
+const api = process.env.VITE_API_URL || "http://localhost:5051";
 
 export async function get(endpoint) {
   const res = await fetch(`${api}${endpoint}`);

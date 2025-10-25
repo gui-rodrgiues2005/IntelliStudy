@@ -25,10 +25,20 @@ WORKDIR /app
 COPY --from=build /app/publish .
 COPY Backend.csproj .
 
+# Copia arquivos necessários para EF Core funcionar
+COPY --from=build /src/Data ./Data
+COPY --from=build /src/Migrations ./Migrations
+COPY --from=build /src/Models ./Models
+COPY --from=build /src/appsettings.json .
+COPY --from=build /src/appsettings.Development.json .
+
 # Comando de entrada principal (ENTRYPOINT) CORRIGIDO:
-# Usa --startup-project . para que o dotnet ef encontre o Backend.dll
+# Instala EF, roda migrations e inicia a aplicação
 ENTRYPOINT ["/bin/bash", "-c", "\
+    echo 'Instalando dotnet-ef...' && \
     dotnet tool install --global dotnet-ef --version 8.0.6 --no-cache && \
     export PATH=\"$PATH:/root/.dotnet/tools\" && \
-    dotnet ef database update --project Backend.csproj --startup-project . && \
+    echo 'Executando migrations...' && \
+    dotnet ef database update --project Backend.csproj && \
+    echo 'Iniciando aplicação...' && \
     exec dotnet Backend.dll"]

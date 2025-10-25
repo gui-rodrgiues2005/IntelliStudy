@@ -34,7 +34,7 @@ if (!string.IsNullOrEmpty(databaseUrl))
             {"ConnectionStrings:DefaultConnection", finalConnectionString}
         });
 
-        Console.WriteLine($"✅ Connection string convertida de URL para Key-Value e injetada no Configuration.");
+        Console.WriteLine($"✅ Connection string convertida de URL para Key-Value: {finalConnectionString}");
     }
     catch (Exception ex)
     {

@@ -3,7 +3,6 @@ import { StudyProvider } from "./context/StudyContext";
 import Dashboard from "./pages/Dashboard/Dashboard";
 import Registro from "./pages/Registro/Registro";
 import Login from "./pages/Login/Login";
-import PrivateRoute from "./Service/PrivateRoute";
 import Resumos from "./pages/Resumos/Resumos";
 import Simulados from "./pages/Simulados/Simulados";
 import Perfil from "./pages/Perfil/Perfil";

@@ -1,5 +1,4 @@
-// Exemplo:
-const api = import.meta.env.VITE_API_URL || "http://localhost:5051";
+const api = import.meta.env.VITE_API_URL || "https://backend-production-69f3.up.railway.app";
 
 export async function get(endpoint) {
   const res = await fetch(`${api}${endpoint}`);

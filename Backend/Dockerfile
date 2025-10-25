@@ -38,8 +38,8 @@ ENTRYPOINT ["/bin/bash", "-c", "\
     echo 'Instalando dotnet-ef...' && \
     dotnet tool install --global dotnet-ef --version 8.0.6 --no-cache && \
     export PATH=\"$PATH:/root/.dotnet/tools\" && \
-    echo 'PATH atualizado: $PATH' && \
+    echo 'PATH atualizado: '$PATH && \
     echo 'Executando migrations...' && \
-    /root/.dotnet/tools/dotnet-ef database update --project Backend.csproj && \
+    PATH=\"$PATH:/root/.dotnet/tools\" /root/.dotnet/tools/dotnet-ef database update --project Backend.csproj && \
     echo 'Iniciando aplicação...' && \
     exec dotnet Backend.dll"]

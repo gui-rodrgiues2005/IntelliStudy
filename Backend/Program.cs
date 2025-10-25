@@ -6,8 +6,51 @@ using System.Text;
 using Microsoft.OpenApi.Models;
 using Backend.Services;
 using Backend.Middleware;
+using Microsoft.Extensions.Configuration; // Necessário
 
 var builder = WebApplication.CreateBuilder(args);
+
+// =========================================================================
+// 1. LÓGICA CRÍTICA DE CONVERSÃO DA STRING DE CONEXÃO DO RAILWAY (URL)
+// =========================================================================
+var databaseUrl = Environment.GetEnvironmentVariable("DATABASE_URL");
+// Tenta obter a string do appsettings.json como fallback, se houver
+string finalConnectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? "";
+
+if (!string.IsNullOrEmpty(databaseUrl))
+{
+    try
+    {
+        // Converte a string de conexão do Railway (URL) para o formato Key-Value (Npgsql/EF Core)
+        var uri = new Uri(databaseUrl);
+        var userInfo = uri.UserInfo.Split(':');
+
+        finalConnectionString = $"Host={uri.Host};Port={uri.Port};Database={uri.AbsolutePath.TrimStart('/')};Username={userInfo[0]};Password={userInfo[1]};SSL Mode=Require;Trust Server Certificate=true";
+
+        // FORÇA A INJEÇÃO: Adiciona a nova string convertida diretamente no Configuration
+        // Isso garante que o DbContext (e qualquer outro serviço) encontre a string Key-Value correta.
+        builder.Configuration.AddInMemoryCollection(new Dictionary<string, string>
+        {
+            {"ConnectionStrings:DefaultConnection", finalConnectionString}
+        });
+
+        Console.WriteLine($"✅ Connection string convertida de URL para Key-Value e injetada no Configuration.");
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"❌ Erro FATAL ao converter DATABASE_URL. Usando Fallback. Erro: {ex.Message}");
+    }
+}
+else
+{
+    Console.WriteLine("⚠️ DATABASE_URL não encontrada, usando string do appsettings.json.");
+}
+
+// O DbContext agora usa a string que foi injetada acima
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseNpgsql(finalConnectionString,
+        npgsqlOptions => npgsqlOptions.EnableRetryOnFailure()) // Adiciona resiliência
+);
 
 // --- Serviços customizados ---
 builder.Services.AddHostedService<GeminiWorker>();
@@ -24,47 +67,6 @@ builder.Services.AddSingleton<GeminiService>(sp =>
     // ATENÇÃO: Verifique a chave da API no appsettings ou ambiente
     return new GeminiService(httpClient, geminiApiKey);
 });
-
-// --- Configuração da String de Conexão ---
-var connectionString = Environment.GetEnvironmentVariable("DATABASE_URL");
-string finalConnectionString = null;
-
-if (!string.IsNullOrEmpty(connectionString))
-{
-    try
-    {
-        // 1. Tenta converter a URL do Railway (postgresql://...) para Key-Value
-        var uri = new Uri(connectionString);
-        var userInfo = uri.UserInfo.Split(':');
-
-        finalConnectionString = $"Host={uri.Host};Port={uri.Port};Database={uri.AbsolutePath.TrimStart('/')};Username={userInfo[0]};Password={userInfo[1]};SSL Mode=Require;Trust Server Certificate=true";
-
-        Console.WriteLine($"✅ Connection string convertida de URL para Key-Value.");
-    }
-    catch (Exception ex)
-    {
-        // 2. Se a conversão falhar, loga o erro e usa o fallback do appsettings.
-        Console.WriteLine($"❌ Erro FATAL ao converter DATABASE_URL: {ex.Message}");
-        Console.WriteLine("⚠️ Usando fallback do appsettings.json. Confirme o formato Key-Value no ambiente de desenvolvimento.");
-        finalConnectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-    }
-}
-else
-{
-    // 3. Se a variável de ambiente não existir, usa o appsettings.json
-    Console.WriteLine("⚠️ DATABASE_URL não encontrada, usando appsettings.json");
-    finalConnectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-}
-
-// Garante que uma string de conexão válida será usada
-if (string.IsNullOrEmpty(finalConnectionString))
-{
-    // Se ainda for nulo/vazio, joga uma exceção clara.
-    throw new InvalidOperationException("Nenhuma string de conexão válida foi encontrada (DATABASE_URL ou DefaultConnection).");
-}
-
-builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseNpgsql(finalConnectionString));
 
 // --- JWT ---
 var jwtSettings = builder.Configuration.GetSection("Jwt");
@@ -139,6 +141,25 @@ builder.Services.AddSwaggerGen(c =>
 builder.Services.AddHealthChecks();
 
 var app = builder.Build();
+
+// Aplica as migrações na inicialização
+using (var scope = app.Services.CreateScope())
+{
+    var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    if (dbContext.Database.IsRelational())
+    {
+        Console.WriteLine("Aplicando migrações...");
+        try
+        {
+            dbContext.Database.Migrate();
+            Console.WriteLine("Migrações aplicadas com sucesso.");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Erro ao aplicar migrações: {ex.Message}");
+        }
+    }
+}
 
 // --- Middleware ---
 if (app.Environment.IsDevelopment())

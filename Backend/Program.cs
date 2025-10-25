@@ -72,18 +72,18 @@ builder.Services.AddAuthentication(options =>
 })
 .AddJwtBearer(options =>
 {
-    // options.RequireHttpsMetadata = false;
-    // options.SaveToken = true;
-    // options.TokenValidationParameters = new TokenValidationParameters
-    // {
-    //     ValidateIssuerSigningKey = true,
-    //     IssuerSigningKey = new SymmetricSecurityKey(key),
-    //     ValidateIssuer = true,
-    //     ValidateAudience = true,
-    //     ValidIssuer = jwtSettings["Issuer"],
-    //     ValidAudience = jwtSettings["Audience"],
-    //     ValidateLifetime = true
-    // };
+    options.RequireHttpsMetadata = false;
+    options.SaveToken = true;
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuerSigningKey = true,
+        IssuerSigningKey = new SymmetricSecurityKey(key),
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidIssuer = jwtSettings["Issuer"],
+        ValidAudience = jwtSettings["Audience"],
+        ValidateLifetime = true
+    };
 });
 
 // --- CORS ---

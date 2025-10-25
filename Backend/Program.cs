@@ -6,62 +6,50 @@ using System.Text;
 using Microsoft.OpenApi.Models;
 using Backend.Services;
 using Backend.Middleware;
-using Microsoft.Extensions.Configuration; // Necessário
 
 var builder = WebApplication.CreateBuilder(args);
 
-// =========================================================================
-// 1. LÓGICA CRÍTICA DE CONVERSÃO DA STRING DE CONEXÃO DO RAILWAY (URL)
-// =========================================================================
+// ======================
+// 1. CONFIGURAÇÃO DO DbContext COM DATABASE_URL
+// ======================
 var databaseUrl = Environment.GetEnvironmentVariable("DATABASE_URL");
-string finalConnectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? "";
-
-if (!string.IsNullOrEmpty(databaseUrl))
+if (string.IsNullOrEmpty(databaseUrl))
 {
-    // Lógica para converter a URL de conexão do Railway/Heroku para o formato Npgsql
-    // O Npgsql não consegue parsear diretamente o esquema "postgresql://", então o substituímos por "http://"
-    // para que a classe Uri do .NET possa fazer o parsing correto dos componentes (Host, Port, UserInfo, Path ).
-    var uri = new Uri(databaseUrl.Replace("postgresql://", "http://" ));
-    var userInfo = uri.UserInfo.Split(':');
-
-    // Monta a string de conexão no formato chave-valor esperado pelo Npgsql
-    finalConnectionString = $"Host={uri.Host};Port={uri.Port};Username={userInfo[0]};Password={userInfo[1]};Database={uri.LocalPath.Substring(1)};SSL Mode=Prefer;Trust Server Certificate=true";
-    Console.WriteLine("Usando string de conexão de ambiente (DATABASE_URL).");
-}
-else
-{
-    Console.WriteLine("Usando string de conexão local (DefaultConnection).");
+    throw new InvalidOperationException("DATABASE_URL não encontrada no ambiente.");
 }
 
-// Se finalConnectionString for nula ou vazia, lance uma exceção
-if (string.IsNullOrEmpty(finalConnectionString))
-{
-    throw new InvalidOperationException("A string de conexão 'DefaultConnection' não foi configurada.");
-}
+// Parsing seguro da URL do Railway
+var uri = new Uri(databaseUrl.Replace("postgresql://", "http://"));
+var userInfo = uri.UserInfo.Split(':');
+var username = Uri.UnescapeDataString(userInfo[0]);
+var password = Uri.UnescapeDataString(userInfo[1]);
+var dbName = uri.LocalPath.TrimStart('/');
 
-// --- Configuração do DbContext ---
-// A string finalConnectionString (convertida ou local) é usada aqui
+var npgsqlConnection = $"Host={uri.Host};Port={uri.Port};Username={username};Password={password};Database={dbName};SSL Mode=Require;Trust Server Certificate=true";
+
+// Configura o DbContext
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseNpgsql(finalConnectionString)
+    options.UseNpgsql(npgsqlConnection)
 );
 
-// --- Serviços customizados ---
+// ======================
+// 2. SERVIÇOS CUSTOMIZADOS
+// ======================
 builder.Services.AddHostedService<GeminiWorker>();
 builder.Services.AddSingleton<EfiPixService>();
 builder.Services.AddScoped<PlanoService>();
-
-// --- HttpClient para GeminiService ---
 builder.Services.AddHttpClient();
 
 var geminiApiKey = builder.Configuration["Gemini:ApiKey"];
 builder.Services.AddSingleton<GeminiService>(sp =>
 {
-    var httpClient = sp.GetRequiredService<HttpClient>( );
-    // ATENÇÃO: Verifique a chave da API no appsettings ou ambiente
-    return new GeminiService(httpClient, geminiApiKey );
+    var httpClient = sp.GetRequiredService<HttpClient>();
+    return new GeminiService(httpClient, geminiApiKey);
 });
 
-// --- JWT ---
+// ======================
+// 3. JWT
+// ======================
 var jwtSettings = builder.Configuration.GetSection("Jwt");
 var key = Encoding.ASCII.GetBytes(jwtSettings["Key"] ?? throw new InvalidOperationException("JWT Key not configured."));
 
@@ -86,7 +74,9 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
-// --- CORS ---
+// ======================
+// 4. CORS
+// ======================
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAll", policy =>
@@ -97,10 +87,14 @@ builder.Services.AddCors(options =>
     });
 });
 
-// --- Controllers ---
+// ======================
+// 5. CONTROLLERS
+// ======================
 builder.Services.AddControllers();
 
-// --- Swagger ---
+// ======================
+// 6. SWAGGER
+// ======================
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
@@ -130,12 +124,16 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
-// --- Health check ---
+// ======================
+// 7. HEALTH CHECKS
+// ======================
 builder.Services.AddHealthChecks();
 
 var app = builder.Build();
 
-// Aplica as migrações na inicialização
+// ======================
+// 8. MIGRAÇÕES AUTOMÁTICAS
+// ======================
 using (var scope = app.Services.CreateScope())
 {
     var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
@@ -154,7 +152,9 @@ using (var scope = app.Services.CreateScope())
     }
 }
 
-// --- Middleware ---
+// ======================
+// 9. MIDDLEWARE
+// ======================
 if (app.Environment.IsDevelopment())
 {
     app.UseDeveloperExceptionPage();
@@ -177,37 +177,9 @@ app.UseAuthorization();
 app.MapControllers();
 app.MapHealthChecks("/health");
 
-
-// --- REGISTRO DE WEBHOOK TEMPORARIAMENTE DESATIVADO PARA DEBUG ---
-// O bloco abaixo foi comentado para evitar o erro de 404/BadRequest que estava
-// quebrando a aplicação após a inicialização.
-
-/*
-using (var scope = app.Services.CreateScope())
-{
-    var efiService = scope.ServiceProvider.GetRequiredService<EfiPixService>();
-    var ngrokUrl = builder.Configuration["Ngrok:Url"];
-
-    // Use Environment.GetEnvironmentVariable para obter a URL de produção
-    // var webhookUrl = Environment.GetEnvironmentVariable("EFI_WEBHOOK_URL");
-
-    if (!string.IsNullOrEmpty(ngrokUrl))
-    {
-        try
-        {
-            await efiService.RegistrarWebhookAsync();
-            Console.WriteLine("✅ Webhook registrado com sucesso na EfiBank.");
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"❌ Falha ao registrar webhook: {ex.Message}");
-        }
-    }
-    else
-    {
-        Console.WriteLine("⚠️ URL do Ngrok/Webhook não configurada. Webhook não registrado.");
-    }
-}
-*/
+// ======================
+// 10. WEBHOOK (desativado para debug)
+// ======================
+// Mantém comentado ou configure depois com Environment.GetEnvironmentVariable("EFI_WEBHOOK_URL")
 
 app.Run();

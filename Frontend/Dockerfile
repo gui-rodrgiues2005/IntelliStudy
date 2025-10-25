@@ -18,5 +18,5 @@ COPY nginx.conf /etc/nginx/nginx.conf
 # Substitui as variáveis de ambiente no nginx.conf
 RUN envsubst '${PORT}' < /etc/nginx/nginx.conf > /etc/nginx/nginx.conf.tmp && mv /etc/nginx/nginx.conf.tmp /etc/nginx/nginx.conf
 
-# Comando padrão do nginx
+# Comando padrão do nginx (não será usado no Railway devido ao railway.toml)
 CMD ["nginx", "-g", "daemon off;"]

@@ -103,7 +103,7 @@ function Dashboard() {
   const handleSliderChange = (e) => { setNumQuestions(parseInt(e.target.value)); };
 
   const handleGenerateSummary = async (topicToGenerate, fileInput, text) => {
-    console.log("⚠️ handleGenerateSummary disparado!", { text });
+    // console.log("⚠️ handleGenerateSummary disparado!", { text });
 
     const topic = topicToGenerate || content;
     const fileToSend = fileInput || uploadedFile;
@@ -504,7 +504,7 @@ function Dashboard() {
       // 🔹 Se ainda não tem ID, tenta buscar pelo requestId
       if (requestId) {
         console.log("⏳ Buscando simulado criado a partir do request ID:", requestId);
-        const resBusca = await fetch(`http://localhost:5051/api/Simulado/por-request/${requestId}`, {
+        const resBusca = await fetch(`${process.env.REACT_APP_API_URL}/api/Simulado/por-request/${requestId}`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
 
@@ -516,7 +516,7 @@ function Dashboard() {
 
         console.log("🎯 Simulado encontrado:", simulado.id);
 
-        const resFinalizar = await fetch(`http://localhost:5051/api/Simulado/${simulado.id}/finalizar`, {
+        const resFinalizar = await fetch(`${process.env.REACT_APP_API_URL}/api/Simulado/${simulado.id}/finalizar`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

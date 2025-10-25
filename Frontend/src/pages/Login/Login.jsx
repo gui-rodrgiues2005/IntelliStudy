@@ -21,7 +21,7 @@ const Login = () => {
     setMensagem("Entrando...");
 
     try {
-      const response = await fetch(`${API_URL}/api/User/login`, {
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/User/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),

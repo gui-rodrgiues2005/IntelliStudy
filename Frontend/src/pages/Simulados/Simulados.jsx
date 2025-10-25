@@ -78,7 +78,7 @@ function Simulados() {
             setIsLoading(true);
             try {
                 const token = localStorage.getItem("token");
-                const res = await fetch(`${api}/api/Simulado`, {
+                const res = await fetch(`${process.env.REACT_APP_API_URL}/api/Simulado`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
                 if (!res.ok) throw new Error("Falha ao buscar lista de simulados.");
@@ -101,7 +101,7 @@ function Simulados() {
 
         try {
             const token = localStorage.getItem("token");
-            const res = await fetch(`http://localhost:5051/api/Simulado/${simuladoId}`, {
+            const res = await fetch(`${process.env.REACT_APP_API_URL}/api/Simulado/${simuladoId}`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
 
@@ -159,7 +159,7 @@ function Simulados() {
 
         try {
             const token = localStorage.getItem("token");
-            const res = await fetch(`http://localhost:5051/api/Simulado/${simuladoId}`, {
+            const res = await fetch(`${process.env.REACT_APP_API_URL}/api/Simulado/${simuladoId}`, {
                 method: 'DELETE',
                 headers: { 'Authorization': `Bearer ${token}` }
             });
@@ -169,9 +169,6 @@ function Simulados() {
             if (simuladoSelecionado?.id === simuladoId) {
                 setSimuladoSelecionado(null);
                 setParsedQuiz([]);
-                console.log("🧩 parsedQuiz:", JSON.parse(data.questoesJson));
-                console.log("📋 Estrutura da primeira questão:", JSON.parse(data.questoesJson)[0]);
-
             }
         } catch (error) {
             console.error(error);

@@ -119,7 +119,6 @@ C:\Users\guilh\Documents\StudyAI\Backend\obj\Debug\net8.0\Backend.AssemblyInfo.c
 C:\Users\guilh\Documents\StudyAI\Backend\obj\Debug\net8.0\Backend.csproj.CoreCompileInputs.cache
 C:\Users\guilh\Documents\StudyAI\Backend\obj\Debug\net8.0\Backend.MvcApplicationPartsAssemblyInfo.cs
 C:\Users\guilh\Documents\StudyAI\Backend\obj\Debug\net8.0\Backend.MvcApplicationPartsAssemblyInfo.cache
-C:\Users\guilh\Documents\StudyAI\Backend\obj\Debug\net8.0\Backend.sourcelink.json
 C:\Users\guilh\Documents\StudyAI\Backend\obj\Debug\net8.0\scopedcss\bundle\Backend.styles.css
 C:\Users\guilh\Documents\StudyAI\Backend\obj\Debug\net8.0\staticwebassets.build.json
 C:\Users\guilh\Documents\StudyAI\Backend\obj\Debug\net8.0\staticwebassets.development.json

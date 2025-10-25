@@ -12,7 +12,7 @@ const Registro = () => {
   const [password, setPassword] = useState("");
   const [mensagem, setMensagem] = useState("");
   const navigate = useNavigate();
-
+  const API_URL = process.env.REACT_APP_API_URL;
   // --- MUDANÇA 2: Adicione o estado para visibilidade da senha ---
   const [showPassword, setShowPassword] = useState(false);
 
@@ -21,7 +21,7 @@ const Registro = () => {
     setMensagem("Criando sua conta...");
 
     try {
-      const response = await fetch("http://localhost:5051/api/User/register", {
+      const response = await fetch(`${API_URL}/api/User/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name: nome, email, password }),
@@ -43,13 +43,13 @@ const Registro = () => {
 
   return (
     <div className="auth-container">
-      <NavigationSite/>
+      <NavigationSite />
       <div className="aurora-background">
         <div className="aurora-blob blob-1"></div>
         <div className="aurora-blob blob-2"></div>
         <div className="aurora-blob blob-3"></div>
       </div>
-      
+
       <div className="floating-elements">
         <Book className="float-icon icon-1" size={48} />
         <Brain className="float-icon icon-2" size={64} />

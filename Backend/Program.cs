@@ -16,8 +16,10 @@ var builder = WebApplication.CreateBuilder(args);
 var databaseUrl = Environment.GetEnvironmentVariable("DATABASE_URL");
 string finalConnectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? "";
 
+Console.WriteLine($"DATABASE_URL encontrada: {!string.IsNullOrEmpty(databaseUrl)}");
 if (!string.IsNullOrEmpty(databaseUrl))
 {
+    Console.WriteLine($"DATABASE_URL: {databaseUrl}");
     // Lógica para converter a URL de conexão do Railway/Heroku para o formato Npgsql
     // O Npgsql não consegue parsear diretamente o esquema "postgresql://", então o substituímos por "http://"
     // para que a classe Uri do .NET possa fazer o parsing correto dos componentes (Host, Port, UserInfo, Path ).
@@ -27,10 +29,12 @@ if (!string.IsNullOrEmpty(databaseUrl))
     // Monta a string de conexão no formato chave-valor esperado pelo Npgsql
     finalConnectionString = $"Host={uri.Host};Port={uri.Port};Username={userInfo[0]};Password={userInfo[1]};Database={uri.LocalPath.Substring(1)};SSL Mode=Prefer;Trust Server Certificate=true";
     Console.WriteLine("Usando string de conexão de ambiente (DATABASE_URL).");
+    Console.WriteLine($"String de conexão final: {finalConnectionString.Replace(userInfo[1], "***")}");
 }
 else
 {
-    Console.WriteLine("Usando string de conexão local (DefaultConnection).");
+    Console.WriteLine("DATABASE_URL não encontrada. Usando string de conexão local (DefaultConnection).");
+    Console.WriteLine($"DefaultConnection: {finalConnectionString}");
 }
 
 // Se finalConnectionString for nula ou vazia, lance uma exceção

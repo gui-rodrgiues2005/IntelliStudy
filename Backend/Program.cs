@@ -9,40 +9,49 @@ var builder = WebApplication.CreateBuilder(args);
 var databaseUrl = Environment.GetEnvironmentVariable("DATABASE_URL");
 string finalConnectionString = "";
 
+Console.WriteLine($"DATABASE_URL encontrada: {!string.IsNullOrEmpty(databaseUrl)}");
+
 if (!string.IsNullOrEmpty(databaseUrl))
 {
+    Console.WriteLine($"DATABASE_URL: {databaseUrl}");
     try
     {
-        // Substitui "postgresql://" por "http://" para usar Uri
+        // Converte postgresql:// para http:// para o Uri conseguir parsear
         var uri = new Uri(databaseUrl.Replace("postgresql://", "http://"));
         var userInfo = uri.UserInfo.Split(':');
-
-        finalConnectionString =
-            $"Host={uri.Host};Port={uri.Port};Username={userInfo[0]};Password={userInfo[1]};Database={uri.LocalPath.Substring(1)};SSL Mode=Prefer;Trust Server Certificate=true";
-
-        Console.WriteLine($"✅ Usando DATABASE_URL convertida para Npgsql (senha ocultada): Host={uri.Host};Port={uri.Port};Username={userInfo[0]};Database={uri.LocalPath.Substring(1)}");
+        finalConnectionString = $"Host={uri.Host};Port={uri.Port};Username={userInfo[0]};Password={userInfo[1]};Database={uri.LocalPath.TrimStart('/')};SSL Mode=Prefer;Trust Server Certificate=true";
+        Console.WriteLine("✅ String de conexão convertida com sucesso.");
+        Console.WriteLine($"String final: {finalConnectionString.Replace(userInfo[1], "***")}");
     }
     catch (Exception ex)
     {
-        Console.WriteLine($"❌ Erro ao processar DATABASE_URL: {ex.Message}");
+        Console.WriteLine($"❌ Erro ao converter DATABASE_URL: {ex.Message}");
+    }
+}
+else
+{
+    Console.WriteLine("⚠️ DATABASE_URL não encontrada, tentando CONNECTION_STRING...");
+    var directConnection = Environment.GetEnvironmentVariable("CONNECTION_STRING");
+    if (!string.IsNullOrEmpty(directConnection))
+    {
+        finalConnectionString = directConnection;
+        Console.WriteLine("✅ Usando CONNECTION_STRING direta.");
+    }
+    else
+    {
+        Console.WriteLine("⚠️ CONNECTION_STRING não encontrada, tentando appsettings.json...");
+        finalConnectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? "";
     }
 }
 
-// Fallback: variável CONNECTION_STRING
 if (string.IsNullOrEmpty(finalConnectionString))
 {
-    finalConnectionString = Environment.GetEnvironmentVariable("CONNECTION_STRING") ?? "";
-}
-
-// Fallback: appsettings.json
-if (string.IsNullOrEmpty(finalConnectionString))
-{
-    finalConnectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? "";
-}
-
-if (string.IsNullOrEmpty(finalConnectionString))
-{
-    throw new InvalidOperationException("❌ Nenhuma string de conexão válida foi encontrada. Configure DATABASE_URL ou DefaultConnection.");
+    Console.WriteLine("❌ ERRO: Nenhuma string de conexão válida foi encontrada!");
+    Console.WriteLine("Configure uma das opções:");
+    Console.WriteLine("1. DATABASE_URL (formato: postgresql://user:pass@host:port/db)");
+    Console.WriteLine("2. CONNECTION_STRING (formato Npgsql completo)");
+    Console.WriteLine("3. DefaultConnection no appsettings.json");
+    throw new InvalidOperationException("String de conexão não configurada.");
 }
 
 // ==============================

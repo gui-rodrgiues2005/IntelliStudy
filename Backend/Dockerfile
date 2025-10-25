@@ -23,20 +23,24 @@ COPY . .
 RUN dotnet publish -c Release -o /app/publish
 
 # ETAPA 2: RUNTIME/FINAL - Roda a aplicação com o SDK (Necessário para o EF Core)
+# ETAPA 2: RUNTIME/FINAL - Roda a aplicação com o SDK (Necessário para o EF Core)
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS final
 WORKDIR /app
 
-# Copia os arquivos publicados e o .csproj para a migração funcionar
+# 1. Copia o .csproj e os binários publicados
 COPY --from=build /app/publish .
+# O .csproj é necessário para o 'dotnet ef'
 COPY Backend.csproj .
 
-# Comando de entrada principal (ENTRYPOINT):
-# 1. Instala EF
-# 2. Atualiza PATH (para encontrar o EF)
-# 3. Migra o Banco de Dados (usando a variável ConnectionStrings__DefaultConnection)
-# 4. Inicia a API
+# 2. Otimiza o ENTRYPOINT
 ENTRYPOINT ["/bin/bash", "-c", "\
+    # Instala o EF Core localmente (se já não estiver instalado)
     dotnet tool install --global dotnet-ef --version 8.0.6 --no-cache && \
     export PATH=\"$PATH:/root/.dotnet/tools\" && \
-    dotnet ef database update --project Backend.csproj && \
+    \
+    # Executa a migração (usando o projeto atual como startup)
+    # Garante que o dotnet ef consiga encontrar o projeto
+    dotnet ef database update --project Backend.csproj --startup-project . && \
+    \
+    # Inicia a aplicação
     exec dotnet Backend.dll"]

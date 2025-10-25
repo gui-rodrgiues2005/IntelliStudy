@@ -14,42 +14,35 @@ var builder = WebApplication.CreateBuilder(args);
 // 1. LÓGICA CRÍTICA DE CONVERSÃO DA STRING DE CONEXÃO DO RAILWAY (URL)
 // =========================================================================
 var databaseUrl = Environment.GetEnvironmentVariable("DATABASE_URL");
-// Tenta obter a string do appsettings.json como fallback, se houver
 string finalConnectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? "";
 
 if (!string.IsNullOrEmpty(databaseUrl))
 {
-    try
-    {
-        // Converte a string de conexão do Railway (URL) para o formato Key-Value (Npgsql/EF Core)
-        var uri = new Uri(databaseUrl);
-        var userInfo = uri.UserInfo.Split(':');
+    // Lógica para converter a URL de conexão do Railway/Heroku para o formato Npgsql
+    // O Npgsql não consegue parsear diretamente o esquema "postgresql://", então o substituímos por "http://"
+    // para que a classe Uri do .NET possa fazer o parsing correto dos componentes (Host, Port, UserInfo, Path ).
+    var uri = new Uri(databaseUrl.Replace("postgresql://", "http://" ));
+    var userInfo = uri.UserInfo.Split(':');
 
-        finalConnectionString = $"Host={uri.Host};Port={uri.Port};Database={uri.AbsolutePath.TrimStart('/')};Username={userInfo[0]};Password={userInfo[1]};SSL Mode=Require;Trust Server Certificate=true";
-
-        // FORÇA A INJEÇÃO: Adiciona a nova string convertida diretamente no Configuration
-        // Isso garante que o DbContext (e qualquer outro serviço) encontre a string Key-Value correta.
-        builder.Configuration.AddInMemoryCollection(new Dictionary<string, string>
-        {
-            {"ConnectionStrings:DefaultConnection", finalConnectionString}
-        });
-
-        Console.WriteLine($"✅ Connection string convertida de URL para Key-Value: {finalConnectionString}");
-    }
-    catch (Exception ex)
-    {
-        Console.WriteLine($"❌ Erro FATAL ao converter DATABASE_URL. Usando Fallback. Erro: {ex.Message}");
-    }
+    // Monta a string de conexão no formato chave-valor esperado pelo Npgsql
+    finalConnectionString = $"Host={uri.Host};Port={uri.Port};Username={userInfo[0]};Password={userInfo[1]};Database={uri.LocalPath.Substring(1)};SSL Mode=Prefer;Trust Server Certificate=true";
+    Console.WriteLine("Usando string de conexão de ambiente (DATABASE_URL).");
 }
 else
 {
-    Console.WriteLine("⚠️ DATABASE_URL não encontrada, usando string do appsettings.json.");
+    Console.WriteLine("Usando string de conexão local (DefaultConnection).");
 }
 
-// O DbContext agora usa a string que foi injetada acima
+// Se finalConnectionString for nula ou vazia, lance uma exceção
+if (string.IsNullOrEmpty(finalConnectionString))
+{
+    throw new InvalidOperationException("A string de conexão 'DefaultConnection' não foi configurada.");
+}
+
+// --- Configuração do DbContext ---
+// A string finalConnectionString (convertida ou local) é usada aqui
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseNpgsql(finalConnectionString,
-        npgsqlOptions => npgsqlOptions.EnableRetryOnFailure()) // Adiciona resiliência
+    options.UseNpgsql(finalConnectionString)
 );
 
 // --- Serviços customizados ---
@@ -63,9 +56,9 @@ builder.Services.AddHttpClient();
 var geminiApiKey = builder.Configuration["Gemini:ApiKey"];
 builder.Services.AddSingleton<GeminiService>(sp =>
 {
-    var httpClient = sp.GetRequiredService<HttpClient>();
+    var httpClient = sp.GetRequiredService<HttpClient>( );
     // ATENÇÃO: Verifique a chave da API no appsettings ou ambiente
-    return new GeminiService(httpClient, geminiApiKey);
+    return new GeminiService(httpClient, geminiApiKey );
 });
 
 // --- JWT ---

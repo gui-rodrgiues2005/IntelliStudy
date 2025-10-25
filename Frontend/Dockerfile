@@ -12,11 +12,11 @@ FROM nginx:alpine
 # Copia o resultado da build para o diretório padrão do nginx
 COPY --from=build /app/dist /usr/share/nginx/html
 
-# Copia configuração customizada do nginx (opcional)
-# COPY nginx.conf /etc/nginx/nginx.conf
+# Copia configuração customizada do nginx para SPA
+COPY nginx.conf /etc/nginx/nginx.conf
 
-# Expõe a porta 80
-EXPOSE 80
+# Expõe a porta 8080 (Railway usa essa porta)
+EXPOSE 8080
 
 # Comando padrão do nginx
 CMD ["nginx", "-g", "daemon off;"]

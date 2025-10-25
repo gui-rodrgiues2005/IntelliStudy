@@ -5,56 +5,18 @@
 /Frontend/build
 /Frontend/dist
 
-# Dependencies
-/node_modules
-node_modules
+# Pastas de build
+bin/
+obj/
+out/
 
-# IDE and editor files
+# Configurações de IDE
 .vscode/
-.idea/
-*.swp
-*.swo
-*~
+.vs/
+*.user
+*.suo
+*.sln.docstates
 
-# OS generated files
-.DS_Store
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
-ehthumbs.db
-Thumbs.db
-
-# Logs
+# Arquivos de log e temporários
 *.log
-logs/
-
-# Environment variables
-.env
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
-
-# Database files
-*.db
-*.sqlite
-*.sqlite3
-
-# Docker
-.dockerignore
-
-# Temporary files
-*.tmp
-*.temp
-
-# Certificates and keys
-*.p12
-*.pfx
-*.key
-*.crt
-*.pem
-
-# Migration snapshots and other EF files
-Backend/Migrations/*.Designer.cs
-Backend/Migrations/AppDbContextModelSnapshot.cs
+[Tt]emp/

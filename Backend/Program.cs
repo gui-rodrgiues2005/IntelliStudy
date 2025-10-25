@@ -6,66 +6,84 @@ using System.Text;
 using Microsoft.OpenApi.Models;
 using Backend.Services;
 using Backend.Middleware;
-using Microsoft.Extensions.Configuration; // Necessário
 
 var builder = WebApplication.CreateBuilder(args);
 
 // =========================================================================
-// 1. LÓGICA CRÍTICA DE CONVERSÃO DA STRING DE CONEXÃO DO RAILWAY (URL)
+// 1. CONFIGURAÇÃO DA STRING DE CONEXÃO DO BANCO DE DADOS
 // =========================================================================
-var databaseUrl = Environment.GetEnvironmentVariable("DATABASE_URL");
-string finalConnectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? "";
+string finalConnectionString = string.Empty;
 
+// Primeiro tenta obter da variável de ambiente DATABASE_URL (Railway/Heroku)
+var databaseUrl = Environment.GetEnvironmentVariable("DATABASE_URL");
 Console.WriteLine($"DATABASE_URL encontrada: {!string.IsNullOrEmpty(databaseUrl)}");
+
 if (!string.IsNullOrEmpty(databaseUrl))
 {
-    Console.WriteLine($"DATABASE_URL: {databaseUrl}");
-    // Lógica para converter a URL de conexão do Railway/Heroku para o formato Npgsql
-    // O Npgsql não consegue parsear diretamente o esquema "postgresql://", então o substituímos por "http://"
-    // para que a classe Uri do .NET possa fazer o parsing correto dos componentes (Host, Port, UserInfo, Path ).
-    var uri = new Uri(databaseUrl.Replace("postgresql://", "http://" ));
-    var userInfo = uri.UserInfo.Split(':');
+    try
+    {
+        // Converte URL do Railway/Heroku para Npgsql
+        var uri = new Uri(databaseUrl.Replace("postgresql://", "http://"));
+        var userInfo = uri.UserInfo.Split(':');
 
-    // Monta a string de conexão no formato chave-valor esperado pelo Npgsql
-    finalConnectionString = $"Host={uri.Host};Port={uri.Port};Username={userInfo[0]};Password={userInfo[1]};Database={uri.LocalPath.Substring(1)};SSL Mode=Prefer;Trust Server Certificate=true";
-    Console.WriteLine("Usando string de conexão de ambiente (DATABASE_URL).");
-    Console.WriteLine($"String de conexão final: {finalConnectionString.Replace(userInfo[1], "***")}");
-}
-else
-{
-    Console.WriteLine("DATABASE_URL não encontrada. Usando string de conexão local (DefaultConnection).");
-    Console.WriteLine($"DefaultConnection: {finalConnectionString}");
+        finalConnectionString = $"Host={uri.Host};Port={uri.Port};Username={userInfo[0]};Password={userInfo[1]};Database={uri.LocalPath.TrimStart('/')};SSL Mode=Prefer;Trust Server Certificate=true";
+
+        Console.WriteLine("✅ Usando string de conexão do Railway (DATABASE_URL).");
+        Console.WriteLine($"🔒 String final (senha oculta): {finalConnectionString.Replace(userInfo[1], "***")}");
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"❌ Erro ao processar DATABASE_URL: {ex.Message}");
+    }
 }
 
-// Se finalConnectionString for nula ou vazia, lance uma exceção
+// Se DATABASE_URL não estiver definida, tenta variável direta
 if (string.IsNullOrEmpty(finalConnectionString))
 {
-    throw new InvalidOperationException("A string de conexão 'DefaultConnection' não foi configurada.");
+    var directConnectionString = Environment.GetEnvironmentVariable("CONNECTION_STRING");
+    if (!string.IsNullOrEmpty(directConnectionString))
+    {
+        finalConnectionString = directConnectionString;
+        Console.WriteLine("✅ Usando string de conexão direta (CONNECTION_STRING).");
+    }
+    else
+    {
+        // Fallback para appsettings.json
+        finalConnectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? "";
+        Console.WriteLine("✅ Usando string de conexão local (DefaultConnection).");
+    }
+}
+
+// Se não existir string de conexão, encerra imediatamente
+if (string.IsNullOrEmpty(finalConnectionString))
+{
+    Console.WriteLine("❌ Nenhuma string de conexão válida encontrada. Abortando...");
+    throw new InvalidOperationException("A string de conexão do banco de dados não foi configurada.");
 }
 
 // --- Configuração do DbContext ---
-// A string finalConnectionString (convertida ou local) é usada aqui
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(finalConnectionString)
 );
 
-// --- Serviços customizados ---
+// =========================================================================
+// 2. SERVIÇOS CUSTOMIZADOS
+// =========================================================================
 builder.Services.AddHostedService<GeminiWorker>();
 builder.Services.AddSingleton<EfiPixService>();
 builder.Services.AddScoped<PlanoService>();
-
-// --- HttpClient para GeminiService ---
 builder.Services.AddHttpClient();
 
 var geminiApiKey = builder.Configuration["Gemini:ApiKey"];
 builder.Services.AddSingleton<GeminiService>(sp =>
 {
-    var httpClient = sp.GetRequiredService<HttpClient>( );
-    // ATENÇÃO: Verifique a chave da API no appsettings ou ambiente
-    return new GeminiService(httpClient, geminiApiKey );
+    var httpClient = sp.GetRequiredService<HttpClient>();
+    return new GeminiService(httpClient, geminiApiKey);
 });
 
-// --- JWT ---
+// =========================================================================
+// 3. JWT
+// =========================================================================
 var jwtSettings = builder.Configuration.GetSection("Jwt");
 var key = Encoding.ASCII.GetBytes(jwtSettings["Key"] ?? throw new InvalidOperationException("JWT Key not configured."));
 
@@ -90,7 +108,9 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
-// --- CORS ---
+// =========================================================================
+// 4. CORS, CONTROLLERS E SWAGGER
+// =========================================================================
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAll", policy =>
@@ -101,10 +121,7 @@ builder.Services.AddCors(options =>
     });
 });
 
-// --- Controllers ---
 builder.Services.AddControllers();
-
-// --- Swagger ---
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
@@ -117,48 +134,46 @@ builder.Services.AddSwaggerGen(c =>
         In = ParameterLocation.Header,
         Description = "Digite 'Bearer {token}' para autenticar"
     });
-
     c.AddSecurityRequirement(new OpenApiSecurityRequirement
     {
         {
             new OpenApiSecurityScheme
             {
-                Reference = new OpenApiReference
-                {
-                    Type = ReferenceType.SecurityScheme,
-                    Id = "Bearer"
-                }
+                Reference = new OpenApiReference { Type = ReferenceType.SecurityScheme, Id = "Bearer" }
             },
             new string[] {}
         }
     });
 });
 
-// --- Health check ---
-builder.Services.AddHealthChecks();
-
+// =========================================================================
+// 5. BUILD APP
+// =========================================================================
 var app = builder.Build();
 
-// Aplica as migrações na inicialização
+// Aplica migrações na inicialização
 using (var scope = app.Services.CreateScope())
 {
     var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
     if (dbContext.Database.IsRelational())
     {
-        Console.WriteLine("Aplicando migrações...");
+        Console.WriteLine("⏳ Aplicando migrações...");
         try
         {
             dbContext.Database.Migrate();
-            Console.WriteLine("Migrações aplicadas com sucesso.");
+            Console.WriteLine("✅ Migrações aplicadas com sucesso.");
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Erro ao aplicar migrações: {ex.Message}");
+            Console.WriteLine($"❌ Erro ao aplicar migrações: {ex.Message}");
+            throw;
         }
     }
 }
 
-// --- Middleware ---
+// =========================================================================
+// 6. MIDDLEWARE
+// =========================================================================
 if (app.Environment.IsDevelopment())
 {
     app.UseDeveloperExceptionPage();
@@ -170,7 +185,6 @@ else
 
 app.UseSwagger();
 app.UseSwaggerUI();
-
 app.UseCors("AllowAll");
 app.UseHttpsRedirection();
 
@@ -181,37 +195,8 @@ app.UseAuthorization();
 app.MapControllers();
 app.MapHealthChecks("/health");
 
-
-// --- REGISTRO DE WEBHOOK TEMPORARIAMENTE DESATIVADO PARA DEBUG ---
-// O bloco abaixo foi comentado para evitar o erro de 404/BadRequest que estava
-// quebrando a aplicação após a inicialização.
-
-/*
-using (var scope = app.Services.CreateScope())
-{
-    var efiService = scope.ServiceProvider.GetRequiredService<EfiPixService>();
-    var ngrokUrl = builder.Configuration["Ngrok:Url"];
-
-    // Use Environment.GetEnvironmentVariable para obter a URL de produção
-    // var webhookUrl = Environment.GetEnvironmentVariable("EFI_WEBHOOK_URL");
-
-    if (!string.IsNullOrEmpty(ngrokUrl))
-    {
-        try
-        {
-            await efiService.RegistrarWebhookAsync();
-            Console.WriteLine("✅ Webhook registrado com sucesso na EfiBank.");
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"❌ Falha ao registrar webhook: {ex.Message}");
-        }
-    }
-    else
-    {
-        Console.WriteLine("⚠️ URL do Ngrok/Webhook não configurada. Webhook não registrado.");
-    }
-}
-*/
-
+// =========================================================================
+// 7. START APP
+// =========================================================================
+Console.WriteLine("🚀 Aplicação iniciando...");
 app.Run();

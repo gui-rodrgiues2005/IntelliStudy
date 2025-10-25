@@ -78,7 +78,7 @@ function Simulados() {
             setIsLoading(true);
             try {
                 const token = localStorage.getItem("token");
-                const res = await fetch('http://localhost:5051/api/Simulado', {
+                const res = await fetch(`${api}/api/Simulado`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
                 if (!res.ok) throw new Error("Falha ao buscar lista de simulados.");

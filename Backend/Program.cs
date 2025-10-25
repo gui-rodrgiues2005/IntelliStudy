@@ -12,14 +12,15 @@ var builder = WebApplication.CreateBuilder(args);
 // ======================
 // 1. CONFIGURAÇÃO DO DbContext COM DATABASE_URL
 // ======================
-var ConnectionStrings = Environment.GetEnvironmentVariable("DATABASE_URL");
-if (string.IsNullOrEmpty(ConnectionStrings))
+var databaseUrl = Environment.GetEnvironmentVariable("DATABASE_URL");
+
+if (string.IsNullOrEmpty(databaseUrl))
 {
     throw new InvalidOperationException("DATABASE_URL não encontrada no ambiente.");
 }
 
 // Parsing seguro da URL do Railway
-var uri = new Uri(ConnectionStrings.Replace("postgresql://", "http://"));
+var uri = new Uri(databaseUrl.Replace("postgresql://", "http://"));
 var userInfo = uri.UserInfo.Split(':');
 var username = Uri.UnescapeDataString(userInfo[0]);
 var password = Uri.UnescapeDataString(userInfo[1]);

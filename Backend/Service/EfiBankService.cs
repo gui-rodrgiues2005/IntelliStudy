@@ -68,10 +68,14 @@ namespace Backend.Services
 
         public async Task<bool> RegistrarWebhookAsync(string chavePix, string webhookUrl)
         {
+            // 1. Obter Token
             var tokenResponse = await ObterTokenAsync();
             var token = tokenResponse.access_token;
 
-            var url = $"https://api.efipay.com.br/v2/webhook/{chavePix}";
+            // URL da API da Efi para registro/alteração de webhook
+            // O _baseUrl deve ser configurado para o ambiente de homologação, ex: https://api.efipay.com.br
+            var baseUrl = _config["Efi:BaseUrl"];
+            var url = $"{baseUrl}/v2/webhook/{chavePix}";
 
             var payload = new { webhookUrl = webhookUrl };
             var content = new StringContent(JsonSerializer.Serialize(payload), Encoding.UTF8, "application/json");
@@ -80,9 +84,35 @@ namespace Backend.Services
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
             request.Content = content;
 
+            // =========================================================================
+            // ❌ REMOVENDO A CORREÇÃO CRÍTICA PARA NGROK: PULAR CHECAGEM DE MTLS
+            // Em um servidor hospedado (Production/Homologation real), a Efí espera
+            // que o servidor trate a segurança mTLS sem esta flag.
+            // Se a chamada falhar aqui, o problema será a ausência do certificado da Efí.
+            // =========================================================================
+
+            // request.Headers.Add("x-skip-mtls-checking", "true"); // <-- REMOVIDO
+
+
+            Console.WriteLine($"[EFI PIX SERVICE] Tentando registrar webhook na URL: {url}");
+            Console.WriteLine($"[EFI PIX SERVICE] Payload: {{ \"webhookUrl\": \"{webhookUrl}\" }}");
+
+
             var response = await _httpClient.SendAsync(request);
 
-            return response.IsSuccessStatusCode; // true se 201 Created
+            if (!response.IsSuccessStatusCode)
+            {
+                var erroContent = await response.Content.ReadAsStringAsync();
+                Console.WriteLine($"[EFI PIX SERVICE] ERRO {response.StatusCode} ao registrar webhook: {erroContent}");
+                Console.WriteLine($"[EFI PIX SERVICE] CONSELHO: Se for um erro 400 ou 401, verifique a configuração mTLS (importação do certificado público da Efí/BC) no seu ambiente hospedado.");
+            }
+            else
+            {
+                Console.WriteLine($"[EFI PIX SERVICE] Webhook registrado com sucesso! Status: {response.StatusCode}");
+            }
+
+            // Deve retornar 201 Created (ou 200 OK se for alteração)
+            return response.IsSuccessStatusCode;
         }
 
         // =====================================================

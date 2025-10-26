@@ -12,7 +12,7 @@ const Registro = () => {
   const [password, setPassword] = useState("");
   const [mensagem, setMensagem] = useState("");
   const navigate = useNavigate();
-  const API_URL = process.env.VITE_API_URL;
+  const API_URL = process.env.VITE_API_URL || "https://backend-production-69f3.up.railway.app";
   // --- MUDANÇA 2: Adicione o estado para visibilidade da senha ---
   const [showPassword, setShowPassword] = useState(false);
 

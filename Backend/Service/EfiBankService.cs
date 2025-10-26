@@ -66,42 +66,24 @@ namespace Backend.Services
             return token;
         }
 
-        public async Task RegistrarWebhookAsync()
+        public async Task<bool> RegistrarWebhookAsync(string chavePix, string webhookUrl)
         {
-            // Obter token de acesso
             var tokenResponse = await ObterTokenAsync();
             var token = tokenResponse.access_token;
 
-            var chavePix = _config["Efi:PixKey"]; // Usar chave do config
-            var backendUrl = _config["Efi:BackendUrl"];
-            var webhookUrl = $"{backendUrl}/api/Pagamento/webhook-pix?ignorar=";// Endpoint correto: PagamentoController
+            var url = $"https://api.efipay.com.br/v2/webhook/{chavePix}";
 
-            var url = $"https://pix.api.efipay.com.br/v2/webhook/{Uri.EscapeDataString(chavePix)}";
-            var payload = new { webhookUrl };
-            var json = JsonSerializer.Serialize(payload);
+            var payload = new { webhookUrl = webhookUrl };
+            var content = new StringContent(JsonSerializer.Serialize(payload), Encoding.UTF8, "application/json");
 
-            var request = new HttpRequestMessage(HttpMethod.Put, url)
-            {
-                Content = new StringContent(json, Encoding.UTF8, "application/json")
-            };
-
-            // Adicionar Bearer token
+            var request = new HttpRequestMessage(HttpMethod.Put, url);
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
-
-            // ⚠️ Cabeçalho importante para desativar o mTLS
-            request.Headers.Add("x-skip-mtls-checking", "true");
+            request.Content = content;
 
             var response = await _httpClient.SendAsync(request);
-            var result = await response.Content.ReadAsStringAsync();
 
-            Console.WriteLine("📡 Resultado registro webhook: " + result);
-
-            if (!response.IsSuccessStatusCode)
-            {
-                throw new Exception($"Falha ao registrar webhook: {response.StatusCode} - {result}");
-            }
+            return response.IsSuccessStatusCode; // true se 201 Created
         }
-
 
         // =====================================================
         // 2️⃣ Criar Cobrança Pix

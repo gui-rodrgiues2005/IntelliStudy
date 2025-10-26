@@ -13,7 +13,7 @@ public class EfiWebhookPayload
 {
     public string? Evento { get; set; }
     public string? Data_Criacao { get; set; }
-    public string? Txid { get; set; } 
+    public string? Txid { get; set; }
 }
 
 [ApiController]
@@ -22,11 +22,14 @@ public class PagamentoController : ControllerBase
 {
     private readonly EfiPixService _efiPixService;
     private readonly AppDbContext _context;
-
-    public PagamentoController(EfiPixService efiPixService, AppDbContext context)
+    private readonly ILogger<EfiPixService> _logger;
+    private readonly IConfiguration _config;
+    public PagamentoController(EfiPixService efiPixService, AppDbContext context, IConfiguration config, ILogger<EfiPixService> logger)
     {
         _efiPixService = efiPixService;
         _context = context;
+        _config = config;
+        _logger = logger;
     }
 
     [Authorize]
@@ -424,19 +427,28 @@ public class PagamentoController : ControllerBase
         return Ok(new { pago = false });
     }
 
-    // Novo endpoint para registrar webhook manualmente
+
+
     [HttpPost("registrar-webhook")]
-    [AllowAnonymous] // Ou [Authorize] se quiser proteger
+    [AllowAnonymous] // ou [Authorize] se quiser proteger
     public async Task<IActionResult> RegistrarWebhook()
     {
         try
         {
-            await _efiPixService.RegistrarWebhookAsync();
-            return Ok(new { mensagem = "Webhook registrado com sucesso na Efí." });
+            // Usando o serviço correto
+            var efiService = _efiPixService;
+
+            bool sucesso = await efiService.RegistrarWebhookAsync(
+                "rodriguesguidev@gmail.com",
+                "https://backend-production-69f3.up.railway.app/api/Pagamento/webhook-pix?ignorar=true"
+            );
+
+            return Ok(new { mensagem = sucesso ? "Webhook registrado com sucesso na Efí." : "Falha ao registrar webhook." });
         }
         catch (Exception ex)
         {
             return BadRequest(new { erro = ex.Message });
         }
     }
+
 }

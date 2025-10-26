@@ -74,7 +74,7 @@ namespace Backend.Services
 
             var chavePix = _config["Efi:PixKey"]; // Usar chave do config
             var backendUrl = _config["Efi:BackendUrl"];
-            var webhookUrl = $"{backendUrl}/api/Pagamento/webhook-pix?ignorar=";// Endpoint correto: PagamentoController
+            var webhookUrl = $"{backendUrl}/api/Pagamento/webhook-pix";
 
             var url = $"https://pix.api.efipay.com.br/v2/webhook/{Uri.EscapeDataString(chavePix)}";
             var payload = new { webhookUrl };

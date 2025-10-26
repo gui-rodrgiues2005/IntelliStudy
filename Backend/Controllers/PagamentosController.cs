@@ -423,4 +423,20 @@ public class PagamentoController : ControllerBase
         Console.WriteLine("============================================");
         return Ok(new { pago = false });
     }
+
+    // Novo endpoint para registrar webhook manualmente
+    [HttpPost("registrar-webhook")]
+    [AllowAnonymous] // Ou [Authorize] se quiser proteger
+    public async Task<IActionResult> RegistrarWebhook()
+    {
+        try
+        {
+            await _efiPixService.RegistrarWebhookAsync();
+            return Ok(new { mensagem = "Webhook registrado com sucesso na Efí." });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { erro = ex.Message });
+        }
+    }
 }

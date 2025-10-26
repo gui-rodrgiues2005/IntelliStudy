@@ -66,14 +66,13 @@ namespace Backend.Services
             return token;
         }
 
+        // ===========================================
+        // 🌐 2. Registrar Webhook (sem mTLS)
+        // ===========================================
         public async Task<bool> RegistrarWebhookAsync(string chavePix, string webhookUrl)
         {
-            // 1. Obter Token
             var tokenResponse = await ObterTokenAsync();
             var token = tokenResponse.access_token;
-
-            // URL da API da Efi para registro/alteração de webhook
-            // O _baseUrl deve ser configurado para o ambiente de homologação, ex: https://api.efipay.com.br
             var baseUrl = _config["Efi:BaseUrl"];
             var url = $"{baseUrl}/v2/webhook/{chavePix}";
 
@@ -84,36 +83,25 @@ namespace Backend.Services
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
             request.Content = content;
 
-            // =========================================================================
-            // ⚠️ TEMPORARIAMENTE REATIVANDO PARA BYPASS DE MTLS NO REGISTRO
-            // Como o Railway não suporta configuração de mTLS para incoming requests,
-            // reativamos o skip para permitir o registro do webhook.
-            // Em produção segura, configure um servidor que suporte mTLS (ex.: VPS com Nginx).
-            // =========================================================================
-
-            request.Headers.Add("x-skip-mtls-checking", "true"); // <-- REATIVADO TEMPORARIAMENTE
-
+            // ⚙️ Ignorar mTLS (Railway não suporta)
+            request.Headers.TryAddWithoutValidation("x-skip-mtls-checking", "true");
 
             Console.WriteLine($"[EFI PIX SERVICE] Tentando registrar webhook na URL: {url}");
             Console.WriteLine($"[EFI PIX SERVICE] Payload: {{ \"webhookUrl\": \"{webhookUrl}\" }}");
 
-
             var response = await _httpClient.SendAsync(request);
+            var resposta = await response.Content.ReadAsStringAsync();
 
             if (!response.IsSuccessStatusCode)
             {
-                var erroContent = await response.Content.ReadAsStringAsync();
-                Console.WriteLine($"[EFI PIX SERVICE] ERRO {response.StatusCode} ao registrar webhook: {erroContent}");
-                Console.WriteLine($"[EFI PIX SERVICE] CONSELHO: Se for um erro 400 ou 401, verifique a configuração mTLS (importação do certificado público da Efí/BC) no seu ambiente hospedado.");
-            }
-            else
-            {
-                Console.WriteLine($"[EFI PIX SERVICE] Webhook registrado com sucesso! Status: {response.StatusCode}");
+                Console.WriteLine($"[EFI PIX SERVICE] ❌ ERRO {response.StatusCode}: {resposta}");
+                return false;
             }
 
-            // Deve retornar 201 Created (ou 200 OK se for alteração)
-            return response.IsSuccessStatusCode;
+            Console.WriteLine($"[EFI PIX SERVICE] ✅ Webhook registrado com sucesso! Status: {response.StatusCode}");
+            return true;
         }
+
 
         // =====================================================
         // 2️⃣ Criar Cobrança Pix
@@ -174,35 +162,49 @@ namespace Backend.Services
         }
 
 
-        public async Task<PixConsultaResponse> VerificarStatusPixAsync(string txid)
+        public async Task<PixConsultaResponse?> VerificarStatusPixAsync(string txid)
         {
-            if (string.IsNullOrEmpty(txid))
-                throw new ArgumentException("Txid não pode ser vazio", nameof(txid));
-
-            // Monta a URL da API da Efi para consultar o Pix
-            var baseUrl = _config["Efi:BaseUrl"];
-            var url = $"{baseUrl}/v2/cob/{txid}";
-
-
             try
             {
-                var response = await _httpClient.GetAsync(url);
+                var tokenResponse = await ObterTokenAsync();
+                var token = tokenResponse.access_token;
+                var baseUrl = _config["Efi:BaseUrl"];
+                var url = $"{baseUrl}/v2/pix/{txid}";
+
+                var request = new HttpRequestMessage(HttpMethod.Get, url);
+                request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+                var response = await _httpClient.SendAsync(request);
+                var content = await response.Content.ReadAsStringAsync();
 
                 if (!response.IsSuccessStatusCode)
-                    throw new Exception($"Erro ao consultar Pix: {response.StatusCode}");
+                {
+                    Console.WriteLine($"[EFI PIX SERVICE] ❌ Falha ao consultar Pix {txid}: {content}");
+                    return null;
+                }
 
-                var result = await response.Content.ReadFromJsonAsync<PixConsultaResponse>();
-
-                if (result == null)
-                    throw new Exception("Resposta inválida da API do Pix.");
+                var result = JsonSerializer.Deserialize<PixConsultaResponse>(content, new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true
+                });
 
                 return result;
             }
             catch (Exception ex)
             {
-                // Aqui você pode logar ou tratar o erro como preferir
-                throw new Exception("Erro ao verificar status do Pix: " + ex.Message);
+                Console.WriteLine($"[EFI PIX SERVICE] Erro ao consultar status Pix: {ex.Message}");
+                return null;
             }
+        }
+
+        public class EfiTokenResponse
+        {
+            public string access_token { get; set; } = string.Empty;
+        }
+
+        public class EfiPixConsultaResponse
+        {
+            public string? Status { get; set; }
         }
     }
 }

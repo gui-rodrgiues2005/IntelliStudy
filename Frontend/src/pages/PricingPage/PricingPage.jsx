@@ -93,7 +93,7 @@ const PricingPage = () => {
                     Authorization: `Bearer ${token}`
                 },
                 body: JSON.stringify({
-                    valor: 12.00,
+                    valor: 0.1,
                     descricao: 'Plano Mestre'
                 })
             });

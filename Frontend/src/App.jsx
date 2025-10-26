@@ -11,7 +11,7 @@ import Ranking from "./pages/Ranking/Ranking";
 import PlanoDeEstudo from "./pages/PlanoDeEstudo/PlanoDeEstudo";
 import HistoricoDePlanos from "./pages/HistoricoDePlanos/HistoricoDePlanos";
 import PricingPage from "./pages/PricingPage/PricingPage";
-import PixPage from "./pages/PixPage/PixPage";
+import PixPage from "./pages/Agradecimento/Agradecimento";
 import MainLayout from "./components/Layout/MainLayout";
 
 import Inicio from "./pages/SITE/Inicio/Inicio";
@@ -23,6 +23,7 @@ import Politica from "./components/Politica/Politica"
 
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import AgradecimentoPage from "./pages/Agradecimento/Agradecimento";
 
 function App() {
 
@@ -122,11 +123,11 @@ function App() {
           />
 
           <Route
-            path="/pagamentoPix"
+            path="/agradecimento"
             element={
               <PrivateRoute>
                 <MainLayout>
-                  <PixPage />
+                  <AgradecimentoPage />
                 </MainLayout>
               </PrivateRoute>
             }

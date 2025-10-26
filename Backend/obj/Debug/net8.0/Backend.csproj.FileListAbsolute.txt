@@ -140,3 +140,7 @@ C:\Users\guilh\Documents\StudyAI\Backend\bin\Debug\net8.0\out\appsettings.json
 C:\Users\guilh\Documents\StudyAI\Backend\bin\Debug\net8.0\out\Backend.deps.json
 C:\Users\guilh\Documents\StudyAI\Backend\bin\Debug\net8.0\out\Backend.runtimeconfig.json
 C:\Users\guilh\Documents\StudyAI\Backend\bin\Debug\net8.0\out\Backend.staticwebassets.endpoints.json
+C:\Users\guilh\Documents\StudyAI\backend\bin\Debug\net8.0\Newtonsoft.Json.dll
+C:\Users\guilh\Documents\StudyAI\backend\bin\Debug\net8.0\Stripe.net.dll
+C:\Users\guilh\Documents\StudyAI\backend\bin\Debug\net8.0\System.Configuration.ConfigurationManager.dll
+C:\Users\guilh\Documents\StudyAI\backend\bin\Debug\net8.0\System.Security.Cryptography.ProtectedData.dll

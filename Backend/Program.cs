@@ -6,10 +6,11 @@ using System.Text;
 using Microsoft.OpenApi.Models;
 using Backend.Services;
 using Backend.Middleware;
+using Stripe;
 using Microsoft.Extensions.Configuration; // Necessário
 
 var builder = WebApplication.CreateBuilder(args);
-
+var configuration = builder.Configuration;
 // =========================================================================
 // 1. LÓGICA CRÍTICA DE CONVERSÃO DA STRING DE CONEXÃO DO RAILWAY (URL)
 // =========================================================================
@@ -50,6 +51,7 @@ builder.Services.AddHostedService<GeminiWorker>();
 builder.Services.AddSingleton<EfiPixService>();
 builder.Services.AddScoped<PlanoService>();
 
+StripeConfiguration.ApiKey = configuration["Stripe:SecretKey"];
 // --- HttpClient para GeminiService ---
 builder.Services.AddHttpClient();
 

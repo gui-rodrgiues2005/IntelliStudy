@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { loadStripe } from "@stripe/stripe-js";
 import { Check, X, Star, Crown, Zap } from 'lucide-react';
 import { API_URL } from '../../../config';
 import './PricingPage.scss';
@@ -12,8 +13,8 @@ const PricingPage = () => {
     const [plano, setPlano] = useState('Gratuito');
     const [ultimoPagamento, setUltimoPagamento] = useState(null);
     const token = localStorage.getItem('token');
+    const stripePromise = loadStripe("pk_test_51SMXVsDqJgnRbRyfLnRx68HQ48lIAbKTGISAgCMepUZQHYAkb7eVAc9J7upLVyjKi3A7hiqb78684bHjA5EY5Dpk00kT2Sakte");
 
-    // --- Carregar dados do usuário incluindo plano ---
     useEffect(() => {
         const carregarDadosUsuario = async () => {
             if (!token) return;
@@ -36,6 +37,59 @@ const PricingPage = () => {
 
         carregarDadosUsuario();
     }, [token]);
+
+
+
+    useEffect(() => {
+        const confirmarPagamento = async () => {
+            const sessionId = new URLSearchParams(window.location.search).get("session_id");
+            if (!sessionId) return; // Nenhum session_id na URL, sai do efeito
+
+            try {
+                const response = await fetch(`${API_URL}/api/Pagamento/confirmar-session`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ sessionId })
+                });
+
+                if (!response.ok) {
+                    throw new Error("Erro ao confirmar pagamento");
+                }
+
+                const data = await response.json();
+                toast.success("Pagamento confirmado com sucesso!");
+                console.log("Dados do pagamento:", data);
+
+                // Recarregar dados do usuário após confirmação
+                const carregarDadosUsuario = async () => {
+                    if (!token) return;
+                    try {
+                        const response = await fetch(`${API_URL}/api/User/meus-dados`, {
+                            headers: { Authorization: `Bearer ${token}` }
+                        });
+                        if (!response.ok) return;
+
+                        const data = await response.json();
+                        setCpf(data.cpf || '');
+                        setTelefone(data.telefone || '');
+                        setPlano(data.plano || 'Gratuito');
+                        setUltimoPagamento(data.ultimoPagamento ? new Date(data.ultimoPagamento) : null);
+                        setUsuarioCarregado(true);
+                    } catch (e) {
+                        // console.error('Erro ao carregar dados do usuário:', e);
+                    }
+                };
+
+                await carregarDadosUsuario();
+            } catch (err) {
+                console.error(err);
+                toast.error("Não foi possível confirmar o pagamento.");
+            }
+        };
+
+        confirmarPagamento();
+    }, [token]);
+
 
     const handleUpgradeClick = () => {
         if (plano === 'Premium') {
@@ -84,42 +138,54 @@ const PricingPage = () => {
         }
     };
 
-    const iniciarPagamento = async () => {
+    async function handlePagamento(valor) {
         try {
-            const response = await fetch(`${API_URL}/api/Pagamento/gerar`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${token}`
-                },
-                body: JSON.stringify({
-                    valor: 0.1,
-                    descricao: 'Plano Mestre'
-                })
+            console.log("[LOG] Iniciando handlePagamento com valor:", valor);
+
+            // Obter dados do usuário para incluir UserId
+            console.log("[LOG] Obtendo dados do usuário...");
+            const userResponse = await fetch(`${API_URL}/api/User/meus-dados`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            if (!userResponse.ok) {
+                const errorText = await userResponse.text();
+                console.error("[ERROR] Erro ao obter dados do usuário:", errorText);
+                throw new Error("Erro ao obter dados do usuário");
+            }
+            const userData = await userResponse.json();
+            console.log("[LOG] Dados do usuário obtidos:", userData);
+
+            console.log("[LOG] Criando checkout no backend...");
+            const res = await fetch(`${API_URL}/api/Pagamento/criar-checkout`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ userId: userData.id, valor })
             });
 
-            if (!response.ok) {
-                const errorText = await response.text();
-                toast.error('Erro ao gerar pagamento, tente novamente mais tarde: ' + errorText);
-                setShowModal(true);
-                return;
+            console.log("[LOG] Resposta do backend - Status:", res.status);
+            if (!res.ok) {
+                const text = await res.text();
+                console.error("[ERROR] Erro no servidor:", text);
+                throw new Error(`Erro no servidor: ${text}`);
             }
 
-            const data = await response.json();
+            const data = await res.json();
+            console.log("[LOG] Dados recebidos do backend:", data);
 
-            if (data.qrcodeUrl) {
-                window.location.href = "/pagamentoPix";
-            } else if (data.pixCopiaECola) {
-                toast.info('Use este código Pix para pagar: ' + data.pixCopiaECola);
-            } else {
-                toast.info('Erro: dados de pagamento inválidos.');
-            }
-        } catch (e) {
-            console.error('Erro inesperado ao iniciar pagamento:', e);
-            toast.info('Erro inesperado ao iniciar pagamento: ' + e.message);
-            setShowModal(true); // abre modal em caso de erro
+            const stripe = await stripePromise;
+            console.log("[LOG] Redirecionando para Stripe Checkout...");
+            await stripe.redirectToCheckout({ sessionId: data.sessionId });
+
+        } catch (err) {
+            console.error("Erro ao criar checkout:", err);
+            toast.error("Não foi possível iniciar o pagamento.");
         }
+    }
+
+    const iniciarPagamento = async () => {
+        await handlePagamento(12);
     };
+
 
     return (
         <div className="pricing-container">
@@ -157,9 +223,13 @@ const PricingPage = () => {
                     <div className="plan-header">
                         <h3>Mestre</h3>
                         <p className="price">R$12<span>/mês</span></p>
-                        <button className="plan-button premium-button" onClick={handleUpgradeClick}>
+                        <button
+                            className="plan-button premium-button"
+                            onClick={() => handlePagamento(12)}
+                        >
                             <Zap size={16} /> Fazer Upgrade Agora
                         </button>
+
                     </div>
                     <ul className="features-list">
                         <li><Check size={18} className="check-icon premium-check" /> Tudo no plano Aprendiz, e mais:</li>

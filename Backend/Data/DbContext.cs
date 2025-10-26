@@ -16,7 +16,7 @@ namespace Backend.Data
         public DbSet<SessaoEstudo> SessoesDeEstudo { get; set; }
         public DbSet<GenerationRequest> GenerationRequests { get; set; }
         public DbSet<Assinatura> Assinaturas { get; set; }
-        public DbSet<PagamentoPix> PagamentosPix { get; set; }
+        public DbSet<PagamentoCartao> PagamentosCartao { get; set; }
         public DbSet<UserConquista> UserConquistas { get; set; }
     }
 }

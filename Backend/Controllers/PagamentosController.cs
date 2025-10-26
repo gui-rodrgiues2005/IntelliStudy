@@ -168,7 +168,7 @@ public class PagamentoController : ControllerBase
     }
 
     // Endpoint principal do Webhook
-    [HttpPost("webhook-pix")]
+    [HttpPost("webhook-pix/pix")]
     [AllowAnonymous]
     public async Task<IActionResult> WebhookPix()
     {

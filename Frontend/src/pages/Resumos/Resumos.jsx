@@ -3,17 +3,16 @@
 import { useState, useEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
 import { Trash2, Download, Menu, X, AlignStartVertical, AlignHorizontalJustifyEnd } from 'lucide-react';
+import { API_URL } from '../../../config';
 import './Resumos.scss';
 
 function Resumos() {
   const [listaResumos, setListaResumos] = useState([]);
   const [resumoSelecionado, setResumoSelecionado] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
-
   // Estados para responsividade mobile
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
-  const API_URL = process.env.VITE_API_URL;
   // Efeito para detectar mudança de tamanho da tela
   useEffect(() => {
     const handleResize = () => {
@@ -115,13 +114,13 @@ function Resumos() {
 
     // Aqui você fará a chamada para a API do Backend que gera o PDF
     // Por enquanto, vamos simular a ação:
-    console.log(`Iniciando download do Resumo ID: ${resumoId}`);
+    // console.log(`Iniciando download do Resumo ID: ${resumoId}`);
 
     // ⚠️ SUBSTITUA ESTE CONSOLE.LOG PELA CHAMADA REAL DA API:
     // Exemplo: window.open(`http://localhost:5051/api/Resumo/download/${resumoId}?token=${token}`, '_blank');
     // Ou faça um fetch e crie o blob, como na Seção 3.
 
-    toast.info(`A função de download para o ID ${resumoId} será implementada.`);
+    toast.info(`A função de download para o ID ${resumoId} esta sendo criada.`);
   };
 
   return (

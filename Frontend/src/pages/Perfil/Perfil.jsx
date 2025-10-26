@@ -7,6 +7,7 @@ import './Perfil.scss';
 import { toast } from "react-toastify";
 import Swal from 'sweetalert2';
 import 'sweetalert2/dist/sweetalert2.min.css';
+import { API_URL } from '../../../config';
 
 function Perfil() {
     const [profileData, setProfileData] = useState(null);
@@ -21,7 +22,6 @@ function Perfil() {
     const [telefone, setTelefone] = useState("");
     const [notifications, setNotifications] = useState(false);
     const [darkMode, setDarkMode] = useState(false);
-    const API_URL = process.env.VITE_API_URL;
 
     const achievementIcons = {
         PRIMEIRO_RESUMO: <BookMarked size={20} />,

@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Check, X, Star, Crown, Zap } from 'lucide-react';
+import { API_URL } from '../../../config';
 import './PricingPage.scss';
+import { toast } from 'react-toastify';
 
 const PricingPage = () => {
     const [showModal, setShowModal] = useState(false);
@@ -9,7 +11,6 @@ const PricingPage = () => {
     const [usuarioCarregado, setUsuarioCarregado] = useState(false);
     const [plano, setPlano] = useState('Gratuito');
     const [ultimoPagamento, setUltimoPagamento] = useState(null);
-    const API_URL = process.env.VITE_API_URL;
     const token = localStorage.getItem('token');
 
     // --- Carregar dados do usuário incluindo plano ---
@@ -29,7 +30,7 @@ const PricingPage = () => {
                 setUltimoPagamento(data.ultimoPagamento ? new Date(data.ultimoPagamento) : null);
                 setUsuarioCarregado(true);
             } catch (e) {
-                console.error('Erro ao carregar dados do usuário:', e);
+                // console.error('Erro ao carregar dados do usuário:', e);
             }
         };
 
@@ -38,7 +39,7 @@ const PricingPage = () => {
 
     const handleUpgradeClick = () => {
         if (plano === 'Premium') {
-            alert('Você já possui o plano Premium!');
+            toast.info('Você já possui o plano Premium!');
             return;
         }
 
@@ -52,7 +53,7 @@ const PricingPage = () => {
     // --- 3️⃣ Salvar dados do usuário e iniciar pagamento ---
     const handleSalvarDados = async () => {
         if (!cpf || !telefone) {
-            alert('Por favor, preencha todos os campos.');
+            toast.info('Por favor, preencha todos os campos.');
             return;
         }
 
@@ -72,7 +73,7 @@ const PricingPage = () => {
                 return;
             }
 
-            console.log('✅ Dados salvos com sucesso!');
+            // console.log('✅ Dados salvos com sucesso!');
             setShowModal(false);
 
             // Após salvar os dados, iniciar pagamento
@@ -99,7 +100,7 @@ const PricingPage = () => {
 
             if (!response.ok) {
                 const errorText = await response.text();
-                alert('Erro ao gerar pagamento: ' + errorText);
+                toast.error('Erro ao gerar pagamento, tente novamente mais tarde: ' + errorText);
                 setShowModal(true);
                 return;
             }
@@ -109,13 +110,13 @@ const PricingPage = () => {
             if (data.qrcodeUrl) {
                 window.location.href = "/pagamentoPix";
             } else if (data.pixCopiaECola) {
-                alert('Use este código Pix para pagar: ' + data.pixCopiaECola);
+                toast.info('Use este código Pix para pagar: ' + data.pixCopiaECola);
             } else {
-                alert('Erro: dados de pagamento inválidos.');
+                toast.info('Erro: dados de pagamento inválidos.');
             }
         } catch (e) {
             console.error('Erro inesperado ao iniciar pagamento:', e);
-            alert('Erro inesperado ao iniciar pagamento: ' + e.message);
+            toast.info('Erro inesperado ao iniciar pagamento: ' + e.message);
             setShowModal(true); // abre modal em caso de erro
         }
     };

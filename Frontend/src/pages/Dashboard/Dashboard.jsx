@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useNavigate, NavLink } from 'react-router-dom'; // Para a função de logout
 import ReactMarkdown from 'react-markdown';
 import { toast } from "react-toastify";
+import { API_URL } from '../../../config';
 
 import {
   BookOpen,
@@ -48,7 +49,6 @@ function Dashboard() {
   const [resumoId, setResumoId] = useState(null)
   const [isResumoDeArquivo, setIsResumoDeArquivo] = useState(false);
   const hasGeneratedFromLocalStorage = useRef(false);
-  const API_URL = process.env.VITE_API_URL;
  
   useEffect(() => {
     const fetchUserName = async () => {
@@ -63,7 +63,7 @@ function Dashboard() {
           setUserName(data.nome); // Salva o nome no estado
         }
       } catch (error) {
-        console.error("Falha ao buscar nome do usuário", error);
+        //console.error("Falha ao buscar nome do usuário", error);
       }
     };
     fetchUserName();
@@ -86,7 +86,7 @@ function Dashboard() {
     });
 
     const resumo = await response.json();
-    console.log(resumo);
+    //console.log(resumo);
   };
 
   const handleDragOver = (e) => { e.preventDefault(); setIsDragOver(true); };
@@ -97,13 +97,13 @@ function Dashboard() {
     const files = e.dataTransfer.files;
     if (files.length > 0) {
       setUploadedFile(files[0]);
-      console.log('Arquivo arrastado:', files[0].name);
+      //console.log('Arquivo arrastado:', files[0].name);
     }
   };
   const handleSliderChange = (e) => { setNumQuestions(parseInt(e.target.value)); };
 
   const handleGenerateSummary = async (topicToGenerate, fileInput, text) => {
-    // console.log("⚠️ handleGenerateSummary disparado!", { text });
+    // //console.log("⚠️ handleGenerateSummary disparado!", { text });
 
     const topic = topicToGenerate || content;
     const fileToSend = fileInput || uploadedFile;
@@ -209,8 +209,8 @@ function Dashboard() {
       const { requestId, resumoId: resumoIdBackend } = await res.json();
       setActiveRequestId(requestId);
 
-      //Acho que é o ID certo
-      console.log('request_Id', requestId)
+      // //Acho que é o ID certo
+      // //console.log('request_Id', requestId)
 
       const pollInterval = setInterval(async () => {
         try {
@@ -237,15 +237,15 @@ function Dashboard() {
             const resumoFinalId = statusData.resumoId || parsedResultado.id || parsedResultado.Id || requestId;
             const resumoTexto = parsedResultado.texto || parsedResultado.ResumoTexto || parsedResultado.resumo || parsedResultado;
 
-            console.log('ResumoFinalId', resumoFinalId);
-            console.log('resumoTexto', resumoTexto);
+            // //console.log('ResumoFinalId', resumoFinalId);
+            // //console.log('resumoTexto', resumoTexto);
 
             setResumoGerado({
               texto: typeof resumoTexto === "string" ? resumoTexto : JSON.stringify(resumoTexto),
               id: resumoFinalId
             });
             setResumoId(resumoFinalId);
-            console.log('Resumo id final guardado', resumoFinalId)
+            // //console.log('Resumo id final guardado', resumoFinalId)
 
             toast.success("Resumo gerado com sucesso!");
           } else if (statusData.status === 3) {
@@ -256,12 +256,12 @@ function Dashboard() {
             setActiveRequestId(null);
           }
         } catch (pollError) {
-          console.error("Erro durante o polling:", pollError);
+          // //console.error("Erro durante o polling:", pollError);
         }
       }, 5000);
 
     } catch (err) {
-      console.error(err);
+      // //console.error(err);
       toast.error('Erro: ' + err.message);
       clearInterval(messageInterval);
       setIsGeneratingSummary(false);
@@ -295,7 +295,7 @@ function Dashboard() {
           setUserName(data.nome);
         }
       } catch (error) {
-        console.error("Falha ao buscar nome do usuário", error);
+        // //console.error("Falha ao buscar nome do usuário", error);
       }
     };
 
@@ -314,13 +314,13 @@ function Dashboard() {
     try {
       return JSON.parse(cleaned);
     } catch (err) {
-      console.error("Erro ao parsear JSON das questões:", err, jsonString);
+      //console.error("Erro ao parsear JSON das questões:", err, jsonString);
       // Tenta limpar caracteres de escape problemáticos (ex: aspas não escapadas)
       try {
         const fixed = cleaned.replace(/([^\\])"([^"]*)"([^,}\]]*)/g, '$1"$2\\"$3'); // Exemplo simples, pode precisar ajuste
         return JSON.parse(fixed);
       } catch (fixErr) {
-        console.error("Falha ao corrigir JSON:", fixErr);
+        //console.error("Falha ao corrigir JSON:", fixErr);
         return [];
       }
     }
@@ -344,11 +344,6 @@ function Dashboard() {
 
       // --- FLUXO DE ARQUIVO (direto) ---
       if (isResumoDeArquivo) {
-        console.log("📤 Enviando simulado (Direto):", {
-          resumoId: resumoGerado.id,
-          numeroDeQuestoes: numQuestions
-        });
-
         res = await fetch(`${API_URL}/api/Simulado/gerar-direto`, {
           method: "POST",
           headers: {
@@ -384,7 +379,7 @@ function Dashboard() {
       }
 
       // --- FLUXO DE TEXTO (com fila) ---
-      console.log('Simulado pra criar', resumoGerado.id)
+      //console.log('Simulado pra criar', resumoGerado.id)
       const response = await fetch(`${API_URL}/api/Simulado/gerar`, {
         method: "POST",
         headers: {
@@ -397,14 +392,10 @@ function Dashboard() {
         })
 
       });
-      console.log("📦 Enviando simulado com payload:", {
-        resumoId: resumoGerado?.id || resumoGerado?.Id,
-        numeroDeQuestoes: numQuestions
-      });
 
       if (!response.ok) throw new Error(await response.text());
       const { requestId } = await response.json();
-      console.log('🧩 Simulado enviado para fila. Request ID:', requestId);
+      //console.log('🧩 Simulado enviado para fila. Request ID:', requestId);
 
       // Polling
       const pollInterval = setInterval(async () => {
@@ -427,7 +418,7 @@ function Dashboard() {
               try {
                 resultadoParsed = JSON.parse(resultadoParsed);
               } catch (err) {
-                console.warn("⚠️ Resultado não era JSON válido:", resultadoParsed);
+                //console.warn("⚠️ Resultado não era JSON válido:", resultadoParsed);
               }
             }
 
@@ -448,14 +439,14 @@ function Dashboard() {
             setIsGeneratingQuiz(false);
           }
         } catch (pollError) {
-          console.error("Erro durante o polling:", pollError);
+          //console.error("Erro durante o polling:", pollError);
           clearInterval(pollInterval);
           setIsGeneratingQuiz(false);
         }
       }, 5000);
 
     } catch (err) {
-      console.error("Erro geral no handleGenerateQuiz:", err);
+      //console.error("Erro geral no handleGenerateQuiz:", err);
       toast.error('Erro: ' + err.message);
       setIsGeneratingQuiz(false);
     }
@@ -463,7 +454,7 @@ function Dashboard() {
 
 
   const handleSubmitQuiz = async () => {
-    console.log("📘 Submetendo simulado:", simuladoGerado);
+    //console.log("📘 Submetendo simulado:", simuladoGerado);
 
     // ✅ Garante que existe algum identificador
     const simuladoId = simuladoGerado?.id || simuladoGerado?.Id;
@@ -479,7 +470,7 @@ function Dashboard() {
 
       // 🔹 Se houver ID direto do simulado (gerado ou vindo do backend)
       if (simuladoId) {
-        console.log("🎯 Enviando respostas para simulado ID:", simuladoId);
+        //console.log("🎯 Enviando respostas para simulado ID:", simuladoId);
         const res = await fetch(`${API_URL}/api/Simulado/${simuladoId}/finalizar`, {
           method: 'POST',
           headers: {
@@ -503,7 +494,7 @@ function Dashboard() {
 
       // 🔹 Se ainda não tem ID, tenta buscar pelo requestId
       if (requestId) {
-        console.log("⏳ Buscando simulado criado a partir do request ID:", requestId);
+        //console.log("⏳ Buscando simulado criado a partir do request ID:", requestId);
         const resBusca = await fetch(`${API_URL}/api/Simulado/por-request/${requestId}`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
@@ -514,7 +505,7 @@ function Dashboard() {
 
         if (!simulado?.id) throw new Error("Simulado retornado não contém ID.");
 
-        console.log("🎯 Simulado encontrado:", simulado.id);
+        //console.log("🎯 Simulado encontrado:", simulado.id);
 
         const resFinalizar = await fetch(`${API_URL}/api/Simulado/${simulado.id}/finalizar`, {
           method: 'POST',
@@ -537,7 +528,7 @@ function Dashboard() {
       }
 
     } catch (error) {
-      console.error("❌ Erro ao finalizar o simulado:", error);
+      //console.error("❌ Erro ao finalizar o simulado:", error);
       toast.error(error.message);
     }
   };

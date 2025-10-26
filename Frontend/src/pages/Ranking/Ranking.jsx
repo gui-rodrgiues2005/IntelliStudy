@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Crown, Medal, Award } from 'lucide-react';
+import { API_URL } from '../../../config';
 import './Ranking.scss';
 
 function Ranking() {
@@ -9,7 +10,7 @@ function Ranking() {
     const [ranking, setRanking] = useState([]);
     const [posicaoUsuario, setPosicaoUsuario] = useState(null); // NOVO ESTADO
     const [isLoading, setIsLoading] = useState(true);
-    const API_URL = process.env.VITE_API_URL;
+    
     useEffect(() => {
         const fetchRanking = async () => {
             try {

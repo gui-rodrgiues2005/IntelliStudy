@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Calendar, Plus, FileText, Target, X, Sparkles, Award, Moon } from 'lucide-react';
 import { useStudy } from '../../context/StudyContext';
+import { API_URL } from '../../../config';
 import './PlanoDeEstudo.scss';
 
 const getNomeDiaAtual = () => {
@@ -20,10 +21,8 @@ function PlanoDeEstudo() {
     const [dataProva, setDataProva] = useState('');
     const [materias, setMaterias] = useState('');
     const [horasPorSemana, setHorasPorSemana] = useState(5);
-     const API_URL = process.env.VITE_API_URL;
     const navigate = useNavigate();
   
-    
 
     // --- FUNÇÃO GENÉRICA PARA FAZER FETCH COM JSON SEGURO ---
     const fetchJSON = async (url, options) => {

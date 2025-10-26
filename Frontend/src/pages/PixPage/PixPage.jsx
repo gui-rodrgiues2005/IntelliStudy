@@ -2,14 +2,14 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Copy, Check, Brain, Rocket } from "lucide-react";
 import { QRCodeCanvas } from "qrcode.react";
+import { API_URL } from '../../../config';
 import './PixPage.scss';
 
 const PixPage = () => {
     const navigate = useNavigate();
     const [pix, setPix] = useState(null);
     const [copied, setCopied] = useState(false);
-    const API_URL = process.env.VITE_API_URL;
-    
+
     useEffect(() => {
         async function fetchPix() {
             const token = localStorage.getItem("token");

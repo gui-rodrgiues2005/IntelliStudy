@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import NavigationSite from '../../components/Layout/NavigationSite/NavigationSite'
+import { API_URL } from '../../../config';
 import './Login.scss';
 
 // --- MUDANÇA 1: Importe os ícones de olho ---
@@ -14,9 +15,6 @@ const Login = () => {
 
   // --- MUDANÇA 2: Adicione o estado para visibilidade da senha ---
   const [showPassword, setShowPassword] = useState(false);
-  const API_URL = import.meta.env.VITE_API_URL || "https://backend-production-69f3.up.railway.app";
-;
-
   const handleLogin = async (e) => {
     e.preventDefault();
     setMensagem("Entrando...");

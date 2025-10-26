@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { Trash2, CheckCircle, XCircle, HelpCircle, AlignHorizontalJustifyEnd, AlignStartVertical } from 'lucide-react';
+import { API_URL } from '../../../config';
 import './Simulados.scss';
+import { toast } from 'react-toastify';
 
 // --- COMPONENTE ISOLADO PARA CADA QUESTÃO ---
 // (Mantém a lógica de interatividade que já tínhamos)
 const Questao = ({ questao, numero }) => {
     const [respostaSelecionada, setRespostaSelecionada] = useState(null);
     const [isCorreta, setIsCorreta] = useState(null);
-    const API_URL = process.env.VITE_API_URL;
     
     const handleResposta = (alternativa) => {
         if (respostaSelecionada) return;
@@ -110,11 +111,11 @@ function Simulados() {
 
             const data = await res.json();
 
-            console.group("🧩 DEBUG SIMULADO RECEBIDO");
-            console.log("📘 Simulado bruto recebido:", data);
-            console.log("📗 Tipo de data.questoesJson:", typeof data.questoesJson);
-            console.log("📘 Valor literal de data.questoesJson:", data.questoesJson);
-            console.groupEnd();
+            // console.group("🧩 DEBUG SIMULADO RECEBIDO");
+            // console.log("📘 Simulado bruto recebido:", data);
+            // console.log("📗 Tipo de data.questoesJson:", typeof data.questoesJson);
+            // console.log("📘 Valor literal de data.questoesJson:", data.questoesJson);
+            //console.groupEnd();
 
             let parsed = [];
 
@@ -125,28 +126,28 @@ function Simulados() {
                     const cleaned = data.questoesJson
                         .replace(/^"+|"+$/g, "") // remove aspas duplas externas
                         .replace(/\\"/g, '"');   // remove escapes
-                    console.log("🧹 JSON limpo para parse:", cleaned);
+                    //console.log("🧹 JSON limpo para parse:", cleaned);
                     parsed = JSON.parse(cleaned);
                 } else {
-                    console.warn("⚠️ questoesJson não é string, usando direto:", data.questoesJson);
+                    //console.warn("⚠️ questoesJson não é string, usando direto:", data.questoesJson);
                     parsed = data.questoesJson;
                 }
             } catch (parseError) {
-                console.error("❌ Erro ao fazer JSON.parse em questoesJson:", parseError);
-                console.log("❌ Conteúdo que falhou:", data.questoesJson);
-                alert("Erro ao interpretar o JSON do simulado. Verifique o console.");
+                //console.error("❌ Erro ao fazer JSON.parse em questoesJson:", parseError);
+                //console.log("❌ Conteúdo que falhou:", data.questoesJson);
+                toast.info("Erro ao interpretar o JSON do simulado. Tente novamente.");
             }
 
-            // Log do resultado final
-            console.group("✅ RESULTADO DO PARSE");
-            console.log("🧩 parsedQuiz:", parsed);
-            console.log("📋 Estrutura da primeira questão:", parsed?.[0]);
-            console.groupEnd();
+            // // Log do resultado final
+            // console.group("✅ RESULTADO DO PARSE");
+            // console.log("🧩 parsedQuiz:", parsed);
+            // console.log("📋 Estrutura da primeira questão:", parsed?.[0]);
+            // console.groupEnd();
 
             setSimuladoSelecionado(data);
             setParsedQuiz(Array.isArray(parsed) ? parsed : []);
         } catch (error) {
-            console.error("🚨 Erro geral em handleSelecionarSimulado:", error);
+            // console.error("🚨 Erro geral em handleSelecionarSimulado:", error);
             alert(error.message);
         } finally {
             setIsFetchingDetails(false);

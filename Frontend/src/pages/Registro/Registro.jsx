@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import NavigationSite from '../../components/Layout/NavigationSite/NavigationSite'
 import '../Login/Login.scss';
-
+import { API_URL } from '../../../config';
 // --- MUDANÇA 1: Importe os ícones de olho ---
 import { Book, Brain, Target, FlaskConical, Lightbulb, Eye, EyeOff } from 'lucide-react';
 
@@ -12,7 +12,6 @@ const Registro = () => {
   const [password, setPassword] = useState("");
   const [mensagem, setMensagem] = useState("");
   const navigate = useNavigate();
-  const API_URL = process.env.VITE_API_URL || "https://backend-production-69f3.up.railway.app";
   // --- MUDANÇA 2: Adicione o estado para visibilidade da senha ---
   const [showPassword, setShowPassword] = useState(false);
 

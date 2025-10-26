@@ -8,11 +8,11 @@ const PixPage = () => {
     const navigate = useNavigate();
     const [pix, setPix] = useState(null);
     const [copied, setCopied] = useState(false);
-
+    const API_URL = process.env.VITE_API_URL;
     useEffect(() => {
         async function fetchPix() {
             const token = localStorage.getItem("token");
-            const res = await fetch("http://localhost:5051/api/Pagamento/meu-pix", {
+            const res = await fetch(`${API_URL}/api/Pagamento/meu-pix`, {
                 headers: { Authorization: `Bearer ${token}` },
             });
             const data = await res.json();
@@ -26,7 +26,7 @@ const PixPage = () => {
 
         const interval = setInterval(async () => {
             try {
-                const res = await fetch("http://localhost:5051/api/Pagamento/verificar-pagamento", {
+                const res = await fetch(`${API_URL}/api/Pagamento/verificar-pagamento`, {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",

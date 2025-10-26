@@ -14,7 +14,7 @@ const Login = () => {
 
   // --- MUDANÇA 2: Adicione o estado para visibilidade da senha ---
   const [showPassword, setShowPassword] = useState(false);
-  const API_URL = process.env.REACT_APP_API_URL;
+  const API_URL = process.env.VITE_API_URL;
 
   const handleLogin = async (e) => {
     e.preventDefault();

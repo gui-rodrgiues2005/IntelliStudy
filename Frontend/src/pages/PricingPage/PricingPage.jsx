@@ -9,7 +9,7 @@ const PricingPage = () => {
     const [usuarioCarregado, setUsuarioCarregado] = useState(false);
     const [plano, setPlano] = useState('Gratuito');
     const [ultimoPagamento, setUltimoPagamento] = useState(null);
-
+    const API_URL = process.env.VITE_API_URL;
     const token = localStorage.getItem('token');
 
     // --- Carregar dados do usuário incluindo plano ---
@@ -17,7 +17,7 @@ const PricingPage = () => {
         const carregarDadosUsuario = async () => {
             if (!token) return;
             try {
-                const response = await fetch('http://localhost:5051/api/User/meus-dados', {
+                const response = await fetch(`${API_URL}/api/User/meus-dados`, {
                     headers: { Authorization: `Bearer ${token}` }
                 });
                 if (!response.ok) return;
@@ -57,7 +57,7 @@ const PricingPage = () => {
         }
 
         try {
-            const response = await fetch('http://localhost:5051/api/User/atualizar-dados', {
+            const response = await fetch(`${API_URL}/api/User/atualizar-dados`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -85,7 +85,7 @@ const PricingPage = () => {
 
     const iniciarPagamento = async () => {
         try {
-            const response = await fetch('http://localhost:5051/api/Pagamento/gerar', {
+            const response = await fetch(`${API_URL}/api/Pagamento/gerar`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

@@ -13,7 +13,7 @@ function Resumos() {
   // Estados para responsividade mobile
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
-
+  const API_URL = process.env.VITE_API_URL;
   // Efeito para detectar mudança de tamanho da tela
   useEffect(() => {
     const handleResize = () => {
@@ -37,7 +37,7 @@ function Resumos() {
     const fetchListaResumos = async () => {
       try {
         const token = localStorage.getItem("token");
-        const res = await fetch('http://localhost:5051/api/Resumo', {
+        const res = await fetch(`${API_URL}/api/Resumo`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
         if (!res.ok) throw new Error("Falha ao buscar lista de resumos.");
@@ -61,7 +61,7 @@ function Resumos() {
     setIsLoading(true);
     try {
       const token = localStorage.getItem("token");
-      const res = await fetch(`http://localhost:5051/api/Resumo/meus-resumos/${resumoId}`, {
+      const res = await fetch(`${API_URL}/api/Resumo/meus-resumos/${resumoId}`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (!res.ok) throw new Error("Falha ao buscar o resumo selecionado.");
@@ -88,7 +88,7 @@ function Resumos() {
 
     try {
       const token = localStorage.getItem("token");
-      const res = await fetch(`http://localhost:5051/api/Resumo/${resumoId}`, {
+      const res = await fetch(`${API_URL}/api/Resumo/${resumoId}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${token}` }
       });

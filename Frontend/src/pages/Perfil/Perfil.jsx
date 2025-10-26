@@ -21,7 +21,7 @@ function Perfil() {
     const [telefone, setTelefone] = useState("");
     const [notifications, setNotifications] = useState(false);
     const [darkMode, setDarkMode] = useState(false);
-
+    const API_URL = process.env.VITE_API_URL;
 
     const achievementIcons = {
         PRIMEIRO_RESUMO: <BookMarked size={20} />,
@@ -45,7 +45,7 @@ function Perfil() {
         const fetchProfileData = async () => {
             try {
                 const token = localStorage.getItem("token");
-                const res = await fetch('http://localhost:5051/api/Profile', {
+                const res = await fetch(`${API_URL}/api/Profile`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
                 if (!res.ok) throw new Error("Falha ao buscar dados do perfil.");
@@ -83,7 +83,7 @@ function Perfil() {
 
         try {
             const token = localStorage.getItem("token");
-            const res = await fetch("http://localhost:5051/api/User/atualizar-perfil", {
+            const res = await fetch(`${API_URL}/api/User/atualizar-perfil`, {
                 method: "PUT",
                 headers: {
                     "Content-Type": "application/json",
@@ -154,7 +154,7 @@ function Perfil() {
         // aqui vem o fetch para deletar
         try {
             const token = localStorage.getItem('token');
-            const response = await fetch('http://localhost:5051/api/User/deletar-conta', {
+            const response = await fetch(`${API_URL}/api/User/deletar-conta`, {
                 method: 'DELETE',
                 headers: {
                     'Content-Type': 'application/json',

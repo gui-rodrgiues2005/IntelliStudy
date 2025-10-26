@@ -20,7 +20,7 @@ function PlanoDeEstudo() {
     const [dataProva, setDataProva] = useState('');
     const [materias, setMaterias] = useState('');
     const [horasPorSemana, setHorasPorSemana] = useState(5);
-    
+     const API_URL = process.env.VITE_API_URL;
     const navigate = useNavigate();
   
     
@@ -46,7 +46,7 @@ function PlanoDeEstudo() {
         setIsLoading(true);
         try {
             const token = localStorage.getItem("token");
-            const data = await fetchJSON('http://localhost:5051/api/plano-de-estudo/ativo', {
+            const data = await fetchJSON(`${API_URL}/api/plano-de-estudo/ativo`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             setPlano(data ? { ...data, cronogramaSemanal: data.cronogramaSemanal ?? [] } : null);
@@ -78,7 +78,7 @@ function PlanoDeEstudo() {
             const token = localStorage.getItem("token");
 
             // 1. Envia o pedido para a fila e obtém o ID da requisição
-            const enfileirarRes = await fetch('http://localhost:5051/api/plano-de-estudo/gerar', {
+            const enfileirarRes = await fetch(`${API_URL}/api/plano-de-estudo/gerar`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
                 body: JSON.stringify(requestBody)
@@ -105,7 +105,7 @@ function PlanoDeEstudo() {
                 // Pergunta pela rota /ativo, que retornará o plano quando estiver pronto
                 setTimeout(async () => {
                     console.log(`Tentando buscar plano... Tentativas restantes: ${retriesLeft}`);
-                    const planoPronto = await fetchJSON('http://localhost:5051/api/plano-de-estudo/ativo', {
+                    const planoPronto = await fetchJSON(`${API_URL}/api/plano-de-estudo/ativo`, {
                         headers: { 'Authorization': `Bearer ${token}` }
                     });
 
@@ -162,7 +162,7 @@ function PlanoDeEstudo() {
 
         try {
             const token = localStorage.getItem("token");
-            await fetch(`http://localhost:5051/api/plano-de-estudo/sessao/${sessaoId}/concluir`, {
+            await fetch(`${API_URL}/api/plano-de-estudo/sessao/${sessaoId}/concluir`, {
                 method: 'POST',
                 headers: { 'Authorization': `Bearer ${token}` }
             });
@@ -187,7 +187,7 @@ function PlanoDeEstudo() {
         setPlano(null);
         try {
             const token = localStorage.getItem("token");
-            await fetch(`http://localhost:5051/api/plano-de-estudo/${planoId}/concluir-plano`, {
+            await fetch(`${API_URL}/api/plano-de-estudo/${planoId}/concluir-plano`, {
                 method: 'POST',
                 headers: { 'Authorization': `Bearer ${token}` }
             });

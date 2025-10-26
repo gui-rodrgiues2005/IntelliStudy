@@ -7,7 +7,8 @@ import './Simulados.scss';
 const Questao = ({ questao, numero }) => {
     const [respostaSelecionada, setRespostaSelecionada] = useState(null);
     const [isCorreta, setIsCorreta] = useState(null);
-
+    const API_URL = process.env.VITE_API_URL;
+    
     const handleResposta = (alternativa) => {
         if (respostaSelecionada) return;
         setRespostaSelecionada(alternativa);
@@ -78,7 +79,7 @@ function Simulados() {
             setIsLoading(true);
             try {
                 const token = localStorage.getItem("token");
-                const res = await fetch(`${process.env.REACT_APP_API_URL}/api/Simulado`, {
+                const res = await fetch(`${API_URL}/api/Simulado`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
                 if (!res.ok) throw new Error("Falha ao buscar lista de simulados.");
@@ -101,7 +102,7 @@ function Simulados() {
 
         try {
             const token = localStorage.getItem("token");
-            const res = await fetch(`${process.env.REACT_APP_API_URL}/api/Simulado/${simuladoId}`, {
+            const res = await fetch(`${API_URL}/api/Simulado/${simuladoId}`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
 
@@ -159,7 +160,7 @@ function Simulados() {
 
         try {
             const token = localStorage.getItem("token");
-            const res = await fetch(`${process.env.REACT_APP_API_URL}/api/Simulado/${simuladoId}`, {
+            const res = await fetch(`${API_URL}/api/Simulado/${simuladoId}`, {
                 method: 'DELETE',
                 headers: { 'Authorization': `Bearer ${token}` }
             });

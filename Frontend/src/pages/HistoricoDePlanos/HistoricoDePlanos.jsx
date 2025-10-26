@@ -5,15 +5,15 @@ import './HistoricoDePlanos.scss';
 function HistoricoDePlanos() {
     const [planos, setPlanos] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
-
+    const API_URL = process.env.VITE_API_URL;
     useEffect(() => {
         const fetchPlanosConcluidos = async () => {
             setIsLoading(true);
             try {
                 const token = localStorage.getItem("token");
-                const res = await fetch('http://localhost:5051/api/plano-de-estudo/concluidos', {
+                const res = await fetch(`${API_URL}/api/plano-de-estudo/concluidos`, {
                     headers: { 'Authorization': `Bearer ${token}` }
-                } );
+                });
                 if (res.ok) {
                     const data = await res.json();
                     setPlanos(data);
@@ -48,7 +48,7 @@ function HistoricoDePlanos() {
                                 <span className="card-data">
                                     Concluído em: {new Date(plano.createdAt).toLocaleDateString()}
                                 </span>
-                               <h3 className="card-meta">{plano.meta}</h3>
+                                <h3 className="card-meta">{plano.meta}</h3>
                                 <p className="card-sessoes">{plano.totalSessoes} sessões completadas</p>
                             </div>
                             {/* Futuramente, um botão para ver detalhes */}

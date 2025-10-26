@@ -48,14 +48,14 @@ function Dashboard() {
   const [resumoId, setResumoId] = useState(null)
   const [isResumoDeArquivo, setIsResumoDeArquivo] = useState(false);
   const hasGeneratedFromLocalStorage = useRef(false);
-  const API_URL = process.env.REACT_APP_API_URL;
+  const API_URL = process.env.VITE_API_URL;
  
   useEffect(() => {
     const fetchUserName = async () => {
       try {
         const token = localStorage.getItem("token");
         // Reutilizando o endpoint de perfil que já busca o nome
-        const res = await fetch(`${process.env.REACT_APP_API_URL}/api/Profile`, {
+        const res = await fetch(`${API_URL}/api/Profile`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
         if (res.ok) {
@@ -80,7 +80,7 @@ function Dashboard() {
     const formData = new FormData();
     formData.append("file", file);
 
-    const response = await fetch(`${process.env.REACT_APP_API_URL}/api/Resumo/resumo-file`, {
+    const response = await fetch(`${API_URL}/api/Resumo/resumo-file`, {
       method: "POST",
       body: formData
     });
@@ -142,7 +142,7 @@ function Dashboard() {
         const formData = new FormData();
         formData.append("file", fileToSend);
 
-        const fileRes = await fetch(`${process.env.REACT_APP_API_URL}/api/Resumo/resumo-file`, {
+        const fileRes = await fetch(`${API_URL}/api/Resumo/resumo-file`, {
           method: "POST",
           headers: { 'Authorization': `Bearer ${token}` },
           body: formData
@@ -152,7 +152,7 @@ function Dashboard() {
         const data = await fileRes.json();
 
         // Busca resumo completo pelo ID retornado
-        const resumoRes = await fetch(`${process.env.REACT_APP_API_URL}/api/Resumo/por-id/${data.resumoId}`, {
+        const resumoRes = await fetch(`${API_URL}/api/Resumo/por-id/${data.resumoId}`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
 
@@ -173,7 +173,7 @@ function Dashboard() {
 
       // --- FLUXO DE TEXTO ---
       setIsResumoDeArquivo(false);
-      const res = await fetch(`${process.env.REACT_APP_API_URL}/api/Resumo/gerar`, {
+      const res = await fetch(`${API_URL}/api/Resumo/gerar`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -214,7 +214,7 @@ function Dashboard() {
 
       const pollInterval = setInterval(async () => {
         try {
-          const statusRes = await fetch(`${process.env.REACT_APP_API_URL}/api/generation/status/${requestId}`, {
+          const statusRes = await fetch(`${API_URL}/api/generation/status/${requestId}`, {
             headers: { 'Authorization': `Bearer ${token}` }
           });
 
@@ -287,7 +287,7 @@ function Dashboard() {
     const fetchUserName = async () => {
       try {
         const token = localStorage.getItem("token");
-        const res = await fetch(`${process.env.REACT_APP_API_URL}/api/Profile`, {
+        const res = await fetch(`${API_URL}/api/Profile`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
         if (res.ok) {
@@ -349,7 +349,7 @@ function Dashboard() {
           numeroDeQuestoes: numQuestions
         });
 
-        res = await fetch(`${process.env.REACT_APP_API_URL}/api/Simulado/gerar-direto`, {
+        res = await fetch(`${API_URL}/api/Simulado/gerar-direto`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -385,7 +385,7 @@ function Dashboard() {
 
       // --- FLUXO DE TEXTO (com fila) ---
       console.log('Simulado pra criar', resumoGerado.id)
-      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/Simulado/gerar`, {
+      const response = await fetch(`${API_URL}/api/Simulado/gerar`, {
         method: "POST",
         headers: {
           "Authorization": `Bearer ${token}`,
@@ -409,7 +409,7 @@ function Dashboard() {
       // Polling
       const pollInterval = setInterval(async () => {
         try {
-          const statusRes = await fetch(`${process.env.REACT_APP_API_URL}/api/generation/status/${requestId}`, {
+          const statusRes = await fetch(`${API_URL}/api/generation/status/${requestId}`, {
             headers: { 'Authorization': `Bearer ${token}` }
           });
 
@@ -480,7 +480,7 @@ function Dashboard() {
       // 🔹 Se houver ID direto do simulado (gerado ou vindo do backend)
       if (simuladoId) {
         console.log("🎯 Enviando respostas para simulado ID:", simuladoId);
-        const res = await fetch(`${process.env.REACT_APP_API_URL}/api/Simulado/${simuladoId}/finalizar`, {
+        const res = await fetch(`${API_URL}/api/Simulado/${simuladoId}/finalizar`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -504,7 +504,7 @@ function Dashboard() {
       // 🔹 Se ainda não tem ID, tenta buscar pelo requestId
       if (requestId) {
         console.log("⏳ Buscando simulado criado a partir do request ID:", requestId);
-        const resBusca = await fetch(`${process.env.REACT_APP_API_URL}/api/Simulado/por-request/${requestId}`, {
+        const resBusca = await fetch(`${API_URL}/api/Simulado/por-request/${requestId}`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
 
@@ -516,7 +516,7 @@ function Dashboard() {
 
         console.log("🎯 Simulado encontrado:", simulado.id);
 
-        const resFinalizar = await fetch(`${process.env.REACT_APP_API_URL}/api/Simulado/${simulado.id}/finalizar`, {
+        const resFinalizar = await fetch(`${API_URL}/api/Simulado/${simulado.id}/finalizar`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

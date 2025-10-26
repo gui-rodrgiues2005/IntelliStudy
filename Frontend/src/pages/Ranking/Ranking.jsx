@@ -9,16 +9,16 @@ function Ranking() {
     const [ranking, setRanking] = useState([]);
     const [posicaoUsuario, setPosicaoUsuario] = useState(null); // NOVO ESTADO
     const [isLoading, setIsLoading] = useState(true);
-
+    const API_URL = process.env.VITE_API_URL;
     useEffect(() => {
         const fetchRanking = async () => {
             try {
                 const token = localStorage.getItem("token");
-                const res = await fetch('http://localhost:5051/api/Ranking', {
+                const res = await fetch(`${API_URL}/api/Ranking`, {
                     headers: { 'Authorization': `Bearer ${token}` }
-                } );
+                });
                 if (!res.ok) throw new Error("Falha ao buscar o ranking.");
-                
+
                 // 2. Desestruturar a nova resposta da API
                 const data = await res.json();
                 setRanking(data.ranking); // Salva a lista de ranking

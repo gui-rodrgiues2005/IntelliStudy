@@ -167,14 +167,17 @@ public class PagamentoController : ControllerBase
         public string? Txid { get; set; } // Pode ser nulo no caso de teste
     }
 
-    // Endpoint alternativo que a EfiBank usa (adiciona /pix automaticamente)
+    // Endpoint principal do Webhook
     [HttpPost("webhook-pix")]
     [AllowAnonymous]
-    public async Task<IActionResult> WebhookPixPix()
+    public async Task<IActionResult> WebhookPix()
     {
         return await ProcessWebhook();
     }
 
+    // Endpoint alternativo que a EfiBank usa (adiciona /pix automaticamente)
+    [HttpPost("webhook-pix")]
+    [AllowAnonymous]
     private async Task<IActionResult> ProcessWebhook()
     {
         Console.WriteLine("=================================================");

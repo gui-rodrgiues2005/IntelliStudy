@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\guilh\\Documents\\StudyAI\\backend\\Backend.csproj": {}
+    "C:\\Users\\guilh\\Documents\\StudyAI\\Backend\\Backend.csproj": {}
   },
   "projects": {
-    "C:\\Users\\guilh\\Documents\\StudyAI\\backend\\Backend.csproj": {
+    "C:\\Users\\guilh\\Documents\\StudyAI\\Backend\\Backend.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\guilh\\Documents\\StudyAI\\backend\\Backend.csproj",
+        "projectUniqueName": "C:\\Users\\guilh\\Documents\\StudyAI\\Backend\\Backend.csproj",
         "projectName": "Backend",
-        "projectPath": "C:\\Users\\guilh\\Documents\\StudyAI\\backend\\Backend.csproj",
+        "projectPath": "C:\\Users\\guilh\\Documents\\StudyAI\\Backend\\Backend.csproj",
         "packagesPath": "C:\\Users\\guilh\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\guilh\\Documents\\StudyAI\\backend\\obj\\",
+        "outputPath": "C:\\Users\\guilh\\Documents\\StudyAI\\Backend\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -43,7 +43,8 @@
           "enableAudit": "true",
           "auditLevel": "low",
           "auditMode": "direct"
-        }
+        },
+        "SdkAnalysisLevel": "9.0.200"
       },
       "frameworks": {
         "net8.0": {
@@ -103,7 +104,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.415/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.200/PortableRuntimeIdentifierGraph.json"
         }
       }
     }

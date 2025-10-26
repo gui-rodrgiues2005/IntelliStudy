@@ -9,6 +9,7 @@ const PixPage = () => {
     const [pix, setPix] = useState(null);
     const [copied, setCopied] = useState(false);
     const API_URL = process.env.VITE_API_URL;
+    
     useEffect(() => {
         async function fetchPix() {
             const token = localStorage.getItem("token");

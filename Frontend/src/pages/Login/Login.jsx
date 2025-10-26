@@ -14,7 +14,8 @@ const Login = () => {
 
   // --- MUDANÇA 2: Adicione o estado para visibilidade da senha ---
   const [showPassword, setShowPassword] = useState(false);
-  const API_URL = process.env.VITE_API_URL;
+  const API_URL = import.meta.env.VITE_API_URL || "https://backend-production-69f3.up.railway.app";
+;
 
   const handleLogin = async (e) => {
     e.preventDefault();

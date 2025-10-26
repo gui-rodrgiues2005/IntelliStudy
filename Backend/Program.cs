@@ -48,7 +48,6 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 
 // --- Serviços customizados ---
 builder.Services.AddHostedService<GeminiWorker>();
-builder.Services.AddSingleton<EfiPixService>();
 builder.Services.AddScoped<PlanoService>();
 
 StripeConfiguration.ApiKey = configuration["Stripe:SecretKey"];

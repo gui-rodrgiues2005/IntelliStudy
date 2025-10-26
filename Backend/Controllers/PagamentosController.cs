@@ -168,7 +168,7 @@ public class PagamentoController : ControllerBase
     }
 
     // Endpoint principal do Webhook
-    [HttpPost("webhook-pix/pix")]
+    [HttpPost("webhook-pix")]
     [AllowAnonymous]
     public async Task<IActionResult> WebhookPix()
     {
@@ -176,8 +176,13 @@ public class PagamentoController : ControllerBase
     }
 
     // Endpoint alternativo que a EfiBank usa (adiciona /pix automaticamente)
-    [HttpPost("webhook-pix")]
+    [HttpPost("webhook-pix/pix")]
     [AllowAnonymous]
+    public async Task<IActionResult> WebhookPixPix()
+    {
+        return await ProcessWebhook();
+    }
+
     private async Task<IActionResult> ProcessWebhook()
     {
         Console.WriteLine("=================================================");
@@ -417,5 +422,21 @@ public class PagamentoController : ControllerBase
         Console.WriteLine($"⌛ Pagamento {dto.Txid} ainda não foi concluído (status={statusEfi.Status}).");
         Console.WriteLine("============================================");
         return Ok(new { pago = false });
+    }
+
+    // Novo endpoint para registrar webhook manualmente
+    [HttpPost("registrar-webhook")]
+    [AllowAnonymous] // Ou [Authorize] se quiser proteger
+    public async Task<IActionResult> RegistrarWebhook()
+    {
+        try
+        {
+            await _efiPixService.RegistrarWebhookAsync();
+            return Ok(new { mensagem = "Webhook registrado com sucesso na Efí." });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { erro = ex.Message });
+        }
     }
 }

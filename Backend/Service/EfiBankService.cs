@@ -85,13 +85,13 @@ namespace Backend.Services
             request.Content = content;
 
             // =========================================================================
-            // ❌ REMOVENDO A CORREÇÃO CRÍTICA PARA NGROK: PULAR CHECAGEM DE MTLS
-            // Em um servidor hospedado (Production/Homologation real), a Efí espera
-            // que o servidor trate a segurança mTLS sem esta flag.
-            // Se a chamada falhar aqui, o problema será a ausência do certificado da Efí.
+            // ⚠️ TEMPORARIAMENTE REATIVANDO PARA BYPASS DE MTLS NO REGISTRO
+            // Como o Railway não suporta configuração de mTLS para incoming requests,
+            // reativamos o skip para permitir o registro do webhook.
+            // Em produção segura, configure um servidor que suporte mTLS (ex.: VPS com Nginx).
             // =========================================================================
 
-            // request.Headers.Add("x-skip-mtls-checking", "true"); // <-- REMOVIDO
+            request.Headers.Add("x-skip-mtls-checking", "true"); // <-- REATIVADO TEMPORARIAMENTE
 
 
             Console.WriteLine($"[EFI PIX SERVICE] Tentando registrar webhook na URL: {url}");

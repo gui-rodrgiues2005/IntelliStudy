@@ -19,7 +19,12 @@
 //             _config = config;
 //             _logger = logger;
 //             // Caminho e senha do certificado
-//             var certPath = Path.Combine(AppContext.BaseDirectory, _config["Efi:CertRelativePath"]);
+//             var certRelativePath = _config["Efi:CertRelativePath"];
+//             if (string.IsNullOrEmpty(certRelativePath))
+//             {
+//                 throw new InvalidOperationException("Efi:CertRelativePath is not configured.");
+//             }
+//             var certPath = Path.Combine(AppContext.BaseDirectory, certRelativePath);
 //             var certPassword = _config["Efi:CertPassword"];
 
 //             if (!File.Exists(certPath))

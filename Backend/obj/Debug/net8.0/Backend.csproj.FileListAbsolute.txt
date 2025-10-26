@@ -144,3 +144,6 @@ C:\Users\guilh\Documents\StudyAI\backend\bin\Debug\net8.0\Newtonsoft.Json.dll
 C:\Users\guilh\Documents\StudyAI\backend\bin\Debug\net8.0\Stripe.net.dll
 C:\Users\guilh\Documents\StudyAI\backend\bin\Debug\net8.0\System.Configuration.ConfigurationManager.dll
 C:\Users\guilh\Documents\StudyAI\backend\bin\Debug\net8.0\System.Security.Cryptography.ProtectedData.dll
+C:\Users\guilh\Documents\StudyAI\Backend\bin\Debug\net8.0\Backend.staticwebassets.endpoints.json
+C:\Users\guilh\Documents\StudyAI\Backend\obj\Debug\net8.0\staticwebassets.build.endpoints.json
+C:\Users\guilh\Documents\StudyAI\Backend\obj\Debug\net8.0\staticwebassets\msbuild.Backend.Microsoft.AspNetCore.StaticWebAssetEndpoints.props

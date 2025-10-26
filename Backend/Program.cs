@@ -178,37 +178,4 @@ app.UseAuthorization();
 app.MapControllers();
 app.MapHealthChecks("/health");
 
-
-// --- REGISTRO DE WEBHOOK TEMPORARIAMENTE DESATIVADO PARA DEBUG ---
-// O bloco abaixo foi comentado para evitar o erro de 404/BadRequest que estava
-// quebrando a aplicação após a inicialização.
-
-/*
-using (var scope = app.Services.CreateScope())
-{
-    var efiService = scope.ServiceProvider.GetRequiredService<EfiPixService>();
-    var ngrokUrl = builder.Configuration["Ngrok:Url"];
-
-    // Use Environment.GetEnvironmentVariable para obter a URL de produção
-    // var webhookUrl = Environment.GetEnvironmentVariable("EFI_WEBHOOK_URL");
-
-    if (!string.IsNullOrEmpty(ngrokUrl))
-    {
-        try
-        {
-            await efiService.RegistrarWebhookAsync();
-            Console.WriteLine("✅ Webhook registrado com sucesso na EfiBank.");
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"❌ Falha ao registrar webhook: {ex.Message}");
-        }
-    }
-    else
-    {
-        Console.WriteLine("⚠️ URL do Ngrok/Webhook não configurada. Webhook não registrado.");
-    }
-}
-*/
-
 app.Run();

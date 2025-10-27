@@ -51,27 +51,54 @@ $transition: all 0.2s ease-in-out;
   padding: 2rem;
   overflow-y: auto;
 
-  .header-title {
+  .profile-header-text {
+    max-width: 800px;
+  }
+
+  .profile-header-title {
     font-size: 2rem;
     font-weight: 700;
     color: $gray-600;
-    margin-bottom: 0.1rem;
     display: flex;
     align-items: center;
-    gap: 0.75rem;
+    gap: 0.5rem;
+  }
 
-    .title-icon {
-      color: $blue-600;
-      animation: sparkle-animation 2s infinite ease-in-out;
+  .profile-header-name {
+    color: $gray-600;
+    font-weight: 800;
+  }
+
+  .profile-header-icon {
+    color: #fbbf24;
+    /* amarelo dourado (bonito com o azul) */
+    width: 28px;
+    height: 28px;
+    animation: glow 2s ease-in-out infinite;
+  }
+
+  .profile-header-subtitle {
+    font-size: 1.1rem;
+    color: #4b5563;
+    margin-bottom: 1.5rem;
+  }
+
+  @keyframes glow {
+
+    0%,
+    100% {
+      filter: drop-shadow(0 0 2px #facc15);
+      transform: scale(1);
+    }
+
+    50% {
+      filter: drop-shadow(0 0 6px #facc15);
+      transform: scale(1.1);
     }
   }
 
-  .header-subtitle {
-    font-size: 1rem;
-    color: $gray-500;
-    margin-bottom: 20px;
-  }
 }
+
 
 // Em Dashboard.scss
 
@@ -162,96 +189,99 @@ $transition: all 0.2s ease-in-out;
 
 // Seletor principal da área de conteúdo do resumo.
 // Use a classe correta que envolve o texto do seu resumo.
-.container-do-resumo { // Troque por sua classe real, ex: .resumo-content, .study-area
+.container-do-resumo {
+  // Troque por sua classe real, ex: .resumo-content, .study-area
 
-    // --- 1. MELHORANDO A FONTE E O TEXTO BASE ---
-    // Escolha uma fonte mais agradável para leitura. Se não quiser adicionar fontes externas,
-    // usar as fontes de sistema mais modernas já é uma grande melhoria.
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
-    
-    // Cor do texto: Troque o preto puro por um cinza bem escuro. É mais suave para os olhos.
-    color: #333; // Um cinza escuro em vez de #000000
+  // --- 1. MELHORANDO A FONTE E O TEXTO BASE ---
+  // Escolha uma fonte mais agradável para leitura. Se não quiser adicionar fontes externas,
+  // usar as fontes de sistema mais modernas já é uma grande melhoria.
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
 
-    // Espaçamento entre linhas: Aumenta o "respiro" vertical entre as linhas de um parágrafo.
-    // 1.6 a 1.7 é ideal para leitura.
-    line-height: 1.7;
+  // Cor do texto: Troque o preto puro por um cinza bem escuro. É mais suave para os olhos.
+  color: #333; // Um cinza escuro em vez de #000000
 
-    // Tamanho da fonte base para parágrafos.
-    font-size: 16px; // Ou 1rem, se você usar unidades relativas.
+  // Espaçamento entre linhas: Aumenta o "respiro" vertical entre as linhas de um parágrafo.
+  // 1.6 a 1.7 é ideal para leitura.
+  line-height: 1.7;
 
-    // Limita a largura do texto. Linhas muito longas são difíceis de acompanhar.
-    // 700px a 800px é considerado ideal para leiturabilidade.
-    max-width: 800px;
-    margin: 2rem auto; // Centraliza o container de texto com margens verticais.
+  // Tamanho da fonte base para parágrafos.
+  font-size: 16px; // Ou 1rem, se você usar unidades relativas.
+
+  // Limita a largura do texto. Linhas muito longas são difíceis de acompanhar.
+  // 700px a 800px é considerado ideal para leiturabilidade.
+  max-width: 800px;
+  margin: 2rem auto; // Centraliza o container de texto com margens verticais.
 
 
-    // --- 2. CRIANDO HIERARQUIA VISUAL PARA TÍTULOS ---
+  // --- 2. CRIANDO HIERARQUIA VISUAL PARA TÍTULOS ---
 
-    // Título Principal (Ex: "Resumo: O que é Processamento de Linguagem Natural (PLN)?")
-    h2 {
-        font-size: 2.25rem; // 36px
-        font-weight: 700; // Negrito
-        color: #1a202c; // Um preto ainda mais escuro para destaque
-        line-height: 1.2; // Menor, para títulos é normal
-        margin-bottom: 1.5rem;
-        border-bottom: 2px solid #e2e8f0; // Uma linha sutil para separar o título
-        padding-bottom: 0.5rem;
+  // Título Principal (Ex: "Resumo: O que é Processamento de Linguagem Natural (PLN)?")
+  h2 {
+    font-size: 2.25rem; // 36px
+    font-weight: 700; // Negrito
+    color: #1a202c; // Um preto ainda mais escuro para destaque
+    line-height: 1.2; // Menor, para títulos é normal
+    margin-bottom: 1.5rem;
+    border-bottom: 2px solid #e2e8f0; // Uma linha sutil para separar o título
+    padding-bottom: 0.5rem;
+  }
+
+  // Títulos de Seção (Ex: "1. Definição e Contextualização")
+  h3 {
+    font-size: 1.75rem; // 28px
+    font-weight: 600; // Semi-negrito
+    color: #2d3748;
+    margin-top: 3rem; // Mais espaço ANTES de uma nova seção
+    margin-bottom: 1rem;
+  }
+
+  // Subtítulos (Ex: "Definição do Tema", "Contextualização Histórica")
+  h4 {
+    font-size: 1.25rem; // 20px
+    font-weight: 600;
+    color: #4a5568;
+    margin-top: 2rem;
+    margin-bottom: 0.75rem;
+  }
+
+
+  // --- 3. ESTILIZANDO ELEMENTOS DO TEXTO ---
+
+  // Parágrafos
+  p {
+    margin-bottom: 1.5rem; // Adiciona espaço DEPOIS de cada parágrafo.
+  }
+
+  // Listas (com marcadores ou números)
+  ul,
+  ol {
+    padding-left: 1.5rem;
+    margin-bottom: 1.5rem;
+
+    li {
+      margin-bottom: 0.75rem; // Espaço entre os itens da lista
     }
+  }
 
-    // Títulos de Seção (Ex: "1. Definição e Contextualização")
-    h3 {
-        font-size: 1.75rem; // 28px
-        font-weight: 600; // Semi-negrito
-        color: #2d3748;
-        margin-top: 3rem; // Mais espaço ANTES de uma nova seção
-        margin-bottom: 1rem;
+  // Links
+  a {
+    color: #3182ce; // Um azul acessível e agradável
+    text-decoration: none; // Remove o sublinhado padrão
+    font-weight: 500;
+    transition: color 0.2s ease-in-out;
+
+    &:hover {
+      color: #2b6cb0;
+      text-decoration: underline; // Adiciona sublinhado no hover
     }
+  }
 
-    // Subtítulos (Ex: "Definição do Tema", "Contextualização Histórica")
-    h4 {
-        font-size: 1.25rem; // 20px
-        font-weight: 600;
-        color: #4a5568;
-        margin-top: 2rem;
-        margin-bottom: 0.75rem;
-    }
-
-
-    // --- 3. ESTILIZANDO ELEMENTOS DO TEXTO ---
-
-    // Parágrafos
-    p {
-        margin-bottom: 1.5rem; // Adiciona espaço DEPOIS de cada parágrafo.
-    }
-
-    // Listas (com marcadores ou números)
-    ul, ol {
-        padding-left: 1.5rem;
-        margin-bottom: 1.5rem;
-
-        li {
-            margin-bottom: 0.75rem; // Espaço entre os itens da lista
-        }
-    }
-
-    // Links
-    a {
-        color: #3182ce; // Um azul acessível e agradável
-        text-decoration: none; // Remove o sublinhado padrão
-        font-weight: 500;
-        transition: color 0.2s ease-in-out;
-
-        &:hover {
-            color: #2b6cb0;
-            text-decoration: underline; // Adiciona sublinhado no hover
-        }
-    }
-
-    // Negrito (se a IA usar a tag <strong> ou <b>)
-    strong, b {
-        font-weight: 600;
-        color: #2d3748;
-    }
+  // Negrito (se a IA usar a tag <strong> ou <b>)
+  strong,
+  b {
+    font-weight: 600;
+    color: #2d3748;
+  }
 }
 
 
@@ -512,9 +542,17 @@ $transition: all 0.2s ease-in-out;
 }
 
 @keyframes pulse {
-  0% { transform: scale(1); }
-  50% { transform: scale(1.05); }
-  100% { transform: scale(1); }
+  0% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(1.05);
+  }
+
+  100% {
+    transform: scale(1);
+  }
 }
 
 // Em Dashboard.scss, dentro do .quiz-container ou em um local apropriado
@@ -1085,8 +1123,7 @@ $transition: all 0.2s ease-in-out;
     flex-direction: column;
   }
 
-  .config-card {
-  }
+  .config-card {}
 
   .sidebar {
     width: 100%;
@@ -1134,4 +1171,3 @@ $transition: all 0.2s ease-in-out;
     }
   }
 }
-

@@ -49,7 +49,7 @@ function Dashboard() {
   const [resumoId, setResumoId] = useState(null)
   const [isResumoDeArquivo, setIsResumoDeArquivo] = useState(false);
   const hasGeneratedFromLocalStorage = useRef(false);
- 
+
   useEffect(() => {
     const fetchUserName = async () => {
       try {
@@ -548,14 +548,16 @@ function Dashboard() {
   return (
     <div className="dashboard">
       <div className="main-content">
-        <header className="header">
-          <h1 className="header-title">
-            Olá, {userName || 'Estudante'}!
-            <Sparkles className="title-icon" />
-          </h1>
-          <p className="header-subtitle">
-            Pronto para começar uma nova sessão de estudos?
-          </p>
+        <header className="profile-header-container">
+          <div className="profile-header-text">
+            <h1 className="profile-header-title">
+              Olá, <span className="profile-header-name">{userName || "Estudante"}</span>!
+              <Sparkles className="profile-header-icon" />
+            </h1>
+            <p className="profile-header-subtitle">
+              Pronto para começar uma nova sessão de estudos?
+            </p>
+          </div>
         </header>
 
         <div className="card">

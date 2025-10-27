@@ -17,8 +17,8 @@ const AgradecimentoPage = () => {
           <Brain size={64} />
         </div>
 
-        <h1>Obrigado pela confiança!</h1>
-        <p>
+        <h1 className="title-agradecimento">Obrigado pela confiança!</h1>
+        <p className="congrulations">
           Sua compra foi concluída com sucesso. <br />
           Esperamos que tenha uma experiência incrível com a <strong>IntelliStudy</strong> —
           sua plataforma de estudos com <span>Inteligência Artificial</span>.

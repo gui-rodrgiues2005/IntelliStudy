@@ -13,7 +13,7 @@ const PricingPage = () => {
     const [plano, setPlano] = useState('Gratuito');
     const [ultimoPagamento, setUltimoPagamento] = useState(null);
     const token = localStorage.getItem('token');
-    const stripePromise = loadStripe("pk_test_51SMXVsDqJgnRbRyfLnRx68HQ48lIAbKTGISAgCMepUZQHYAkb7eVAc9J7upLVyjKi3A7hiqb78684bHjA5EY5Dpk00kT2Sakte");
+    const stripePromise = loadStripe("pk_live_51SMXVsDqJgnRbRyfDQ9I407VCxFu17n8fCE05ECZ1enEz6AdMy4MuGnzM6hgWeNjHCdx1XI0BYCwEzSoK0URFuNb00QBsgadsz");
 
     useEffect(() => {
         const carregarDadosUsuario = async () => {

@@ -206,14 +206,19 @@ function Perfil() {
                     <div className="avatar">
                         {profileData.nome.substring(0, 2).toUpperCase()}
                     </div>
+
                     <div className="user-info">
-                        <h2 className='nomeUser'>{profileData.nome}</h2>
-                        <p className='emailUser'>{profileData.email} ・ Membro desde {new Date(profileData.membroDesde).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })}</p>
+                        <h2 className="nomeUser">{profileData.nome}</h2>
+                        <p className="emailUser">
+                            {profileData.email} - Membro desde{" "}
+                            {new Date(profileData.membroDesde).toLocaleDateString("pt-BR", {
+                                month: "long",
+                                year: "numeric",
+                            })}
+                        </p>
+
                         <div className="tags">
                             <span className="tag student">Estudante Ativo</span>
-                            {/* <span className={`tag plan ${profileData.plano === 'Premium' ? 'premium' : 'free'}`}>
-                                {profileData.plano === 'Premium' ? '★ Plano Premium' : 'Plano Gratuito'}
-                            </span> */}
                         </div>
                     </div>
                 </div>

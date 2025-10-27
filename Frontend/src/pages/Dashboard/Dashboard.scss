@@ -345,6 +345,12 @@ $transition: all 0.2s ease-in-out;
   }
 }
 
+.header-text-wrapper {
+  p {
+    color: #292929;
+  }
+}
+
 // Botão de gerar simulado - VERSÃO MELHORADA
 .btn-generate-quiz {
   display: flex;

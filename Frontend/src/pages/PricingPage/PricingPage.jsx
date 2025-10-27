@@ -206,9 +206,10 @@ const PricingPage = () => {
                         <button className="plan-button disabled">Seu Plano Atual</button>
                     </div>
                     <ul className="features-list">
-                        <li><Check size={18} className="check-icon" /> 5 Resumos por dia</li>
-                        <li><Check size={18} className="check-icon" /> 5 Simulados por dia (5 questões)</li>
+                        <li><Check size={18} className="check-icon" /> 3 Resumos por dia</li>
+                        <li><Check size={18} className="check-icon" /> 3 Simulados por dia </li>
                         <li><Check size={18} className="check-icon" /> 1 Plano de Estudos por semana</li>
+                        <li><Check size={18} className="check-icon" /> Conquistas da plataforma são limitadas</li>
                     </ul>
                 </div>
 

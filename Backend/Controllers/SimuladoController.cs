@@ -75,7 +75,7 @@ public class SimuladoController : ControllerBase
                 message = "Limite diário de simulados atingido para o plano atual.",
                 sugestao = "Assine o plano Premium e gere simulados ilimitados!",
                 planoAtual = user.Plano,
-                limiteDiario = 5
+                limiteDiario = 3
             });
         }
 

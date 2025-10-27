@@ -19,6 +19,7 @@ public class ConquistaService
                 "NOTA_MAXIMA" => false,
                 "MARATONA" => false,
                 "MESTRE_RESUMOS" => totalResumos >= 100,
+                "PLANO_PREMIUM" => isPremium,
                 _ => false
             };
 

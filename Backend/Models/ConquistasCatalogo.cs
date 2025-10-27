@@ -14,6 +14,7 @@ namespace Backend.Models
             new("NOTA_MAXIMA", "Nota Máxima", "Premium"),
             new("MARATONA", "Estudou por 60 minutos seguidos", "Premium"),
             new("MESTRE_RESUMOS", "Criou 100 resumos", "Premium"),
+            new("PLANO_PREMIUM", "Adquira o plano Premium!", "Gratuito")
         };
     }
 }

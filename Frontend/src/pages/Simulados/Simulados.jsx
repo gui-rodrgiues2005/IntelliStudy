@@ -9,7 +9,7 @@ import { toast } from 'react-toastify';
 const Questao = ({ questao, numero }) => {
     const [respostaSelecionada, setRespostaSelecionada] = useState(null);
     const [isCorreta, setIsCorreta] = useState(null);
-    
+
     const handleResposta = (alternativa) => {
         if (respostaSelecionada) return;
         setRespostaSelecionada(alternativa);
@@ -75,6 +75,13 @@ function Simulados() {
         setIsMobileOpen(!isMobileOpen);
     };
 
+    // FUNÇÃO NOVA: Para fechar explicitamente
+    const closeSidebar = () => {
+        if (isMobile) { // Apenas se estiver em modo mobile
+            setIsMobileOpen(false);
+        }
+    };
+
     useEffect(() => {
         const fetchListaSimulados = async () => {
             setIsLoading(true);
@@ -100,7 +107,8 @@ function Simulados() {
         setSimuladoSelecionado(null);
         setParsedQuiz([]);
         setIsFetchingDetails(true);
-
+        closeSidebar();
+        
         try {
             const token = localStorage.getItem("token");
             const res = await fetch(`${API_URL}/api/Simulado/${simuladoId}`, {
@@ -183,7 +191,7 @@ function Simulados() {
             {/* Botão de menu mobile */}
             {isMobile && (
                 <button className="simulados-mobile-menu-btn" onClick={toggleSidebar}>
-                    {isMobileOpen ? <AlignHorizontalJustifyEnd size={24} /> : <AlignStartVertical size={24} />}
+                    {isMobileOpen ? <AlignHorizontalJustifyEnd size={24} /> : <AlignStartVertical size={24} />}Seus simulados
                 </button>
             )}
 

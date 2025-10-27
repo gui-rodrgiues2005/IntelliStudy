@@ -25,13 +25,16 @@ $sidebar-width: 320px;
   // Botão de menu mobile
   .resumos-mobile-menu-btn {
     display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
     position: fixed;
     top: 1rem; // Abaixo do header
-    left: 18rem;
+    left: 4rem;
     z-index: 1001;
     background-color: $primary-color;
     color: white;
-    border-radius: 50%;
+    border-radius: 12px;
     border: none;
     padding: 0.75rem;
     cursor: pointer;

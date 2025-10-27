@@ -54,7 +54,7 @@ function MainLayout({ children }) {
       {/* Botão hamburger para mobile */}
       {isMobile && (
         <button onClick={toggleSidebar} className="mobile-menu-btn">
-          {isMobileOpen ? <X size={24} /> : <Menu size={24} />}
+          {isMobileOpen ? <X size={15} /> : <Menu size={15} />}
         </button>
       )}
 
@@ -65,7 +65,6 @@ function MainLayout({ children }) {
 
       {/* --- MUDANÇA 3: Adicionar classe dinâmica à sidebar --- */}
       <aside className="main-sidebar">
-
         <div className="sidebar-header">
           <div className="logo-container">
             {isCollapsed ? (

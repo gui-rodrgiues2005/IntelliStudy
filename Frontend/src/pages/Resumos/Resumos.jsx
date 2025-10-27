@@ -30,7 +30,12 @@ function Resumos() {
   const toggleSidebar = () => {
     setIsMobileOpen(!isMobileOpen);
   };
-
+  // FUNÇÃO NOVA: Para fechar explicitamente
+  const closeSidebar = () => {
+    if (isMobile) { // Apenas se estiver em modo mobile
+      setIsMobileOpen(false);
+    }
+  };
   // Efeito que busca a lista de resumos quando a página carrega
   useEffect(() => {
     const fetchListaResumos = async () => {
@@ -58,6 +63,7 @@ function Resumos() {
   const handleSelecionarResumo = async (resumoId) => {
     setResumoSelecionado(null); // Limpa o resumo anterior
     setIsLoading(true);
+    closeSidebar();
     try {
       const token = localStorage.getItem("token");
       const res = await fetch(`${API_URL}/api/Resumo/meus-resumos/${resumoId}`, {
@@ -129,7 +135,7 @@ function Resumos() {
 
       {isMobile && (
         <button className="resumos-mobile-menu-btn" onClick={toggleSidebar}>
-          {isMobileOpen ? <AlignHorizontalJustifyEnd size={24} /> : <AlignStartVertical size={24} />}
+          {isMobileOpen ? <AlignHorizontalJustifyEnd size={24} /> : <AlignStartVertical size={24} />} Seus Resumos
         </button>
       )}
 

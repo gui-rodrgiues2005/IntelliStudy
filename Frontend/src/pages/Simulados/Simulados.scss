@@ -1,5 +1,5 @@
 // --- VARIÁVEIS DE COR (ajuste conforme sua paleta) ---
-$primary-color: #2563eb;
+$primary-color: #0056b3;
 $success-color: #10b981;
 $error-color: #ef4444;
 $white: #ffffff;
@@ -25,13 +25,16 @@ $red-800: #9f1239;
   // Botão de menu mobile
   .simulados-mobile-menu-btn {
     display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
     position: fixed;
-    top: 1rem; // Abaixo do header
-    left: 18rem;
+    top: 1rem; 
+    left: 4rem;
+    border-radius: 12px;
     z-index: 1001;
     background-color: $primary-color;
     color: white;
-    border-radius: 50%;
     border: none;
     padding: 0.75rem;
     cursor: pointer;

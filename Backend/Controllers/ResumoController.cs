@@ -50,7 +50,7 @@ namespace Backend.Controllers
                     message = "Limite diário de resumos atingido para o plano atual.",
                     sugestao = "Assine o plano Premium e gere resumos ilimitados!",
                     planoAtual = user.Plano,
-                    limiteDiario = 3
+                    limiteDiario = 5
                 });
             }
 

@@ -34,7 +34,7 @@ namespace Backend.Services
                             r.Tipo == GenerationType.Resumo &&
                             r.CreatedAt.Date == hoje);
 
-            return resumosHoje < 3;
+            return resumosHoje < 5;
         }
 
         public bool PodeGerarSimulado(User user)
@@ -49,7 +49,7 @@ namespace Backend.Services
             int simuladosHoje = _context.Simulados
                 .Count(s => s.Resumo.UserId == user.Id && s.CreatedAt.Date == hoje);
 
-            return simuladosHoje < 3;
+            return simuladosHoje < 5;
         }
 
         public bool PodeCriarPlanoDeEstudo(User user)

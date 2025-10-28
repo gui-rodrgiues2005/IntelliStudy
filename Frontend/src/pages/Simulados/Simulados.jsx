@@ -52,24 +52,10 @@ function Simulados() {
     const [isLoading, setIsLoading] = useState(true);
     const [isFetchingDetails, setIsFetchingDetails] = useState(false);
     const [parsedQuiz, setParsedQuiz] = useState([]);
+
+    // Estados para responsividade mobile
     const [isMobile, setIsMobile] = useState(false);
     const [isMobileOpen, setIsMobileOpen] = useState(false);
-
-    useEffect(() => {
-        if (typeof window !== "undefined") {
-            const checkMobile = () => setIsMobile(window.innerWidth < 768);
-            checkMobile(); // verifica uma vez no início
-            window.addEventListener("resize", checkMobile);
-            return () => window.removeEventListener("resize", checkMobile);
-        }
-    }, []);
-
-    useEffect(() => {
-        window.onerror = (msg, src, line, col, err) => {
-            alert("Erro: " + msg);
-            console.log("🚨 Erro capturado:", msg, src, line, col, err);
-        };
-    }, []);
 
     // Efeito para detectar mudança de tamanho da tela
     useEffect(() => {
@@ -89,12 +75,6 @@ function Simulados() {
         setIsMobileOpen(!isMobileOpen);
     };
 
-    // FUNÇÃO NOVA: Para fechar explicitamente
-    const closeSidebar = () => {
-        if (isMobile) { // Apenas se estiver em modo mobile
-            setIsMobileOpen(false);
-        }
-    };
 
     useEffect(() => {
         const fetchListaSimulados = async () => {
@@ -121,7 +101,7 @@ function Simulados() {
         setSimuladoSelecionado(null);
         setParsedQuiz([]);
         setIsFetchingDetails(true);
-
+        
         try {
             const token = localStorage.getItem("token");
             const res = await fetch(`${API_URL}/api/Simulado/${simuladoId}`, {
@@ -132,29 +112,49 @@ function Simulados() {
 
             const data = await res.json();
 
+            // console.group("🧩 DEBUG SIMULADO RECEBIDO");
+            // console.log("📘 Simulado bruto recebido:", data);
+            // console.log("📗 Tipo de data.questoesJson:", typeof data.questoesJson);
+            // console.log("📘 Valor literal de data.questoesJson:", data.questoesJson);
+            //console.groupEnd();
+
             let parsed = [];
 
+            // 🧠 Tentativa segura de parse
             try {
                 if (typeof data.questoesJson === "string") {
+                    // Caso tenha JSON duplo (ex: "\"[{\\\"pergunta\\\":...}]\"")
                     const cleaned = data.questoesJson
-                        .replace(/^"+|"+$/g, "")
-                        .replace(/\\"/g, '"');
+                        .replace(/^"+|"+$/g, "") // remove aspas duplas externas
+                        .replace(/\\"/g, '"');   // remove escapes
+                    //console.log("🧹 JSON limpo para parse:", cleaned);
                     parsed = JSON.parse(cleaned);
                 } else {
+                    //console.warn("⚠️ questoesJson não é string, usando direto:", data.questoesJson);
                     parsed = data.questoesJson;
                 }
             } catch (parseError) {
+                //console.error("❌ Erro ao fazer JSON.parse em questoesJson:", parseError);
+                //console.log("❌ Conteúdo que falhou:", data.questoesJson);
                 toast.info("Erro ao interpretar o JSON do simulado. Tente novamente.");
             }
+
+            // // Log do resultado final
+            // console.group("✅ RESULTADO DO PARSE");
+            // console.log("🧩 parsedQuiz:", parsed);
+            // console.log("📋 Estrutura da primeira questão:", parsed?.[0]);
+            // console.groupEnd();
 
             setSimuladoSelecionado(data);
             setParsedQuiz(Array.isArray(parsed) ? parsed : []);
         } catch (error) {
+            // console.error("🚨 Erro geral em handleSelecionarSimulado:", error);
             alert(error.message);
         } finally {
             setIsFetchingDetails(false);
         }
     };
+
 
     const handleDeleteSimulado = async (simuladoId, event) => {
         event.stopPropagation();

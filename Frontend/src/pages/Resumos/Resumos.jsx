@@ -63,7 +63,7 @@ function Resumos() {
   const handleSelecionarResumo = async (resumoId) => {
     setResumoSelecionado(null); // Limpa o resumo anterior
     setIsLoading(true);
-   
+    closeSidebar();
     try {
       const token = localStorage.getItem("token");
       const res = await fetch(`${API_URL}/api/Resumo/meus-resumos/${resumoId}`, {

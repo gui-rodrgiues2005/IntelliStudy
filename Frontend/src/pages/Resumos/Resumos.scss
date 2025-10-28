@@ -5,6 +5,7 @@ $primary-color: #0056b3;
 $primary-light: #e7f1ff;
 $text-color: #333;
 $text-light: #6c757d;
+$gray-100: #f3f4f6;
 $border-color: #e0e0e0;
 $background-color: #f8f9fa;
 $danger-color: #dc3545;
@@ -16,11 +17,9 @@ $sidebar-width: 320px;
 // --- Estilo Principal da Página ---
 .meus-resumos-page {
   display: flex;
-  height: calc(100vh - 60px); // Ajuste '60px' para a altura do seu header
-  background-color: $background-color;
-  font-family: 'Inter', sans-serif; // Recomendo usar uma fonte como a Inter para um look moderno
-  position: relative; // Para posicionar o botão mobile
-  margin-top: 40px;
+  height: 100%;
+  background-color: $gray-100;
+  position: relative;
 
   // Botão de menu mobile
   .resumos-mobile-menu-btn {
@@ -30,7 +29,7 @@ $sidebar-width: 320px;
     gap: 10px;
     position: fixed;
     top: 1rem;
-    left: 6rem;
+    right: 1rem;
     border-radius: 12px;
     z-index: 1001;
     background-color: $primary-color;

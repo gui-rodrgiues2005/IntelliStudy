@@ -16,11 +16,12 @@ $green-800: #065f46;
 $red-800: #9f1239;
 
 // --- LAYOUT PRINCIPAL DA PÁGINA ---
+// --- LAYOUT PRINCIPAL DA PÁGINA ---
 .meus-simulados-page {
   display: flex;
   height: 100%;
   background-color: $gray-100;
-  position: relative; // Para posicionar o botão mobile
+  position: relative;
 
   // Botão de menu mobile
   .simulados-mobile-menu-btn {
@@ -29,8 +30,8 @@ $red-800: #9f1239;
     justify-content: center;
     gap: 10px;
     position: fixed;
-    top: 1rem; 
-    left: 6rem;
+    top: 1rem;
+    right: 1rem;
     border-radius: 12px;
     z-index: 1001;
     background-color: $primary-color;

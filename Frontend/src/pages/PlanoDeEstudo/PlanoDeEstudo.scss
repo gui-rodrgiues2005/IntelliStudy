@@ -101,6 +101,123 @@
 }
 
 
+/* Estilos para o Dropdown (Select) */
+.styled-select-container {
+    position: relative;
+    width: 100%;
+    margin-bottom: 20px;
+    /* Espaçamento */
+}
+
+/* Em src/pages/PlanoDeEstudo/PlanoDeEstudo.scss */
+
+// Seletor geral para os inputs do modal (assumindo que você já tem um estilo geral)
+.modal-content input[type="text"],
+.modal-content input[type="date"],
+.modal-content input[type="range"],
+.modal-content textarea {
+    // Exemplo de estilo base que você já deve ter:
+    // width: 100%;
+    // padding: 12px 15px;
+    // border: 1px solid var(--border-color);
+    // border-radius: 8px;
+    // ...
+}
+
+.custom-date-input {
+    position: relative;
+    width: 100%;
+}
+
+.custom-date-input input[type="date"] {
+    // 1. Remove o ícone padrão do seletor de data
+    &::-webkit-calendar-picker-indicator {
+        opacity: 0; // Esconde o indicador em navegadores baseados em WebKit (Chrome, Safari)
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        top: 0;
+        left: 0;
+        cursor: pointer;
+        z-index: 2; // Garante que ele continue clicável, mas invisível
+    }
+    
+    // 2. Garante que o input pareça um campo de texto quando não há valor
+    color: var(--text-color-dark); // Cor do texto normal
+    
+    &:not([value=""]) {
+        // Quando a data for selecionada, o texto fica escuro.
+        color: var(--text-color-dark); 
+    }
+    
+    &[value=""] {
+        // Quando não há valor (exibindo o placeholder), o texto parece mais claro.
+        color: var(--text-color-placeholder, #aaa); 
+    }
+}
+
+// Estilo para o ícone customizado do Calendar
+.calendar-icon {
+    position: absolute;
+    top: 50%;
+    right: 15px; /* Alinha à direita */
+    transform: translateY(-50%);
+    pointer-events: none; /* Garante que o clique passe para o input[type="date"] invisível */
+    color: var(--primary-color, #7000FF); /* Cor do tema */
+    z-index: 1; 
+}
+
+.styled-select {
+    /* Esconde a seta padrão do navegador */
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+
+    /* Estilo do seu app */
+    width: 100%;
+    padding: 12px 15px;
+    font-size: 1.2rem;
+    font-weight: 500;
+    color: #333;
+    /* Cor do texto */
+    background-color: #f7f9fc;
+    /* Fundo claro */
+    border: 2px solid #e0e6ed;
+    /* Borda suave */
+    border-radius: 12px;
+    /* Cantos arredondados */
+    cursor: pointer;
+    transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+.styled-select:hover {
+    border-color: #6a1b9a;
+    /* Cor do hover (roxo) */
+}
+
+.styled-select:focus {
+    outline: none;
+    border-color: #6a1b9a;
+    box-shadow: 0 0 0 3px rgba(106, 27, 154, 0.2);
+    /* Sombra suave */
+}
+
+/* Adiciona uma seta customizada (opcional, mas recomendado) */
+.styled-select-container::after {
+    content: '▼';
+    /* Caractere de seta para baixo */
+    position: absolute;
+    top: 50%;
+    right: 15px;
+    transform: translateY(-50%);
+    pointer-events: none;
+    /* Garante que o clique passe para o select */
+    color: #6a1b9a;
+    /* Cor da seta */
+    font-size: 0.8rem;
+}
+
+
 // --- CARD DE META SEMANAL MELHORADO ---
 .meta-semanal-card {
     background: linear-gradient(135deg, var(--card-bg) 0%, #f8f9fa 100%);
@@ -847,7 +964,6 @@
         border: none;
         border-radius: 12px;
         cursor: pointer;
-        margin-top: 1rem;
         transition: all 0.3s ease;
         box-shadow: 0 4px 15px rgba(67, 97, 238, 0.4);
 
@@ -960,7 +1076,7 @@
 
 
 @media (max-width: 530px) {
-    
+
     .page-header {
         display: flex;
         align-items: center;
@@ -981,6 +1097,6 @@
 
     .btn-novo-plano {
         height: 40px;
-        
+
     }
 }

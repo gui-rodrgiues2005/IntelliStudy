@@ -241,54 +241,56 @@ function PlanoDeEstudo() {
                                     type="text"
                                     value={meta}
                                     onChange={(e) => setMeta(e.target.value)}
-                                    placeholder="Ex: Passar na prova de Cálculo"
+                                    placeholder="Ex: Tirar 8 na prova de História"
                                     required
                                 />
                             </div>
 
-                            {/* DATA */}
                             <div className="form-group">
                                 <label>Data da prova ou prazo final</label>
-                                <input
-                                    type="date"
-                                    value={dataProva}
-                                    onChange={(e) => setDataProva(e.target.value)}
-                                    required
-                                />
-                            </div>
 
+                                {/* NOVO CONTAINER PARA ESTILIZAÇÃO */}
+                                <div className="custom-date-input">
+                                    <input
+                                        type="date"
+                                        value={dataProva}
+                                        onChange={(e) => setDataProva(e.target.value)}
+                                        required
+                                        // Adicionando placeholder que será visível antes da seleção
+                                        placeholder="dd / mm / aaaa"
+                                    />
+                                    {/* ÍCONE DE CALENDÁRIO VISUAL */}
+                                    <Calendar size={20} className="calendar-icon" />
+                                </div>
+                            </div>
                             {/* MATÉRIAS */}
                             <div className="form-group">
-                                <label>Matérias a cobrir (separadas por vírgula)</label>
+                                <label>Matérias a cobrir</label>
                                 <input
                                     type="text"
                                     value={materias}
                                     onChange={(e) => setMaterias(e.target.value)}
-                                    placeholder="Ex: Derivadas, Integrais, Limites"
+                                    placeholder="Ex: Soma e Subtração, Projeção de Mapas, Ecossistemas"
                                     required
                                 />
                             </div>
-                            {/* HORAS */}
-                            <div className="form-group">
-                                <label>
-                                    Quantas horas por semana você pode estudar?
-                                    <p></p>
-                                    <strong>{horasPorSemana} h/semana</strong>
-                                </label>
-                                <input
-                                    type="range"
-                                    min="1"
-                                    max="20"
-                                    step="1"
+
+                            <div className="styled-select-container">
+                                <label>Quantas horas ?</label>
+                                <select
+                                    id="horasPorSemana"
                                     value={horasPorSemana}
-                                    onInput={(e) => setHorasPorSemana(parseInt(e.target.value))}
-                                    onTouchMove={(e) => setHorasPorSemana(parseInt(e.target.value))} 
-                                    className="slider"
-                                />
-
+                                    onChange={(e) => setHorasPorSemana(parseInt(e.target.value))}
+                                    className="styled-select" // Use a classe estilizada
+                                >
+                                    {/* Gera as opções de 1 a 20 */}
+                                    {Array.from({ length: 20 }, (_, i) => i + 1).map((hora) => (
+                                        <option key={hora} value={hora}>
+                                            {hora} horas por semana
+                                        </option>
+                                    ))}
+                                </select>
                             </div>
-
-                            {/* BOTÃO */}
                             <button type="submit" className="btn-criar-plano">
                                 <Sparkles size={20} /> Criar Meu Plano Inteligente
                             </button>

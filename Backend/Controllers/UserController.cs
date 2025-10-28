@@ -25,15 +25,53 @@ namespace SaaS_Aluno.Controllers
             _config = config;
         }
 
+        private readonly string[] NomesProibidos = new string[]
+    {
+        "xxx", "porn", "porno", "sex", "sexo", "nude", "nudes", "boobs", "tetas", "peitos", "puta", "foda", "fuck", "shit", "bitch", "slut", "cock", "dick", "pussy", "ass", "boobies",
+            "merda", "caralho", "cu", "burro", "idiota", "estupido", "imbecil", "otario", "babaca", "viado", "gayzinho", "gay", "retard", "bastard", "moron",
+            "admin", "moderator", "mod", "staff", "god", "root", "null", "undefined", "test", "teste", "user", "guest", "anonymous", "anon", "bot", "robot",
+            "noob", "hacker", "loli", "pedo", "pedophile", "pedofilo", "incest", "incestuoso", "kill", "murder", "terror", "fuckboy", "fuckgirl",
+            "p0rn", "x0x", "s3x", "f0d4", "b1tch", "c0ck", "d1ck", "pu55y"
+    };
+
+        private async Task<(bool valido, string mensagem)> ValidarNomeAsync(string nome, int? usuarioId = null)
+        {
+            if (string.IsNullOrWhiteSpace(nome))
+                return (false, "Nome não pode ser vazio.");
+
+            string nomeNormalizado = nome.Trim().ToLower();
+
+            // 1️⃣ Verifica nomes proibidos
+            if (NomesProibidos.Contains(nomeNormalizado))
+                return (false, "Nome não permitido.");
+
+            // 2️⃣ Verifica duplicação
+            bool existe = await _context.Users
+                .AnyAsync(u => u.Name.ToLower() == nomeNormalizado && u.Id != usuarioId);
+
+            if (existe)
+                return (false, "Nome já está em uso.");
+
+            // 3️⃣ Verifica caracteres inválidos (somente letras e números, opcional)
+            if (!System.Text.RegularExpressions.Regex.IsMatch(nome, @"^[a-zA-Z0-9 ]+$"))
+                return (false, "Nome contém caracteres inválidos.");
+
+            return (true, null);
+        }
+
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] RegisterDto dto)
         {
+            // Validar nome
+            var (valido, mensagem) = await ValidarNomeAsync(dto.Name);
+            if (!valido) return BadRequest(mensagem);
+
             if (await _context.Users.AnyAsync(u => u.Email == dto.Email))
                 return BadRequest("Email já cadastrado.");
 
             var user = new User
             {
-                Name = dto.Name,
+                Name = dto.Name.Trim(),
                 Email = dto.Email,
                 PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password),
                 Role = "Aluno",
@@ -45,6 +83,7 @@ namespace SaaS_Aluno.Controllers
 
             return Ok(new { user.Id, user.Name, user.Email, user.Role });
         }
+
 
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginDto dto)
@@ -160,6 +199,7 @@ namespace SaaS_Aluno.Controllers
             if (user == null)
                 return NotFound("Usuário não encontrado.");
 
+
             user.Cpf = dto.Cpf ?? user.Cpf;
             user.Telefone = dto.Telefone ?? user.Telefone;
 
@@ -188,6 +228,14 @@ namespace SaaS_Aluno.Controllers
             var user = await _context.Users.FindAsync(int.Parse(userId));
             if (user == null)
                 return NotFound(new { message = "Usuário não encontrado." });
+
+            if (!string.IsNullOrWhiteSpace(dto.Name))
+            {
+                var (valido, mensagem) = await ValidarNomeAsync(dto.Name, user.Id);
+                if (!valido) return BadRequest(new { message = mensagem });
+
+                user.Name = dto.Name.Trim();
+            }
 
             // Só valida senha se estiver tentando alterar
             if (!string.IsNullOrWhiteSpace(dto.NewPassword))

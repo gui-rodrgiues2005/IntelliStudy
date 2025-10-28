@@ -54,7 +54,7 @@ function Simulados() {
     const [parsedQuiz, setParsedQuiz] = useState([]);
 
     // Estados para responsividade mobile
-    const [isMobile, setIsMobile] = useState(false);
+    const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
     const [isMobileOpen, setIsMobileOpen] = useState(false);
 
     // Efeito para detectar mudança de tamanho da tela

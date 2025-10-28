@@ -276,14 +276,16 @@ function PlanoDeEstudo() {
                                     <strong>{horasPorSemana} h/semana</strong>
                                 </label>
                                 <input
-                                    key={isModalOpen ? 'range-aberto' : 'range-fechado'}
                                     type="range"
                                     min="1"
                                     max="20"
                                     step="1"
                                     value={horasPorSemana}
-                                    onChange={(e) => setHorasPorSemana(parseInt(e.target.value))}
+                                    onInput={(e) => setHorasPorSemana(parseInt(e.target.value))}
+                                    onTouchMove={(e) => setHorasPorSemana(parseInt(e.target.value))} 
+                                    className="slider"
                                 />
+
                             </div>
 
                             {/* BOTÃO */}

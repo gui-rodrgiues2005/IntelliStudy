@@ -9,6 +9,8 @@ import Swal from 'sweetalert2';
 import 'sweetalert2/dist/sweetalert2.min.css';
 import { API_URL } from '../../../config';
 
+
+
 function Perfil() {
     const [profileData, setProfileData] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
@@ -64,8 +66,51 @@ function Perfil() {
 
     // console.log("Renderizando perfil com dados:", profileData);
 
+    const validarNome = (nome) => {
+        const nomeLimpo = nome.trim();
+
+        if (!nomeLimpo) return { valido: false, motivo: "O nome não pode estar vazio" };
+        if (nomeLimpo.length < 2) return { valido: false, motivo: "O nome é muito curto" };
+        if (nomeLimpo.length > 13) return { valido: false, motivo: "O nome é muito longo" };
+
+        // Letras, números, acentos, hífen, apóstrofo e espaço
+        const regexValido = /^[A-Za-zÀ-ú0-9\s'-]+$/;
+        if (!regexValido.test(nomeLimpo)) return { valido: false, motivo: "O nome contém caracteres inválidos ou emojis" };
+
+        const nomeNormalizado = nomeLimpo.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+        const nomeSemEspacos = nomeNormalizado.replace(/\s/g, "");
+
+        const palavrasProibidas = [
+            "xxx", "porn", "porno", "sex", "sexo", "nude", "nudes", "boobs", "tetas", "peitos", "puta", "foda", "fuck", "shit", "bitch", "slut", "cock", "dick", "pussy", "ass", "boobies",
+            "merda", "caralho", "cu", "burro", "idiota", "estupido", "imbecil", "otario", "babaca", "viado", "gayzinho", "gay", "retard", "bastard", "moron",
+            "admin", "moderator", "mod", "staff", "god", "root", "null", "undefined", "test", "teste", "user", "guest", "anonymous", "anon", "bot", "robot",
+            "noob", "hacker", "loli", "pedo", "pedophile", "pedofilo", "incest", "incestuoso", "kill", "murder", "terror", "fuckboy", "fuckgirl",
+            "p0rn", "x0x", "s3x", "f0d4", "b1tch", "c0ck", "d1ck", "pu55y"
+        ];
+
+        for (const palavra of palavrasProibidas) {
+            if (nomeSemEspacos.includes(palavra)) {
+                return { valido: false, motivo: "O nome contém palavras proibidas" };
+            }
+        }
+
+        if (/([a-zA-Z0-9])\1{2,}/.test(nomeSemEspacos)) {
+            return { valido: false, motivo: "O nome contém repetições de caracteres inválidas" };
+        }
+
+        return { valido: true, motivo: "" };
+    };
+
+
     const handleUpdate = async (e) => {
         e.preventDefault();
+
+        // ✅ Validação do nome
+        const resultado = validarNome(name);
+        if (!resultado.valido) {
+            toast.error(resultado.motivo);
+            return; // impede envio se o nome não for válido
+        }
 
         // Monta o payload apenas com campos preenchidos
         const payload = {
@@ -75,12 +120,10 @@ function Perfil() {
             telefone: telefone || undefined
         };
 
-        // Só inclui senhas se ambas estiverem preenchidas
         if (novaSenha && senhaAtual) {
             payload.currentPassword = senhaAtual;
             payload.newPassword = novaSenha;
         }
-
         try {
             const token = localStorage.getItem("token");
             const res = await fetch(`${API_URL}/api/User/atualizar-perfil`, {

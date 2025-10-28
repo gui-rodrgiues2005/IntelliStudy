@@ -53,13 +53,24 @@ function Simulados() {
     const [isFetchingDetails, setIsFetchingDetails] = useState(false);
     const [parsedQuiz, setParsedQuiz] = useState([]);
 
-    // Estados para responsividade mobile
- const [isMobile, setIsMobile] = useState(() => {
-  if (typeof window !== "undefined") {
-    return window.innerWidth < 768;
-  }
-  return false;
-});
+    const [isMobile, setIsMobile] = useState(false);
+
+    useEffect(() => {
+        if (typeof window !== "undefined") {
+            const checkMobile = () => setIsMobile(window.innerWidth < 768);
+            checkMobile(); // verifica uma vez no início
+            window.addEventListener("resize", checkMobile);
+            return () => window.removeEventListener("resize", checkMobile);
+        }
+    }, []);
+
+    useEffect(() => {
+        window.onerror = (msg, src, line, col, err) => {
+            alert("Erro: " + msg);
+            console.log("🚨 Erro capturado:", msg, src, line, col, err);
+        };
+    }, []);
+
 
     const [isMobileOpen, setIsMobileOpen] = useState(false);
 
@@ -114,7 +125,7 @@ function Simulados() {
         setParsedQuiz([]);
         setIsFetchingDetails(true);
         closeSidebar();
-        
+
         try {
             const token = localStorage.getItem("token");
             const res = await fetch(`${API_URL}/api/Simulado/${simuladoId}`, {

@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
 import { Trash2, Download, Menu, X, AlignStartVertical, AlignHorizontalJustifyEnd } from 'lucide-react';
 import { API_URL } from '../../../config';
-import { toast } from 'react-toastify';
 import './Resumos.scss';
 
 function Resumos() {
@@ -12,20 +11,14 @@ function Resumos() {
   const [resumoSelecionado, setResumoSelecionado] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   // Estados para responsividade mobile
-  const [isMobile, setIsMobile] = useState(() => {
-    if (typeof window !== "undefined") {
-      return window.innerWidth < 768;
-    }
-    return false;
-  });
-
+  const [isMobile, setIsMobile] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   // Efeito para detectar mudança de tamanho da tela
   useEffect(() => {
     const handleResize = () => {
       setIsMobile(window.innerWidth < 768);
       if (window.innerWidth >= 768) {
-        setIsMobileOpen(false);
+        setIsMobileOpen(false); // Fecha sidebar mobile em telas grandes
       }
     };
 

@@ -20,7 +20,7 @@ function PlanoDeEstudo() {
     const [meta, setMeta] = useState('');
     const [dataProva, setDataProva] = useState('');
     const [materias, setMaterias] = useState('');
-    const [horasPorSemana, setHorasPorSemana] = useState(5);
+    const [horasPorSemana, setHorasPorSemana] = useState(10);
     const navigate = useNavigate();
 
 
@@ -268,21 +268,21 @@ function PlanoDeEstudo() {
                                     required
                                 />
                             </div>
-
-                            {/* HORAS */}
                             {/* HORAS */}
                             <div className="form-group">
-                                <label>Quantas horas por semana você pode estudar?</label>
-                                <div className="range-display">
-                                    <strong>{horasPorSemana}h/semana</strong>
-                                </div>
+                                <label>
+                                    Quantas horas por semana você pode estudar?
+                                    <p></p>
+                                    <strong>{horasPorSemana} h/semana</strong>
+                                </label>
                                 <input
+                                    key={isModalOpen ? 'range-aberto' : 'range-fechado'}
                                     type="range"
                                     min="1"
                                     max="20"
                                     step="1"
                                     value={horasPorSemana}
-                                    onInput={(e) => setHorasPorSemana(parseInt(e.target.value))}
+                                    onChange={(e) => setHorasPorSemana(parseInt(e.target.value))}
                                 />
                             </div>
 

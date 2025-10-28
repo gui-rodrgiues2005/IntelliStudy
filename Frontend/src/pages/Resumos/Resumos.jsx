@@ -30,7 +30,12 @@ function Resumos() {
   const toggleSidebar = () => {
     setIsMobileOpen(!isMobileOpen);
   };
-
+  // FUNÇÃO NOVA: Para fechar explicitamente
+  const closeSidebar = () => {
+    if (isMobile) { // Apenas se estiver em modo mobile
+      setIsMobileOpen(false);
+    }
+  };
   // Efeito que busca a lista de resumos quando a página carrega
   useEffect(() => {
     const fetchListaResumos = async () => {
@@ -54,10 +59,11 @@ function Resumos() {
     fetchListaResumos();
   }, []); // O array vazio [] garante que isso só roda uma vez
 
+  // Função para buscar um resumo completo quando o usuário clica em um item da lista
   const handleSelecionarResumo = async (resumoId) => {
     setResumoSelecionado(null); // Limpa o resumo anterior
     setIsLoading(true);
-
+   
     try {
       const token = localStorage.getItem("token");
       const res = await fetch(`${API_URL}/api/Resumo/meus-resumos/${resumoId}`, {
@@ -67,9 +73,9 @@ function Resumos() {
 
       const data = await res.json();
       setResumoSelecionado(data);
-
-      // ❌ Não fechamos o menu automaticamente, só clicando no botão o usuário fecha
-
+      if (isMobile) {
+        setIsMobileOpen(false); // Fecha sidebar mobile após selecionar
+      }
     } catch (error) {
       console.error(error);
       alert(error.message);
@@ -77,7 +83,6 @@ function Resumos() {
       setIsLoading(false);
     }
   };
-
 
   const handleDeleteResumo = async (resumoId, event) => {
     event.stopPropagation(); // Impede que o clique no ícone também selecione o resumo.

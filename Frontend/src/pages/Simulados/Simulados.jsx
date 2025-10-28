@@ -89,12 +89,12 @@ function Simulados() {
         setIsMobileOpen(!isMobileOpen);
     };
 
-    // // FUNÇÃO NOVA: Para fechar explicitamente
-    // const closeSidebar = () => {
-    //     if (isMobile) { // Apenas se estiver em modo mobile
-    //         setIsMobileOpen(false);
-    //     }
-    // };
+    // FUNÇÃO NOVA: Para fechar explicitamente
+    const closeSidebar = () => {
+        if (isMobile) { // Apenas se estiver em modo mobile
+            setIsMobileOpen(false);
+        }
+    };
 
     useEffect(() => {
         const fetchListaSimulados = async () => {
@@ -115,17 +115,12 @@ function Simulados() {
         };
         fetchListaSimulados();
     }, []);
-    
+
     const handleSelecionarSimulado = async (simuladoId) => {
         if (isFetchingDetails || simuladoSelecionado?.id === simuladoId) return;
         setSimuladoSelecionado(null);
         setParsedQuiz([]);
         setIsFetchingDetails(true);
-
-        // Fechar o menu *depois de um pequeno delay*, pra não colidir com o fetch
-        if (isMobile) {
-            setTimeout(() => setIsMobileOpen(false), 300);
-        }
 
         try {
             const token = localStorage.getItem("token");

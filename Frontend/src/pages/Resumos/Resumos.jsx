@@ -30,6 +30,12 @@ function Resumos() {
   const toggleSidebar = () => {
     setIsMobileOpen(!isMobileOpen);
   };
+  // // FUNÇÃO NOVA: Para fechar explicitamente
+  // const closeSidebar = () => {
+  //   if (isMobile) { // Apenas se estiver em modo mobile
+  //     setIsMobileOpen(false);
+  //   }
+  // };
   // Efeito que busca a lista de resumos quando a página carrega
   useEffect(() => {
     const fetchListaResumos = async () => {
@@ -55,35 +61,28 @@ function Resumos() {
 
   // Função para buscar um resumo completo quando o usuário clica em um item da lista
   const handleSelecionarResumo = async (resumoId) => {
-    if (isLoading || resumoSelecionado?.id === resumoId) return;
-
     setResumoSelecionado(null); // Limpa o resumo anterior
     setIsLoading(true);
-
-    // Fechar o menu mobile com pequeno delay (para não causar re-render brusco)
-    if (isMobile) {
-      setTimeout(() => setIsMobileOpen(false), 300);
-    }
-
+    
     try {
       const token = localStorage.getItem("token");
       const res = await fetch(`${API_URL}/api/Resumo/meus-resumos/${resumoId}`, {
-        headers: { 'Authorization': `Bearer ${token}` },
+        headers: { 'Authorization': `Bearer ${token}` }
       });
-
       if (!res.ok) throw new Error("Falha ao buscar o resumo selecionado.");
 
       const data = await res.json();
       setResumoSelecionado(data);
-
+      if (isMobile) {
+        setIsMobileOpen(false); // Fecha sidebar mobile após selecionar
+      }
     } catch (error) {
-      console.error("🚨 Erro ao buscar resumo:", error);
+      console.error(error);
       alert(error.message);
     } finally {
       setIsLoading(false);
     }
   };
-
 
   const handleDeleteResumo = async (resumoId, event) => {
     event.stopPropagation(); // Impede que o clique no ícone também selecione o resumo.

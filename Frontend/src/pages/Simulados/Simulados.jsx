@@ -89,6 +89,13 @@ function Simulados() {
         setIsMobileOpen(!isMobileOpen);
     };
 
+    // // FUNÇÃO NOVA: Para fechar explicitamente
+    // const closeSidebar = () => {
+    //     if (isMobile) { // Apenas se estiver em modo mobile
+    //         setIsMobileOpen(false);
+    //     }
+    // };
+
     useEffect(() => {
         const fetchListaSimulados = async () => {
             setIsLoading(true);
@@ -108,7 +115,7 @@ function Simulados() {
         };
         fetchListaSimulados();
     }, []);
-
+    
     const handleSelecionarSimulado = async (simuladoId) => {
         if (isFetchingDetails || simuladoSelecionado?.id === simuladoId) return;
         setSimuladoSelecionado(null);

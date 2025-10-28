@@ -6,6 +6,49 @@ import { API_URL } from '../../../config';
 // --- MUDANÇA 1: Importe os ícones de olho ---
 import { Book, Brain, Target, FlaskConical, Lightbulb, Eye, EyeOff } from 'lucide-react';
 
+const validarNome = (nome) => {
+  const nomeLimpo = nome.trim();
+
+  if (!nomeLimpo) return { valido: false, motivo: "O nome não pode estar vazio" };
+  if (nomeLimpo.length < 2) return { valido: false, motivo: "O nome é muito curto" };
+  if (nomeLimpo.length > 13) return { valido: false, motivo: "O nome é muito longo" };
+
+  // Regex básico: letras, acentos, espaço, hífen e apóstrofo
+  const regexValido = /^[A-Za-zÀ-ú0-9\s'-]+$/;
+  if (!regexValido.test(nomeLimpo)) return { valido: false, motivo: "O nome contém caracteres inválidos ou emojis" };
+
+  // Normaliza o nome para remover acentos e transformar em minúsculo
+  const nomeNormalizado = nomeLimpo
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase();
+
+  const nomeSemEspacos = nomeNormalizado.replace(/\s/g, "");
+
+  const palavrasProibidas = [
+    "xxx", "porn", "porno", "sex", "sexo", "nude", "nudes", "boobs", "tetas", "peitos", "puta", "foda", "fuck", "shit", "bitch", "slut", "cock", "dick", "pussy", "ass", "boobies",
+    "merda", "caralho", "cu", "burro", "idiota", "estupido", "imbecil", "otario", "babaca", "viado", "gayzinho", "gay", "retard", "bastard", "moron",
+    "admin", "moderator", "mod", "staff", "god", "root", "null", "undefined", "test", "teste", "user", "guest", "anonymous", "anon", "bot", "robot",
+    "noob", "hacker", "loli", "pedo", "pedophile", "pedofilo", "incest", "incestuoso", "kill", "murder", "terror", "fuckboy", "fuckgirl",
+    "p0rn", "x0x", "s3x", "f0d4", "b1tch", "c0ck", "d1ck", "pu55y"
+  ];
+
+  for (const palavra of palavrasProibidas) {
+    if (nomeSemEspacos.includes(palavra)) {
+      return { valido: false, motivo: "O nome contém palavras proibidas" };
+    }
+  }
+
+  // Bloquear repetições excessivas tipo "aaaaaa" ou "xxxx"
+  if (/([a-zA-Z0-9])\1{2,}/.test(nomeSemEspacos)) {
+    return { valido: false, motivo: "O nome contém repetições de caracteres inválidas" };
+  }
+
+  return { valido: true, motivo: "" };
+};
+
+
+
 const Registro = () => {
   const [nome, setNome] = useState("");
   const [email, setEmail] = useState("");
@@ -17,6 +60,14 @@ const Registro = () => {
 
   const handleRegister = async (e) => {
     e.preventDefault();
+
+    // Valida o nome antes de enviar
+    const validacao = validarNome(nome);
+    if (!validacao.valido) {
+      setMensagem(validacao.motivo);
+      return; // impede o envio
+    }
+
     setMensagem("Criando sua conta...");
 
     try {

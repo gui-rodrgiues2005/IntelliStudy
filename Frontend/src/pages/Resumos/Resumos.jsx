@@ -128,7 +128,7 @@ function Resumos() {
 
       {isMobile && (
         <button className="resumos-mobile-menu-btn" onClick={toggleSidebar}>
-          {isMobileOpen ? <AlignHorizontalJustifyEnd size={15} /> : <AlignStartVertical size={15} />} Seus Resumos
+          {isMobileOpen ? <AlignHorizontalJustifyEnd size={15} /> : <AlignStartVertical size={15} />}
         </button>
       )}
 

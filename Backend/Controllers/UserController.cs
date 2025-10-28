@@ -89,7 +89,21 @@ namespace SaaS_Aluno.Controllers
         public async Task<IActionResult> Login([FromBody] LoginDto dto)
         {
             var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == dto.Email);
-            if (user == null || !BCrypt.Net.BCrypt.Verify(dto.Password, user.PasswordHash))
+            if (user == null)
+                return Unauthorized("Email ou senha incorretos.");
+
+            bool passwordValid;
+            try
+            {
+                passwordValid = BCrypt.Net.BCrypt.Verify(dto.Password, user.PasswordHash);
+            }
+            catch (BCrypt.Net.SaltParseException)
+            {
+                // Hash inválido, trata como senha incorreta
+                passwordValid = false;
+            }
+
+            if (!passwordValid)
                 return Unauthorized("Email ou senha incorretos.");
 
             // 🔹 Verifica se o plano expirou
@@ -243,7 +257,17 @@ namespace SaaS_Aluno.Controllers
                 if (string.IsNullOrWhiteSpace(dto.CurrentPassword))
                     return BadRequest(new { message = "Senha atual é obrigatória para alterar a senha." });
 
-                if (!BCrypt.Net.BCrypt.Verify(dto.CurrentPassword, user.PasswordHash))
+                bool currentPasswordValid;
+                try
+                {
+                    currentPasswordValid = BCrypt.Net.BCrypt.Verify(dto.CurrentPassword, user.PasswordHash);
+                }
+                catch (BCrypt.Net.SaltParseException)
+                {
+                    currentPasswordValid = false;
+                }
+
+                if (!currentPasswordValid)
                     return BadRequest(new { message = "Senha atual incorreta." });
 
                 user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.NewPassword);
@@ -293,7 +317,17 @@ namespace SaaS_Aluno.Controllers
                     return NotFound(new { message = "Usuário não encontrado." });
 
                 // Valida a senha antes de permitir a exclusão
-                if (!BCrypt.Net.BCrypt.Verify(dto.Password, user.PasswordHash))
+                bool deletePasswordValid;
+                try
+                {
+                    deletePasswordValid = BCrypt.Net.BCrypt.Verify(dto.Password, user.PasswordHash);
+                }
+                catch (BCrypt.Net.SaltParseException)
+                {
+                    deletePasswordValid = false;
+                }
+
+                if (!deletePasswordValid)
                     return BadRequest(new { message = "Senha incorreta. Por favor, confirme sua senha." });
 
                 // Remove registros relacionados (ajuste conforme suas tabelas)

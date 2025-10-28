@@ -95,16 +95,23 @@ namespace SaaS_Aluno.Controllers
             bool passwordValid;
             try
             {
+                // Tenta verificar normalmente
                 passwordValid = BCrypt.Net.BCrypt.Verify(dto.Password, user.PasswordHash);
             }
             catch (BCrypt.Net.SaltParseException)
             {
-                // Hash inválido, trata como senha incorreta
-                passwordValid = false;
+                passwordValid = BCrypt.Net.BCrypt.Verify(dto.Password, user.PasswordHash, true);
             }
 
             if (!passwordValid)
                 return Unauthorized("Email ou senha incorretos.");
+
+            if (passwordValid && user.PasswordHash.StartsWith("$2a$"))
+            {
+                user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password);
+                await _context.SaveChangesAsync();
+            }
+
 
             // 🔹 Verifica se o plano expirou
             if (user.PlanoExpiraEm.HasValue && user.PlanoExpiraEm.Value <= DateTime.UtcNow)

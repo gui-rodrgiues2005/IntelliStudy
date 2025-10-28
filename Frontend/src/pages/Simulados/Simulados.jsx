@@ -75,7 +75,6 @@ function Simulados() {
         setIsMobileOpen(!isMobileOpen);
     };
 
-
     useEffect(() => {
         const fetchListaSimulados = async () => {
             setIsLoading(true);
@@ -139,11 +138,6 @@ function Simulados() {
                 toast.info("Erro ao interpretar o JSON do simulado. Tente novamente.");
             }
 
-            // // Log do resultado final
-            // console.group("✅ RESULTADO DO PARSE");
-            // console.log("🧩 parsedQuiz:", parsed);
-            // console.log("📋 Estrutura da primeira questão:", parsed?.[0]);
-            // console.groupEnd();
 
             setSimuladoSelecionado(data);
             setParsedQuiz(Array.isArray(parsed) ? parsed : []);
@@ -154,7 +148,6 @@ function Simulados() {
             setIsFetchingDetails(false);
         }
     };
-
 
     const handleDeleteSimulado = async (simuladoId, event) => {
         event.stopPropagation();

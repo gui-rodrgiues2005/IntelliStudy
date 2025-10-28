@@ -140,40 +140,40 @@ const PricingPage = () => {
 
     async function handlePagamento(valor) {
         try {
-            console.log("[LOG] Iniciando handlePagamento com valor:", valor);
+            // console.log("[LOG] Iniciando handlePagamento com valor:", valor);
 
-            // Obter dados do usuário para incluir UserId
-            console.log("[LOG] Obtendo dados do usuário...");
+            // // Obter dados do usuário para incluir UserId
+            // console.log("[LOG] Obtendo dados do usuário...");
             const userResponse = await fetch(`${API_URL}/api/User/meus-dados`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             if (!userResponse.ok) {
                 const errorText = await userResponse.text();
-                console.error("[ERROR] Erro ao obter dados do usuário:", errorText);
+                // console.error("[ERROR] Erro ao obter dados do usuário:", errorText);
                 throw new Error("Erro ao obter dados do usuário");
             }
             const userData = await userResponse.json();
-            console.log("[LOG] Dados do usuário obtidos:", userData);
+            // console.log("[LOG] Dados do usuário obtidos:", userData);
 
-            console.log("[LOG] Criando checkout no backend...");
+            // console.log("[LOG] Criando checkout no backend...");
             const res = await fetch(`${API_URL}/api/Pagamento/criar-checkout`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ userId: userData.id, valor })
             });
 
-            console.log("[LOG] Resposta do backend - Status:", res.status);
+            // console.log("[LOG] Resposta do backend - Status:", res.status);
             if (!res.ok) {
                 const text = await res.text();
-                console.error("[ERROR] Erro no servidor:", text);
+                // console.error("[ERROR] Erro no servidor:", text);
                 throw new Error(`Erro no servidor: ${text}`);
             }
 
             const data = await res.json();
-            console.log("[LOG] Dados recebidos do backend:", data);
+            // console.log("[LOG] Dados recebidos do backend:", data);
 
             const stripe = await stripePromise;
-            console.log("[LOG] Redirecionando para Stripe Checkout...");
+            // console.log("[LOG] Redirecionando para Stripe Checkout...");
             await stripe.redirectToCheckout({ sessionId: data.sessionId });
 
         } catch (err) {
@@ -206,8 +206,8 @@ const PricingPage = () => {
                         <button className="plan-button disabled">Seu Plano Atual</button>
                     </div>
                     <ul className="features-list">
-                        <li><Check size={18} className="check-icon" /> 3 Resumos por dia</li>
-                        <li><Check size={18} className="check-icon" /> 3 Simulados por dia </li>
+                        <li><Check size={18} className="check-icon" /> 5 Resumos por dia</li>
+                        <li><Check size={18} className="check-icon" /> 5 Simulados por dia </li>
                         <li><Check size={18} className="check-icon" /> 1 Plano de Estudos por semana</li>
                         <li><Check size={18} className="check-icon" /> Conquistas da plataforma são limitadas</li>
                     </ul>

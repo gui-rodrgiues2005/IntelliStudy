@@ -52,8 +52,8 @@ function Simulados() {
     const [isLoading, setIsLoading] = useState(true);
     const [isFetchingDetails, setIsFetchingDetails] = useState(false);
     const [parsedQuiz, setParsedQuiz] = useState([]);
-
     const [isMobile, setIsMobile] = useState(false);
+    const [isMobileOpen, setIsMobileOpen] = useState(false);
 
     useEffect(() => {
         if (typeof window !== "undefined") {
@@ -70,9 +70,6 @@ function Simulados() {
             console.log("🚨 Erro capturado:", msg, src, line, col, err);
         };
     }, []);
-
-
-    const [isMobileOpen, setIsMobileOpen] = useState(false);
 
     // Efeito para detectar mudança de tamanho da tela
     useEffect(() => {
@@ -124,7 +121,6 @@ function Simulados() {
         setSimuladoSelecionado(null);
         setParsedQuiz([]);
         setIsFetchingDetails(true);
-        closeSidebar();
 
         try {
             const token = localStorage.getItem("token");

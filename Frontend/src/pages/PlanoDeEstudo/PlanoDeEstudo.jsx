@@ -270,18 +270,19 @@ function PlanoDeEstudo() {
                             </div>
 
                             {/* HORAS */}
+                            {/* HORAS */}
                             <div className="form-group">
-                                <label>
-                                    Quantas horas por semana você pode estudar?
-                                    <strong> {horasPorSemana}h</strong>
-                                </label>
+                                <label>Quantas horas por semana você pode estudar?</label>
+                                <div className="range-display">
+                                    <strong>{horasPorSemana}h/semana</strong>
+                                </div>
                                 <input
                                     type="range"
                                     min="1"
                                     max="20"
                                     step="1"
                                     value={horasPorSemana}
-                                    onInput={(e) => setHorasPorSemana(parseInt(e.target.value))} 
+                                    onInput={(e) => setHorasPorSemana(parseInt(e.target.value))}
                                 />
                             </div>
 

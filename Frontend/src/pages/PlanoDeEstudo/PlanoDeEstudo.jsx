@@ -281,7 +281,7 @@ function PlanoDeEstudo() {
                                     max="20"
                                     step="1"
                                     value={horasPorSemana}
-                                    onChange={(e) => setHorasPorSemana(Number(e.target.value))} // ✅ conversão pra número
+                                    onInput={(e) => setHorasPorSemana(parseInt(e.target.value))} 
                                 />
                             </div>
 

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
-import { Trash2, Download, Menu, X, AlignStartVertical, AlignHorizontalJustifyEnd } from 'lucide-react';
+import { Trash2, Download, Menu, X, AlignStartVertical, ArrowRight, List, AlignHorizontalJustifyEnd } from 'lucide-react';
 import { API_URL } from '../../../config';
 import './Resumos.scss';
 
@@ -31,6 +31,8 @@ function Resumos() {
     setIsMobileOpen(!isMobileOpen);
   };
 
+
+
   // Efeito que busca a lista de resumos quando a página carrega
   useEffect(() => {
     const fetchListaResumos = async () => {
@@ -58,7 +60,7 @@ function Resumos() {
   const handleSelecionarResumo = async (resumoId) => {
     setResumoSelecionado(null); // Limpa o resumo anterior
     setIsLoading(true);
-   
+
     try {
       const token = localStorage.getItem("token");
       const res = await fetch(`${API_URL}/api/Resumo/meus-resumos/${resumoId}`, {
@@ -68,7 +70,10 @@ function Resumos() {
 
       const data = await res.json();
       setResumoSelecionado(data);
-
+      
+      if (isMobile) {
+        setIsMobileOpen(false);
+      }
     } catch (error) {
       console.error(error);
       alert(error.message);
@@ -128,7 +133,7 @@ function Resumos() {
 
       {isMobile && (
         <button className="resumos-mobile-menu-btn" onClick={toggleSidebar}>
-          {isMobileOpen ? <AlignHorizontalJustifyEnd size={15} /> : <AlignStartVertical size={15} />}
+          {isMobileOpen ? <ArrowRight size={15} /> : <List size={15} />}
         </button>
       )}
 

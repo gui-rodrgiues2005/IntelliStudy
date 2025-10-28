@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Trash2, CheckCircle, XCircle, HelpCircle, AlignHorizontalJustifyEnd, AlignStartVertical } from 'lucide-react';
+import { Trash2, CheckCircle, XCircle, HelpCircle, AlignHorizontalJustifyEnd, ArrowRight, List, AlignStartVertical } from 'lucide-react';
 import { API_URL } from '../../../config';
 import './Simulados.scss';
 import { toast } from 'react-toastify';
@@ -129,6 +129,11 @@ function Simulados() {
 
             setSimuladoSelecionado(data);
             setParsedQuiz(Array.isArray(parsed) ? parsed : []);
+            
+            if (isMobile) {
+                setIsMobileOpen(false);
+            }
+            
         } catch (error) {
             alert(error.message);
         } finally {
@@ -165,7 +170,7 @@ function Simulados() {
             {/* Botão de menu mobile */}
             {isMobile && (
                 <button className="simulados-mobile-menu-btn" onClick={toggleSidebar}>
-                    {isMobileOpen ? <AlignHorizontalJustifyEnd size={15} /> : <AlignStartVertical size={15} />}
+                    {isMobileOpen ? <ArrowRight size={15} /> : <List size={15} />}
                 </button>
             )}
 

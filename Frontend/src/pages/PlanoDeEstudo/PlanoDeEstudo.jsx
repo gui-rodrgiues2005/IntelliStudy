@@ -22,7 +22,7 @@ function PlanoDeEstudo() {
     const [materias, setMaterias] = useState('');
     const [horasPorSemana, setHorasPorSemana] = useState(5);
     const navigate = useNavigate();
-  
+
 
     // --- FUNÇÃO GENÉRICA PARA FAZER FETCH COM JSON SEGURO ---
     const fetchJSON = async (url, options) => {
@@ -216,29 +216,79 @@ function PlanoDeEstudo() {
             </div>
 
             {isModalOpen && (
-                <div className="modal-overlay">
-                    <div className="modal-content">
-                        <button className="modal-close-btn" onClick={() => setIsModalOpen(false)}><X size={24} /></button>
+                <div className="modal-overlay" onClick={() => setIsModalOpen(false)}>
+                    <div
+                        className="modal-content"
+                        onClick={(e) => e.stopPropagation()} // evita fechar clicando dentro
+                    >
+                        <button
+                            className="modal-close-btn"
+                            onClick={() => setIsModalOpen(false)}
+                        >
+                            <X size={24} />
+                        </button>
+
                         <h2>Criar Novo Plano de Estudos</h2>
-                        <p>Informe seus objetivos e a IA montará o cronograma ideal para você.</p>
+                        <p>
+                            Informe seus objetivos e a IA montará o cronograma ideal para você.
+                        </p>
+
                         <form onSubmit={handleCriarPlano}>
+                            {/* META */}
                             <div className="form-group">
                                 <label>Qual sua meta principal?</label>
-                                <input type="text" value={meta} onChange={(e) => setMeta(e.target.value)} placeholder="Ex: Passar na prova de Cálculo" required />
+                                <input
+                                    type="text"
+                                    value={meta}
+                                    onChange={(e) => setMeta(e.target.value)}
+                                    placeholder="Ex: Passar na prova de Cálculo"
+                                    required
+                                />
                             </div>
+
+                            {/* DATA */}
                             <div className="form-group">
                                 <label>Data da prova ou prazo final</label>
-                                <input type="date" value={dataProva} onChange={(e) => setDataProva(e.target.value)} required />
+                                <input
+                                    type="date"
+                                    value={dataProva}
+                                    onChange={(e) => setDataProva(e.target.value)}
+                                    required
+                                />
                             </div>
+
+                            {/* MATÉRIAS */}
                             <div className="form-group">
                                 <label>Matérias a cobrir (separadas por vírgula)</label>
-                                <input type="text" value={materias} onChange={(e) => setMaterias(e.target.value)} placeholder="Ex: Derivadas, Integrais, Limites" required />
+                                <input
+                                    type="text"
+                                    value={materias}
+                                    onChange={(e) => setMaterias(e.target.value)}
+                                    placeholder="Ex: Derivadas, Integrais, Limites"
+                                    required
+                                />
                             </div>
+
+                            {/* HORAS */}
                             <div className="form-group">
-                                <label>Quantas horas por semana você pode estudar? ({horasPorSemana}h)</label>
-                                <input type="range" min="1" max="20" value={horasPorSemana} onChange={(e) => setHorasPorSemana(e.target.value)} />
+                                <label>
+                                    Quantas horas por semana você pode estudar?
+                                    <strong> {horasPorSemana}h</strong>
+                                </label>
+                                <input
+                                    type="range"
+                                    min="1"
+                                    max="20"
+                                    step="1"
+                                    value={horasPorSemana}
+                                    onChange={(e) => setHorasPorSemana(Number(e.target.value))} // ✅ conversão pra número
+                                />
                             </div>
-                            <button type="submit" className="btn-criar-plano"><Sparkles size={20} /> Criar Meu Plano Inteligente</button>
+
+                            {/* BOTÃO */}
+                            <button type="submit" className="btn-criar-plano">
+                                <Sparkles size={20} /> Criar Meu Plano Inteligente
+                            </button>
                         </form>
                     </div>
                 </div>
@@ -303,7 +353,7 @@ function PlanoDeEstudo() {
                                     dia.sessoes.map((sessao) => (
                                         <div key={sessao.id} className={`sessao-card ${sessao.concluida ? "concluida" : ""}`}>
                                             <div className="sessao-header">
-                                                <input type="checkbox"  className="ui-checkbox" checked={sessao.concluida} onChange={() => handleConcluirSessao(sessao.id)} />
+                                                <input type="checkbox" className="ui-checkbox" checked={sessao.concluida} onChange={() => handleConcluirSessao(sessao.id)} />
                                                 <div className="sessao-titulo">
                                                     <span>{sessao.topico}</span>
                                                     <small>{sessao.duracaoMinutos} min</small>
@@ -318,7 +368,7 @@ function PlanoDeEstudo() {
                                 ) : (
                                     <div className="dia-descanso">
                                         <p>Dia de descanso</p>
-                                          <Moon size={18} />
+                                        <Moon size={18} />
                                     </div>
                                 )}
                             </div>

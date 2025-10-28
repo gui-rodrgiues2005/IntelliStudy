@@ -165,7 +165,7 @@ function Simulados() {
             {/* Botão de menu mobile */}
             {isMobile && (
                 <button className="simulados-mobile-menu-btn" onClick={toggleSidebar}>
-                    {isMobileOpen ? <AlignHorizontalJustifyEnd size={24} /> : <AlignStartVertical size={24} />}
+                    {isMobileOpen ? <AlignHorizontalJustifyEnd size={15} /> : <AlignStartVertical size={15} />} Seus Simulados
                 </button>
             )}
 

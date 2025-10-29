@@ -1,10 +1,10 @@
 {
   "version": 2,
-  "dgSpecHash": "ycGGPD7Rd+c=",
+  "dgSpecHash": "9Zn0wdRY1Og=",
   "success": true,
   "projectFilePath": "C:\\Users\\guilh\\Documents\\StudyAI\\backend\\Backend.csproj",
   "expectedPackageFiles": [
-    "C:\\Users\\guilh\\.nuget\\packages\\bcrypt.net-next\\4.0.3\\bcrypt.net-next.4.0.3.nupkg.sha512",
+    "C:\\Users\\guilh\\.nuget\\packages\\bcrypt.net-next\\3.3.0\\bcrypt.net-next.3.3.0.nupkg.sha512",
     "C:\\Users\\guilh\\.nuget\\packages\\documentformat.openxml\\3.3.0\\documentformat.openxml.3.3.0.nupkg.sha512",
     "C:\\Users\\guilh\\.nuget\\packages\\documentformat.openxml.framework\\3.3.0\\documentformat.openxml.framework.3.3.0.nupkg.sha512",
     "C:\\Users\\guilh\\.nuget\\packages\\humanizer.core\\2.14.1\\humanizer.core.2.14.1.nupkg.sha512",
@@ -134,5 +134,16 @@
     "C:\\Users\\guilh\\.nuget\\packages\\system.xml.readerwriter\\4.3.0\\system.xml.readerwriter.4.3.0.nupkg.sha512",
     "C:\\Users\\guilh\\.nuget\\packages\\system.xml.xmldocument\\4.3.0\\system.xml.xmldocument.4.3.0.nupkg.sha512"
   ],
-  "logs": []
+  "logs": [
+    {
+      "code": "NU1603",
+      "level": "Warning",
+      "warningLevel": 1,
+      "message": "Backend depende de BCrypt.Net-Next (>= 3.2.2), mas BCrypt.Net-Next 3.2.2 não foi encontrado. A melhor correspondência aproximada de BCrypt.Net-Next 3.3.0 foi resolvida.",
+      "libraryId": "BCrypt.Net-Next",
+      "targetGraphs": [
+        "net8.0"
+      ]
+    }
+  ]
 }

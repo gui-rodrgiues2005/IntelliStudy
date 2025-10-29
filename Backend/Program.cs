@@ -22,7 +22,7 @@ if (!string.IsNullOrEmpty(databaseUrl))
     // Lógica para converter a URL de conexão do Railway/Heroku para o formato Npgsql
     // O Npgsql não consegue parsear diretamente o esquema "postgresql://", então o substituímos por "http://"
     // para que a classe Uri do .NET possa fazer o parsing correto dos componentes (Host, Port, UserInfo, Path ).
-    var uri = new Uri(databaseUrl.Replace("postgresql://", "http://" ));
+    var uri = new Uri(databaseUrl.Replace("postgresql://", "http://"));
     var userInfo = uri.UserInfo.Split(':');
 
     // Monta a string de conexão no formato chave-valor esperado pelo Npgsql
@@ -46,6 +46,8 @@ builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(finalConnectionString)
 );
 
+
+
 // --- Serviços customizados ---
 builder.Services.AddHostedService<GeminiWorker>();
 builder.Services.AddScoped<PlanoService>();
@@ -57,9 +59,9 @@ builder.Services.AddHttpClient();
 var geminiApiKey = builder.Configuration["Gemini:ApiKey"];
 builder.Services.AddSingleton<GeminiService>(sp =>
 {
-    var httpClient = sp.GetRequiredService<HttpClient>( );
+    var httpClient = sp.GetRequiredService<HttpClient>();
     // ATENÇÃO: Verifique a chave da API no appsettings ou ambiente
-    return new GeminiService(httpClient, geminiApiKey );
+    return new GeminiService(httpClient, geminiApiKey);
 });
 
 // --- JWT ---
@@ -154,6 +156,26 @@ using (var scope = app.Services.CreateScope())
             Console.WriteLine($"Erro ao aplicar migrações: {ex.Message}");
         }
     }
+}
+
+using (var scope = app.Services.CreateScope())
+{
+    var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+    // Contagem antes
+    var countBefore = await dbContext.Users.CountAsync(u => u.PasswordHash.StartsWith("$2a$"));
+    Console.WriteLine($"> Senhas $2a$ antes: {countBefore}");
+
+    // Atualiza todos os hashes $2a$ para $2b$
+    var rowsAffected = await dbContext.Database.ExecuteSqlRawAsync(
+        "UPDATE \"Users\" SET \"PasswordHash\" = REPLACE(\"PasswordHash\", '$2a$', '$2b$') WHERE \"PasswordHash\" LIKE '$2a$%'"
+    );
+
+    Console.WriteLine($"> Linhas atualizadas: {rowsAffected}");
+
+    // Contagem depois
+    var countAfter = await dbContext.Users.CountAsync(u => u.PasswordHash.StartsWith("$2a$"));
+    Console.WriteLine($"> Senhas $2a$ depois: {countAfter}");
 }
 
 // --- Middleware ---

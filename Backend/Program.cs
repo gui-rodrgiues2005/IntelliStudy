@@ -158,25 +158,25 @@ using (var scope = app.Services.CreateScope())
     }
 }
 
-using (var scope = app.Services.CreateScope())
-{
-    var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+// using (var scope = app.Services.CreateScope())
+// {
+//     var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
-    // Contagem antes
-    var countBefore = await dbContext.Users.CountAsync(u => u.PasswordHash.StartsWith("$2a$"));
-    Console.WriteLine($"> Senhas $2a$ antes: {countBefore}");
+//     // Contagem antes
+//     var countBefore = await dbContext.Users.CountAsync(u => u.PasswordHash.StartsWith("$2a$"));
+//     Console.WriteLine($"> Senhas $2a$ antes: {countBefore}");
 
-    // Atualiza todos os hashes $2a$ para $2b$
-    var rowsAffected = await dbContext.Database.ExecuteSqlRawAsync(
-        "UPDATE \"Users\" SET \"PasswordHash\" = REPLACE(\"PasswordHash\", '$2a$', '$2b$') WHERE \"PasswordHash\" LIKE '$2a$%'"
-    );
+//     // Atualiza todos os hashes $2a$ para $2b$
+//     var rowsAffected = await dbContext.Database.ExecuteSqlRawAsync(
+//         "UPDATE \"Users\" SET \"PasswordHash\" = REPLACE(\"PasswordHash\", '$2a$', '$2b$') WHERE \"PasswordHash\" LIKE '$2a$%'"
+//     );
 
-    Console.WriteLine($"> Linhas atualizadas: {rowsAffected}");
+//     Console.WriteLine($"> Linhas atualizadas: {rowsAffected}");
 
-    // Contagem depois
-    var countAfter = await dbContext.Users.CountAsync(u => u.PasswordHash.StartsWith("$2a$"));
-    Console.WriteLine($"> Senhas $2a$ depois: {countAfter}");
-}
+//     // Contagem depois
+//     var countAfter = await dbContext.Users.CountAsync(u => u.PasswordHash.StartsWith("$2a$"));
+//     Console.WriteLine($"> Senhas $2a$ depois: {countAfter}");
+// }
 
 // --- Middleware ---
 if (app.Environment.IsDevelopment())

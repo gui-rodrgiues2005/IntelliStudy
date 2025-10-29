@@ -92,17 +92,17 @@ namespace SaaS_Aluno.Controllers
                 return Unauthorized("Email ou senha incorretos.");
 
             bool passwordValid = false;
-            bool isLegacyHash = false;
 
             try
             {
-                // Tenta verificar com BCrypt padrão
-                passwordValid = BCrypt.Net.BCrypt.Verify(dto.Password, user.PasswordHash);
-            }
-            catch (BCrypt.Net.SaltParseException)
-            {
-                // Caso o hash seja inválido (formato antigo $2a$ ou corrompido)
-                isLegacyHash = true;
+                string hash = user.PasswordHash;
+
+                // 🔹 Se for hash antigo ($2a$), converte pra $2b$ pra verificar
+                if (hash.StartsWith("$2a$"))
+                    hash = "$2b$" + hash.Substring(4);
+
+                // Verifica normalmente
+                passwordValid = BCrypt.Net.BCrypt.Verify(dto.Password, hash);
             }
             catch (Exception ex)
             {
@@ -111,21 +111,9 @@ namespace SaaS_Aluno.Controllers
             }
 
             if (!passwordValid)
-            {
-                if (isLegacyHash)
-                {
-                    // 🔸 Retorna resposta especial para frontend abrir modal
-                    return Ok(new
-                    {
-                        requiresPasswordUpdate = true,
-                        message = "Sua senha precisa ser atualizada para continuar."
-                    });
-                }
-
                 return Unauthorized("Email ou senha incorretos.");
-            }
 
-            // 🔹 Se o hash antigo ($2a$) for válido, atualiza automaticamente
+            // 🔹 Se o hash ainda for o formato antigo, atualiza para o novo
             if (user.PasswordHash.StartsWith("$2a$"))
             {
                 user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password);
@@ -168,8 +156,6 @@ namespace SaaS_Aluno.Controllers
                 }
             });
         }
-
-
 
 
         [HttpPost("update-password")]

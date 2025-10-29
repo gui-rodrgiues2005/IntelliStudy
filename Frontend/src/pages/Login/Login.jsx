@@ -144,6 +144,10 @@ const Login = () => {
         <div className="auth-footer">
           <p>Não tem uma conta? <Link to="/registro">Crie uma agora</Link></p>
         </div>
+
+        <p className="boas-vindas">
+          Obrigado por confiar na <strong>IntelliStudy</strong>! Esta plataforma é dedicada exclusivamente a estudos educacionais e profissionais.
+        </p>
       </div>
 
       {/* {showPasswordModal && (

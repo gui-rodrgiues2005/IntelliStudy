@@ -158,25 +158,29 @@ using (var scope = app.Services.CreateScope())
     }
 }
 
-// using (var scope = app.Services.CreateScope())
-// {
-//     var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+using (var scope = app.Services.CreateScope())
+{
+    var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
-//     // Contagem antes
-//     var countBefore = await dbContext.Users.CountAsync(u => u.PasswordHash.StartsWith("$2a$"));
-//     Console.WriteLine($"> Senhas $2a$ antes: {countBefore}");
+    // Busca a usuária pela conta de e-mail
+    var user = await dbContext.Users
+        .FirstOrDefaultAsync(u => u.Email == "juliaromeiro1234@gmail.com");
 
-//     // Atualiza todos os hashes $2a$ para $2b$
-//     var rowsAffected = await dbContext.Database.ExecuteSqlRawAsync(
-//         "UPDATE \"Users\" SET \"PasswordHash\" = REPLACE(\"PasswordHash\", '$2a$', '$2b$') WHERE \"PasswordHash\" LIKE '$2a$%'"
-//     );
+    if (user != null)
+    {
+        // Gera o novo hash
+        string novaSenha = "#Julia96996";
+        user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(novaSenha);
 
-//     Console.WriteLine($"> Linhas atualizadas: {rowsAffected}");
-
-//     // Contagem depois
-//     var countAfter = await dbContext.Users.CountAsync(u => u.PasswordHash.StartsWith("$2a$"));
-//     Console.WriteLine($"> Senhas $2a$ depois: {countAfter}");
-// }
+        // Salva no banco
+        await dbContext.SaveChangesAsync();
+        Console.WriteLine("Senha da Julia atualizada com sucesso!");
+    }
+    else
+    {
+        Console.WriteLine("Usuária não encontrada!");
+    }
+}
 
 // --- Middleware ---
 if (app.Environment.IsDevelopment())

@@ -163,26 +163,48 @@ using (var scope = app.Services.CreateScope())
 {
     var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
-    // Busca a usuária pela conta de e-mail
-    var user = await dbContext.Users
-        .FirstOrDefaultAsync(u => u.Email == "juliaromeiro1234@gmail.com");
+    const string emailUsuarioCorrigir = "juliaromeiro1234@gmail.com";
+    const string novaSenhaTemporaria = "#Julia96996";
+
+    Console.WriteLine("--- Verificação e Correção de Hash da Usuária Julia ---");
+
+    // Busca a usuária pela conta de e-mail
+    var user = await dbContext.Users
+    .FirstOrDefaultAsync(u => u.Email == emailUsuarioCorrigir);
 
     if (user != null)
     {
-        // Gera o novo hash
-        string novaSenha = "#Julia96996";
-        user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(novaSenha);
+        // Verifica se o hash está no formato antigo (começa com $2a$)
+        if (user.PasswordHash?.StartsWith("$2a$") == true)
+        {
+            Console.WriteLine($"Usuária {user.Name} encontrada. Hash atual é antigo ($2a$).");
 
-        // Salva no banco
-        await dbContext.SaveChangesAsync();
-        Console.WriteLine("Senha da Julia atualizada com sucesso!");
+            // Gera o novo hash, forçando o formato $2b$ (HashType.BX)
+            string novoHash = BCrypt.Net.BCrypt.HashPassword(novaSenhaTemporaria);
+
+
+            user.PasswordHash = novoHash;
+
+            // Salva no banco
+            await dbContext.SaveChangesAsync();
+            Console.WriteLine("✅ SUCESSO! Senha atualizada para o novo padrão ($2b$).");
+            Console.WriteLine($"Lembre-se: A senha agora é '{novaSenhaTemporaria}'.");
+        }
+        else if (user.PasswordHash?.StartsWith("$2b$") == true)
+        {
+            Console.WriteLine("Usuária encontrada. Hash já está no formato correto ($2b$). Nenhuma ação necessária.");
+        }
+        else
+        {
+            Console.WriteLine("Usuária encontrada, mas o Hash não é $2a$ nem $2b$. Verificação manual recomendada.");
+        }
     }
     else
     {
-        Console.WriteLine("Usuária não encontrada!");
+        Console.WriteLine($"Usuária com email {emailUsuarioCorrigir} não encontrada! Nenhuma correção feita.");
     }
+    Console.WriteLine("-----------------------------------------------------");
 }
-
 // --- Middleware ---
 if (app.Environment.IsDevelopment())
 {

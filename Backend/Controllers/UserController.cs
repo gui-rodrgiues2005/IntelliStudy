@@ -90,63 +90,46 @@ namespace SaaS_Aluno.Controllers
         {
             var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == dto.Email);
             if (user == null)
-                return Unauthorized(new { message = "Email ou senha incorretos." });
+                return Unauthorized("Email ou senha incorretos.");
 
             bool passwordValid = false;
             bool isLegacyHash = false;
 
             try
             {
-                // tentativa normal
+                // Tenta verificar com BCrypt padrão
                 passwordValid = BCrypt.Net.BCrypt.Verify(dto.Password, user.PasswordHash);
             }
             catch (BCrypt.Net.SaltParseException)
             {
-                // não tenta métodos que podem não existir — apenas marca legacy
+                // Hash antigo detectado (provavelmente $2a$)
                 isLegacyHash = true;
-                passwordValid = false;
-            }
-            catch
-            {
-                // qualquer outra exceção de hashing: não validar a senha
-                isLegacyHash = true;
-                passwordValid = false;
+                passwordValid = false; // força usuário a redefinir
             }
 
-            // Se não validou com método atual
             if (!passwordValid)
             {
-                // se o hash é legacy (ex.: começa com $2a$) sinalize para frontend
-                if (isLegacyHash || (user.PasswordHash?.StartsWith("$2a$") == true))
+                // Se o erro for por hash antigo, sinaliza o frontend
+                if (isLegacyHash)
                 {
-                    // marca a flag (para evitar aparecer toda hora, se quiser)
-                    if (!user.NeedsPasswordUpdate)
+                    return Ok(new
                     {
-                        user.NeedsPasswordUpdate = true;
-                        await _context.SaveChangesAsync();
-                    }
-
-                    return BadRequest(new
-                    {
-                        message = "Sua senha precisa ser atualizada por questões de segurança.",
                         requiresPasswordUpdate = true,
-                        // opcionalmente envia o user id para o frontend (ou use token)
-                        userId = user.Id
+                        message = "Por questões de segurança, precisamos que você confirme sua senha."
                     });
                 }
 
-                return Unauthorized(new { message = "Email ou senha incorretos." });
+                return Unauthorized("Email ou senha incorretos.");
             }
 
-            // Se chegou aqui, senha válida com a lib atual — atualiza hash se ainda for $2a$
-            if (passwordValid && user.PasswordHash != null && user.PasswordHash.StartsWith("$2a$"))
+            // Se o hash for antigo ($2a$), atualiza automaticamente
+            if (user.PasswordHash.StartsWith("$2a$"))
             {
                 user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password);
-                user.NeedsPasswordUpdate = false;
                 await _context.SaveChangesAsync();
             }
 
-            // Gerar JWT normalmente
+            // 🔹 Gera token JWT normalmente
             var tokenHandler = new JwtSecurityTokenHandler();
             var key = Encoding.ASCII.GetBytes(_config["Jwt:Key"]);
             var tokenDescriptor = new SecurityTokenDescriptor
@@ -182,6 +165,7 @@ namespace SaaS_Aluno.Controllers
                 }
             });
         }
+
 
 
         [HttpPost("update-password")]

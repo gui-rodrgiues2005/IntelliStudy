@@ -36,7 +36,7 @@ function PlanoDeEstudo() {
             const text = await res.text();
             return text ? JSON.parse(text) : null;
         } catch (err) {
-            console.error(`Erro ao buscar ${url}`, err);
+            // console.error(`Erro ao buscar ${url}`, err);
             return null;
         }
     };
@@ -108,14 +108,14 @@ function PlanoDeEstudo() {
                     });
 
                     if (planoPronto && (!plano || plano.id !== planoPronto.id)) {
-                        console.log("✅ Novo plano carregado:", planoPronto);
+                        // console.log("✅ Novo plano carregado:", planoPronto);
                         setPlano(planoPronto);
                         setIsLoading(false);
                         setMeta('');
                         setMaterias('');
                         setHorasPorSemana(10);
                     } else {
-                        console.log("⌛ Aguardando novo plano...");
+                        // console.log("⌛ Aguardando novo plano...");
                         setTimeout(() => pollForPlano(retriesLeft - 1), 3000);
                     }
                 } catch (err) {
@@ -221,12 +221,11 @@ function PlanoDeEstudo() {
         );
     };
 
-    // Função separada para executar a exclusão da sessão
     const executarExclusaoSessao = async (sessaoId) => {
         const planoOriginal = JSON.parse(JSON.stringify(plano));
         const novoPlano = { ...plano };
 
-        // Remove localmente para atualização imediata
+        // Remove localmente pra feedback imediato
         novoPlano.cronogramaSemanal.forEach(dia => {
             dia.sessoes = dia.sessoes?.filter(sessao => sessao.id !== sessaoId) || [];
         });
@@ -234,7 +233,7 @@ function PlanoDeEstudo() {
 
         try {
             const token = localStorage.getItem("token");
-            const res = await fetch(`${API_URL}/api/plano-de-estudo/sessao/${sessaoId}/concluir`, {
+            const res = await fetch(`${API_URL}/api/plano-de-estudo/sessao/${sessaoId}`, {
                 method: 'DELETE',
                 headers: { 'Authorization': `Bearer ${token}` }
             });
@@ -244,12 +243,41 @@ function PlanoDeEstudo() {
             }
 
             toast.success("Sessão excluída com sucesso!");
+
+            // 🔥 Polling pra garantir que a exclusão refletiu no backend
+            const verificarSessaoRemovida = async (retriesLeft = 6) => {
+                if (retriesLeft <= 0) {
+                    console.warn("⏰ Timeout esperando exclusão da sessão refletir.");
+                    return;
+                }
+
+                const ativo = await fetchJSON(`${API_URL}/api/plano-de-estudo/ativo`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                // Se o plano ainda existe, mas a sessão não está mais nele → sucesso
+                const sessaoAindaExiste = ativo?.cronogramaSemanal?.some(dia =>
+                    dia.sessoes?.some(s => s.id === sessaoId)
+                );
+
+                if (!sessaoAindaExiste) {
+                    // console.log("✅ Sessão removida do servidor com sucesso!");
+                    setPlano(ativo);
+                } else {
+                    // console.log("⌛ Sessão ainda presente no backend... tentando de novo");
+                    setTimeout(() => verificarSessaoRemovida(retriesLeft - 1), 1500);
+                }
+            };
+
+            setTimeout(() => verificarSessaoRemovida(), 2000);
+
         } catch (error) {
             console.error("Erro ao excluir sessão:", error);
             toast.error("Não foi possível excluir a sessão.");
-            setPlano(planoOriginal); // Restaura plano original em caso de erro
+            setPlano(planoOriginal); // Restaura se deu erro
         }
     };
+
 
     // --- EXCLUIR TODO O PLANO ---
     const handleExcluirTodoPlano = async () => {
@@ -292,6 +320,7 @@ function PlanoDeEstudo() {
     const executarExclusaoPlano = async () => {
         try {
             const token = localStorage.getItem("token");
+
             const res = await fetch(`${API_URL}/api/plano-de-estudo/${plano.id}`, {
                 method: 'DELETE',
                 headers: { 'Authorization': `Bearer ${token}` }
@@ -302,12 +331,41 @@ function PlanoDeEstudo() {
             }
 
             toast.success("Plano excluído com sucesso!");
-            setPlano(null); // Limpa o plano da state
+
+            // 🔥 Evita mostrar o plano antigo na tela
+            setPlano(null);
+            setIsLoading(true);
+
+            // 🕓 Polling para garantir que o backend refletiu a exclusão
+            const verificarExclusao = async (retriesLeft = 8) => {
+                if (retriesLeft <= 0) {
+                    setIsLoading(false);
+                    return;
+                }
+
+                const ativo = await fetchJSON(`${API_URL}/api/plano-de-estudo/ativo`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (!ativo) {
+                    // ✅ Backend confirmou que o plano foi excluído
+                    setPlano(null);
+                    setIsLoading(false);
+                    console.log("✅ Plano removido do servidor com sucesso!");
+                } else {
+                    console.log("⌛ Ainda há plano ativo, tentando novamente...");
+                    setTimeout(() => verificarExclusao(retriesLeft - 1), 1500);
+                }
+            };
+
+            setTimeout(() => verificarExclusao(), 2000);
         } catch (error) {
             console.error("Erro ao excluir plano:", error);
             toast.error("Não foi possível excluir o plano.");
+            setIsLoading(false);
         }
     };
+
 
     const handleGerarResumoDaSessao = (topico) => {
         localStorage.setItem('topicoInicial', topico);

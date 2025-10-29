@@ -123,7 +123,7 @@ public class PlanoDeEstudoController : ControllerBase
 
         var plano = await _context.PlanosDeEstudo
             .Include(p => p.Sessoes) // Inclui as sessões de estudo
-            .Where(p => p.UserId == userId)
+            .Where(p => p.UserId == userId && !p.Concluido)
             .OrderByDescending(p => p.CreatedAt)
             .FirstOrDefaultAsync();
 
@@ -160,28 +160,26 @@ public class PlanoDeEstudoController : ControllerBase
     }
 
     // ENDPOINT: Excluir uma sessão de um plano atual
-    [HttpDelete("sessao/{sessaoId}/concluir")]
+    [HttpDelete("sessao/{sessaoId}")]
     public async Task<IActionResult> ExcluirSessaoPlanoAtual(int sessaoId)
     {
-        // 1. Identifica o usuário logado
         var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
 
-        // 2. Busca a sessão junto com o plano
         var sessao = await _context.SessoesDeEstudo
             .Include(s => s.PlanoDeEstudo)
             .FirstOrDefaultAsync(s => s.Id == sessaoId);
 
         if (sessao == null || sessao.PlanoDeEstudo.UserId != userId)
         {
-            return Forbid("Sessão não encontrada ou não pertence ao usuário.");
+            return NotFound(new { erro = "Sessão não encontrada ou não pertence ao usuário." });
         }
 
-        // 3. Remove a sessão
         _context.SessoesDeEstudo.Remove(sessao);
         await _context.SaveChangesAsync();
 
         return Ok(new { mensagem = "Sessão removida com sucesso." });
     }
+
 
     [HttpDelete("{planoId}")]
     public async Task<IActionResult> ExcluirPlanoCompleto(int planoId)

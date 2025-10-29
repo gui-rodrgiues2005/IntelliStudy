@@ -1,20 +1,23 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import NavigationSite from '../../components/Layout/NavigationSite/NavigationSite'
+import NavigationSite from '../../components/Layout/NavigationSite/NavigationSite';
 import { API_URL } from '../../../config';
 import './Login.scss';
-
-// --- MUDANÇA 1: Importe os ícones de olho ---
 import { Book, Brain, Target, FlaskConical, Lightbulb, Eye, EyeOff } from 'lucide-react';
 
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [mensagem, setMensagem] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+
+  // --- Modal para atualizar senha ---
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [newPassword, setNewPassword] = useState("");
+  const [modalMensagem, setModalMensagem] = useState("");
+
   const navigate = useNavigate();
 
-  // --- MUDANÇA 2: Adicione o estado para visibilidade da senha ---
-  const [showPassword, setShowPassword] = useState(false);
   const handleLogin = async (e) => {
     e.preventDefault();
     setMensagem("Entrando...");
@@ -26,16 +29,49 @@ const Login = () => {
         body: JSON.stringify({ email, password }),
       });
 
+      const data = await response.json();
+
       if (response.ok) {
-        const data = await response.json();
         localStorage.setItem("token", data.token);
-        navigate("/dashboard");
+
+        // Se o backend indicar que precisa atualizar senha
+        if (data.requiresPasswordUpdate) {
+          setShowPasswordModal(true);
+        } else {
+          navigate("/dashboard");
+        }
       } else {
-        const error = await response.text();
-        setMensagem("Erro: " + error);
+        setMensagem("Erro: " + data.message || "Email ou senha incorretos.");
       }
     } catch (err) {
       setMensagem("Erro de conexão com o servidor. Tente novamente.");
+    }
+  };
+
+  const handleUpdatePassword = async () => {
+    setModalMensagem("Atualizando senha...");
+    try {
+      const token = localStorage.getItem("token");
+
+      const response = await fetch(`${API_URL}/api/User/update-password`, {
+        method: "POST",
+        headers: { 
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify({ oldPassword: password, newPassword }),
+      });
+
+      if (response.ok) {
+        setShowPasswordModal(false);
+        setMensagem("Senha atualizada com sucesso! Faça login novamente.");
+        setPassword(""); // Limpa senha antiga
+      } else {
+        const error = await response.text();
+        setModalMensagem("Erro: " + error);
+      }
+    } catch (err) {
+      setModalMensagem("Erro de conexão. Tente novamente.");
     }
   };
 
@@ -75,11 +111,10 @@ const Login = () => {
               required
             />
           </div>
-          {/* --- MUDANÇA 3: Crie um wrapper para o campo de senha e o ícone --- */}
+
           <div className="form-group password-group">
             <label htmlFor="password">Senha</label>
             <input
-              // O tipo do input agora depende do estado
               type={showPassword ? "text" : "password"}
               id="password"
               placeholder="Sua senha"
@@ -87,11 +122,11 @@ const Login = () => {
               onChange={(e) => setPassword(e.target.value)}
               required
             />
-            {/* O ícone que alterna a visibilidade */}
             <div className="password-toggle-icon" onClick={() => setShowPassword(!showPassword)}>
               {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
             </div>
           </div>
+
           {mensagem && <p className="auth-message">{mensagem}</p>}
           <button type="submit" className="auth-button">Entrar</button>
         </form>
@@ -100,6 +135,24 @@ const Login = () => {
           <p>Não tem uma conta? <Link to="/registro">Crie uma agora</Link></p>
         </div>
       </div>
+
+      {/* --- Modal simples para atualizar senha --- */}
+      {showPasswordModal && (
+        <div className="modal-overlay">
+          <div className="modal">
+            <h3>Estamos atualizando nossa segurança</h3>
+            <p>Por questões de segurança, confirme sua senha.</p>
+            <input
+              type="password"
+              placeholder="Nova senha"
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+            />
+            {modalMensagem && <p className="modal-message">{modalMensagem}</p>}
+            <button onClick={handleUpdatePassword}>Atualizar senha</button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

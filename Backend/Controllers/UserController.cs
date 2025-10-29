@@ -92,45 +92,44 @@ namespace SaaS_Aluno.Controllers
             if (user == null)
                 return Unauthorized("Email ou senha incorretos.");
 
-            bool passwordValid = false;
+            bool passwordValid;
+            bool isLegacyHash = false;
 
-            // Tenta verificar senha normalmente
             try
             {
                 passwordValid = BCrypt.Net.BCrypt.Verify(dto.Password, user.PasswordHash);
             }
             catch (BCrypt.Net.SaltParseException)
             {
-                // Se hash antigo falhar, tenta no modo legacy
-                try
-                {
-                    passwordValid = BCrypt.Net.BCrypt.Verify(dto.Password, user.PasswordHash, true);
-                }
-                catch
-                {
-                    passwordValid = false;
-                }
+                // Hash antigo detectado
+                isLegacyHash = true;
+                passwordValid = BCrypt.Net.BCrypt.Verify(dto.Password, user.PasswordHash, true);
             }
 
             if (!passwordValid)
                 return Unauthorized("Email ou senha incorretos.");
 
-            // Atualiza o hash para o novo formato, se necessário
-            if (passwordValid && !user.PasswordHash.StartsWith("$2b$"))
+            // Se hash antigo e usuário ainda não atualizou, sinaliza para frontend
+            if (isLegacyHash && !user.NeedsPasswordUpdate)
+            {
+                user.NeedsPasswordUpdate = true;
+                await _context.SaveChangesAsync();
+
+                return Ok(new
+                {
+                    requiresPasswordUpdate = true,
+                    message = "Por questões de segurança, precisamos que você confirme sua senha."
+                });
+            }
+
+            // Caso hash antigo, mas já atualizado, rehash normal
+            if (passwordValid && user.PasswordHash.StartsWith("$2a$"))
             {
                 user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password);
                 await _context.SaveChangesAsync();
             }
 
-            // 🔹 Verifica se o plano expirou
-            if (user.PlanoExpiraEm.HasValue && user.PlanoExpiraEm.Value <= DateTime.UtcNow)
-            {
-                user.Plano = "Gratuito";
-                user.Ativo = false;
-                await _context.SaveChangesAsync();
-            }
-
-            // 🔹 Gera o token JWT
+            // 🔹 Gera token JWT normalmente
             var tokenHandler = new JwtSecurityTokenHandler();
             var key = Encoding.ASCII.GetBytes(_config["Jwt:Key"]);
             var tokenDescriptor = new SecurityTokenDescriptor
@@ -150,7 +149,6 @@ namespace SaaS_Aluno.Controllers
             var token = tokenHandler.CreateToken(tokenDescriptor);
             var tokenString = tokenHandler.WriteToken(token);
 
-            // 🔹 Retorna dados completos pro frontend
             return Ok(new
             {
                 token = tokenString,
@@ -162,9 +160,39 @@ namespace SaaS_Aluno.Controllers
                     user.Role,
                     user.Plano,
                     user.Ativo,
+                    user.NeedsPasswordUpdate,
                     PlanoExpiraEm = user.PlanoExpiraEm?.ToString("yyyy-MM-ddTHH:mm:ssZ")
                 }
             });
+        }
+
+        [HttpPost("update-password")]
+        public async Task<IActionResult> UpdatePassword([FromBody] UpdatePasswordDto dto)
+        {
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == dto.UserId);
+            if (user == null)
+                return NotFound();
+
+            // Valida senha antiga (legacy mode se necessário)
+            bool valid = false;
+            try
+            {
+                valid = BCrypt.Net.BCrypt.Verify(dto.OldPassword, user.PasswordHash);
+            }
+            catch (BCrypt.Net.SaltParseException)
+            {
+                valid = BCrypt.Net.BCrypt.Verify(dto.OldPassword, user.PasswordHash, true);
+            }
+
+            if (!valid)
+                return Unauthorized("Senha incorreta.");
+
+            // Salva nova senha
+            user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.NewPassword);
+            user.NeedsPasswordUpdate = false; // remove o flag
+            await _context.SaveChangesAsync();
+
+            return Ok("Senha atualizada com sucesso.");
         }
 
 

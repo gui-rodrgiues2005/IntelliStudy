@@ -14,6 +14,7 @@ namespace Backend.Models
         public int Pontos { get; set; } = 0;
         public string? Cpf { get; set; }
         public string? Telefone { get; set; }
+        public bool NeedsPasswordUpdate { get; set; } = false;
 
         // "Gratuito" ou "Premium"
         public string Plano { get; set; } = "Gratuito";

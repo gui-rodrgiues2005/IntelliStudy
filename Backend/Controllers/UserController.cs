@@ -84,7 +84,6 @@ namespace SaaS_Aluno.Controllers
             return Ok(new { user.Id, user.Name, user.Email, user.Role });
         }
 
-
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginDto dto)
         {
@@ -102,27 +101,31 @@ namespace SaaS_Aluno.Controllers
             }
             catch (BCrypt.Net.SaltParseException)
             {
-                // Hash antigo detectado (provavelmente $2a$)
+                // Caso o hash seja inválido (formato antigo $2a$ ou corrompido)
                 isLegacyHash = true;
-                passwordValid = false; // força usuário a redefinir
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Erro ao verificar hash: {ex.Message}");
+                return StatusCode(500, "Erro interno ao processar login.");
             }
 
             if (!passwordValid)
             {
-                // Se o erro for por hash antigo, sinaliza o frontend
                 if (isLegacyHash)
                 {
+                    // 🔸 Retorna resposta especial para frontend abrir modal
                     return Ok(new
                     {
                         requiresPasswordUpdate = true,
-                        message = "Por questões de segurança, precisamos que você confirme sua senha."
+                        message = "Sua senha precisa ser atualizada para continuar."
                     });
                 }
 
                 return Unauthorized("Email ou senha incorretos.");
             }
 
-            // Se o hash for antigo ($2a$), atualiza automaticamente
+            // 🔹 Se o hash antigo ($2a$) for válido, atualiza automaticamente
             if (user.PasswordHash.StartsWith("$2a$"))
             {
                 user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password);
@@ -165,6 +168,7 @@ namespace SaaS_Aluno.Controllers
                 }
             });
         }
+
 
 
 

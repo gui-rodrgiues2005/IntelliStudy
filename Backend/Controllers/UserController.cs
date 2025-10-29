@@ -99,11 +99,11 @@ namespace SaaS_Aluno.Controllers
             {
                 passwordValid = BCrypt.Net.BCrypt.Verify(dto.Password, user.PasswordHash);
             }
-            catch (BCrypt.Net.SaltParseException)
+            catch
             {
-                // Hash antigo detectado
+                // Hash inválido ou antigo ($2a$), vamos apenas sinalizar que precisa atualizar
                 isLegacyHash = true;
-                passwordValid = BCrypt.Net.BCrypt.Verify(dto.Password, user.PasswordHash, true);
+                passwordValid = false;
             }
 
             if (!passwordValid)

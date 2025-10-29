@@ -15,6 +15,7 @@ const Login = () => {
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [newPassword, setNewPassword] = useState("");
   const [modalMensagem, setModalMensagem] = useState("");
+  const [userId, setUserId] = useState(null);
 
   const navigate = useNavigate();
 
@@ -31,19 +32,21 @@ const Login = () => {
 
       const data = await response.json();
 
+      if (response.ok && data.requiresPasswordUpdate) {
+        setShowPasswordModal(true);
+        setUserId(data.userId);
+        setMensagem(data.message);
+        return;
+      }
+
       if (response.ok) {
         localStorage.setItem("token", data.token);
         navigate("/dashboard");
       } else {
-        // Se o backend disse que precisa atualizar a senha
-        if (data.requiresPasswordUpdate) {
-          setShowPasswordModal(true);
-        } else {
-          setMensagem("Erro: " + data.message);
-        }
+        setMensagem("Erro: " + (data.message || "Falha ao entrar."));
       }
     } catch (err) {
-      setMensagem("Erro com o servidor. Se o problema persistir, tente novamente mais tarde.");
+      setMensagem("Erro de conexão com o servidor. Tente novamente.");
     }
   };
 
@@ -136,20 +139,14 @@ const Login = () => {
         </div>
       </div>
 
-      {/* --- Modal simples para atualizar senha --- */}
       {showPasswordModal && (
         <div className="modal-overlay">
           <div className="modal">
-            <h3>Estamos atualizando nossa segurança</h3>
-            <p>Por questões de segurança, confirme sua senha.</p>
-            <input
-              type="password"
-              placeholder="Nova senha"
-              value={newPassword}
-              onChange={(e) => setNewPassword(e.target.value)}
-            />
-            {modalMensagem && <p className="modal-message">{modalMensagem}</p>}
-            <button onClick={handleUpdatePassword}>Atualizar senha</button>
+            <h3>Atualização de segurança</h3>
+            <p>{mensagem}</p>
+            <button onClick={() => navigate("/update-password")}>
+              Atualizar agora
+            </button>
           </div>
         </div>
       )}

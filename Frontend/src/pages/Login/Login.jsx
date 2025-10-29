@@ -33,20 +33,20 @@ const Login = () => {
 
       if (response.ok) {
         localStorage.setItem("token", data.token);
-
-        // Se o backend indicar que precisa atualizar senha
+        navigate("/dashboard");
+      } else {
+        // Se o backend disse que precisa atualizar a senha
         if (data.requiresPasswordUpdate) {
           setShowPasswordModal(true);
         } else {
-          navigate("/dashboard");
+          setMensagem("Erro: " + data.message);
         }
-      } else {
-        setMensagem("Erro: " + data.message || "Email ou senha incorretos.");
       }
     } catch (err) {
-      setMensagem("Erro de conexão com o servidor. Tente novamente.");
+      setMensagem("Erro com o servidor. Se o problema persistir, tente novamente mais tarde.");
     }
   };
+
 
   const handleUpdatePassword = async () => {
     setModalMensagem("Atualizando senha...");
@@ -55,7 +55,7 @@ const Login = () => {
 
       const response = await fetch(`${API_URL}/api/User/update-password`, {
         method: "POST",
-        headers: { 
+        headers: {
           "Content-Type": "application/json",
           "Authorization": `Bearer ${token}`
         },

@@ -122,7 +122,7 @@ namespace SaaS_Aluno.Controllers
                 });
             }
 
-            // Caso hash antigo, mas já atualizado, rehash normal
+            // Caso hash antigo, mas já atualizado ou hash normal, rehash seguro
             if (passwordValid && user.PasswordHash.StartsWith("$2a$"))
             {
                 user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password);
@@ -192,9 +192,8 @@ namespace SaaS_Aluno.Controllers
             user.NeedsPasswordUpdate = false; // remove o flag
             await _context.SaveChangesAsync();
 
-            return Ok("Senha atualizada com sucesso.");
+            return Ok(new { message = "Senha atualizada com sucesso." });
         }
-
 
         [Authorize]
         [HttpGet("profile")]

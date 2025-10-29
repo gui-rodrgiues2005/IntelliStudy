@@ -7,6 +7,7 @@ using Microsoft.OpenApi.Models;
 using Backend.Services;
 using Backend.Middleware;
 using Stripe;
+using BCrypt.Net;
 using Microsoft.Extensions.Configuration; // Necessário
 
 var builder = WebApplication.CreateBuilder(args);

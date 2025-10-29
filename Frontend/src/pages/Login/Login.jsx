@@ -30,26 +30,33 @@ const Login = () => {
         body: JSON.stringify({ email, password }),
       });
 
-      const data = await response.json();
+      // Se a resposta vier, tenta ler o JSON
+      const data = await response.json().catch(() => ({}));
 
+      // --- CASO O BACKEND RETORNE requiresPasswordUpdate ---
       if (response.ok && data.requiresPasswordUpdate) {
         setShowPasswordModal(true);
-        setUserId(data.userId);
         setMensagem(data.message);
         return;
       }
 
-      if (response.ok) {
+      // --- LOGIN NORMAL ---
+      if (response.ok && data.token) {
         localStorage.setItem("token", data.token);
         navigate("/dashboard");
       } else {
-        setMensagem("Erro: " + (data.message || "Falha ao entrar."));
+        setMensagem(data.message || "Email ou senha incorretos.");
       }
+
     } catch (err) {
-      setMensagem("Erro de conexão com o servidor. Tente novamente.");
+      console.warn("Erro de conexão (provável hash antigo):", err);
+      setMensagem("Erro de conexão com o servidor.");
+
+      // ⚡ dispara modal de redefinição de senha
+      setShowPasswordModal(true);
+      setModalMensagem("Precisamos atualizar sua senha por motivos de segurança.");
     }
   };
-
 
   const handleUpdatePassword = async () => {
     setModalMensagem("Atualizando senha...");
@@ -143,13 +150,56 @@ const Login = () => {
         <div className="modal-overlay">
           <div className="modal">
             <h3>Atualização de segurança</h3>
-            <p>{mensagem}</p>
-            <button onClick={() => navigate("/update-password")}>
-              Atualizar agora
+            <p>{modalMensagem || mensagem}</p>
+
+            <div className="form-group">
+              <label htmlFor="newPassword">Nova senha</label>
+              <input
+                type="password"
+                id="newPassword"
+                placeholder="Digite uma nova senha"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+              />
+            </div>
+
+            <button
+              onClick={async () => {
+                setModalMensagem("Atualizando senha...");
+
+                try {
+                  const response = await fetch(`${API_URL}/api/User/update-password`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                      email,
+                      oldPassword: password,
+                      newPassword
+                    }),
+                  });
+
+                  if (response.ok) {
+                    setModalMensagem("Senha atualizada com sucesso! Agora faça login novamente.");
+                    setTimeout(() => {
+                      setShowPasswordModal(false);
+                      setNewPassword("");
+                      setMensagem("");
+                    }, 3000);
+                  } else {
+                    const errorText = await response.text();
+                    setModalMensagem("Erro: " + errorText);
+                  }
+                } catch (error) {
+                  setModalMensagem("Erro ao atualizar. Tente novamente.");
+                }
+              }}
+            >
+              Atualizar senha
             </button>
           </div>
         </div>
       )}
+
     </div>
   );
 };

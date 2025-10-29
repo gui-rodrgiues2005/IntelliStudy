@@ -171,31 +171,32 @@ namespace SaaS_Aluno.Controllers
         [HttpPost("update-password")]
         public async Task<IActionResult> UpdatePassword([FromBody] UpdatePasswordDto dto)
         {
-            var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == dto.UserId);
-            if (user == null)
-                return NotFound();
+            var user = await _context.Users.FirstOrDefaultAsync(u =>
+                u.Id == dto.UserId || u.Email == dto.Email);
 
-            // Valida senha antiga (legacy mode se necessário)
+            if (user == null)
+                return NotFound("Usuário não encontrado.");
+
             bool valid = false;
             try
             {
                 valid = BCrypt.Net.BCrypt.Verify(dto.OldPassword, user.PasswordHash);
             }
-            catch (BCrypt.Net.SaltParseException)
+            catch
             {
-                valid = BCrypt.Net.BCrypt.Verify(dto.OldPassword, user.PasswordHash, true);
+                valid = false;
             }
 
             if (!valid)
-                return Unauthorized("Senha incorreta.");
+                return Unauthorized("Senha antiga incorreta.");
 
-            // Salva nova senha
             user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.NewPassword);
-            user.NeedsPasswordUpdate = false; // remove o flag
+            user.NeedsPasswordUpdate = false;
             await _context.SaveChangesAsync();
 
-            return Ok(new { message = "Senha atualizada com sucesso." });
+            return Ok("Senha atualizada com sucesso.");
         }
+
 
         [Authorize]
         [HttpGet("profile")]

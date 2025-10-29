@@ -158,34 +158,34 @@ namespace SaaS_Aluno.Controllers
         }
 
 
-        [HttpPost("update-password")]
-        public async Task<IActionResult> UpdatePassword([FromBody] UpdatePasswordDto dto)
-        {
-            var user = await _context.Users.FirstOrDefaultAsync(u =>
-                u.Id == dto.UserId || u.Email == dto.Email);
+        // [HttpPost("update-password")]
+        // public async Task<IActionResult> UpdatePassword([FromBody] UpdatePasswordDto dto)
+        // {
+        //     var user = await _context.Users.FirstOrDefaultAsync(u =>
+        //         u.Id == dto.UserId || u.Email == dto.Email);
 
-            if (user == null)
-                return NotFound("Usuário não encontrado.");
+        //     if (user == null)
+        //         return NotFound("Usuário não encontrado.");
 
-            bool valid = false;
-            try
-            {
-                valid = BCrypt.Net.BCrypt.Verify(dto.OldPassword, user.PasswordHash);
-            }
-            catch
-            {
-                valid = false;
-            }
+        //     bool valid = false;
+        //     try
+        //     {
+        //         valid = BCrypt.Net.BCrypt.Verify(dto.OldPassword, user.PasswordHash);
+        //     }
+        //     catch
+        //     {
+        //         valid = false;
+        //     }
 
-            if (!valid)
-                return Unauthorized("Senha antiga incorreta.");
+        //     if (!valid)
+        //         return Unauthorized("Senha antiga incorreta.");
 
-            user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.NewPassword);
-            user.NeedsPasswordUpdate = false;
-            await _context.SaveChangesAsync();
+        //     user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.NewPassword);
+        //     user.NeedsPasswordUpdate = false;
+        //     await _context.SaveChangesAsync();
 
-            return Ok("Senha atualizada com sucesso.");
-        }
+        //     return Ok("Senha atualizada com sucesso.");
+        // }
 
 
         [Authorize]

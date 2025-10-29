@@ -146,7 +146,7 @@ const Login = () => {
         </div>
       </div>
 
-      {showPasswordModal && (
+      {/* {showPasswordModal && (
         <div className="modal-overlay">
           <div className="modal">
             <h3>Atualização de segurança</h3>
@@ -198,7 +198,7 @@ const Login = () => {
             </button>
           </div>
         </div>
-      )}
+      )} */}
 
     </div>
   );

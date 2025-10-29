@@ -32,7 +32,6 @@ public class PlanoDeEstudoController : ControllerBase
     // ... (usings e declaração da classe)
     // Em Backend/Controllers/PlanoDeEstudoController.cs
 
-    // SUBSTITUA O MÉTODO "GerarPlano" POR ESTE:
     [HttpPost("gerar")]
     public async Task<IActionResult> EnfileirarGeracaoPlano([FromBody] CriarPlanoRequestDto request)
     {
@@ -49,31 +48,64 @@ public class PlanoDeEstudoController : ControllerBase
             return Forbid("Limite diário de planos de estudo atingido para o plano atual.");
         }
 
-
         // Validação básica dos dados de entrada
         if (string.IsNullOrWhiteSpace(request.Meta) || request.Materias == null || !request.Materias.Any())
         {
             return BadRequest("Meta e matérias são campos obrigatórios.");
         }
 
-        // 1. Criar o pedido para a fila
-        // Serializamos o objeto de request completo para guardar todo o contexto necessário.
+        var planosAtivos = await _context.PlanosDeEstudo
+            .Where(p => p.UserId == userId && !p.Concluido)
+            .ToListAsync();
+
+        foreach (var p in planosAtivos)
+        {
+            p.Concluido = true;
+        }
+
+        // ================================
+        // Validação de conteúdos proibidos
+        // ================================
+        var termosProibidos = new List<string>
+    {
+        "sexo", "pornografia", "violência", "drogas", "golpes",
+        "posições sexuais", "assédio", "arma", "morte", "suicídio",
+        "terrorismo", "hacker", "pirataria", "conteúdo adulto",
+        "sexo explícito", "ataque", "assassinato", "coito", "masturbação",
+        "prostituição", "crimes", "extorsão", "invasão", "trafico", "arma de fogo",
+        "explosão", "vírus", "malware", "humilhação", "abuso"
+    };
+
+        bool contemTermosProibidos = termosProibidos.Any(t =>
+            request.Meta.Contains(t, StringComparison.OrdinalIgnoreCase) ||
+            request.Materias.Any(m => m.Contains(t, StringComparison.OrdinalIgnoreCase))
+        );
+
+        if (contemTermosProibidos)
+        {
+            return BadRequest(new
+            {
+                erro = "Tema não permitido. A plataforma é exclusiva para estudos educacionais e profissionais sérios."
+            });
+        }
+
+        // ================================
+        // Criar o pedido para a fila
+        // ================================
         var inputJson = JsonSerializer.Serialize(request);
 
         var novoPedido = new GenerationRequest
         {
             UserId = userId,
-            Tipo = GenerationType.PlanoDeEstudo, // Nosso novo tipo de geração!
+            Tipo = GenerationType.PlanoDeEstudo,
             Status = RequestStatus.Pendente,
-            InputTexto = inputJson, // Guardamos o request completo como JSON
+            InputTexto = inputJson,
             CreatedAt = DateTime.UtcNow
         };
 
-        // 2. Adicionar o pedido à tabela de fila e salvar
         _context.GenerationRequests.Add(novoPedido);
         await _context.SaveChangesAsync();
 
-        // 3. Retornar o ID do pedido para o frontend poder consultar o status
         return CreatedAtAction(
             actionName: "GetStatusDoPedido",
             controllerName: "Generation",
@@ -81,6 +113,7 @@ public class PlanoDeEstudoController : ControllerBase
             value: new { requestId = novoPedido.Id }
         );
     }
+
 
     // ENDPOINT 2: Buscar o plano de estudos ativo do usuário
     [HttpGet("ativo")]
@@ -124,6 +157,68 @@ public class PlanoDeEstudoController : ControllerBase
         await _context.SaveChangesAsync();
 
         return Ok();
+    }
+
+    // ENDPOINT: Excluir uma sessão de um plano atual
+    [HttpDelete("sessao/{sessaoId}/concluir")]
+    public async Task<IActionResult> ExcluirSessaoPlanoAtual(int sessaoId)
+    {
+        // 1. Identifica o usuário logado
+        var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+
+        // 2. Busca a sessão junto com o plano
+        var sessao = await _context.SessoesDeEstudo
+            .Include(s => s.PlanoDeEstudo)
+            .FirstOrDefaultAsync(s => s.Id == sessaoId);
+
+        if (sessao == null || sessao.PlanoDeEstudo.UserId != userId)
+        {
+            return Forbid("Sessão não encontrada ou não pertence ao usuário.");
+        }
+
+        // 3. Remove a sessão
+        _context.SessoesDeEstudo.Remove(sessao);
+        await _context.SaveChangesAsync();
+
+        return Ok(new { mensagem = "Sessão removida com sucesso." });
+    }
+
+    [HttpDelete("{planoId}")]
+    public async Task<IActionResult> ExcluirPlanoCompleto(int planoId)
+    {
+        try
+        {
+            // 1. Identifica o usuário logado
+            var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+
+            // 2. Busca o plano junto com todas as sessões (usando Include)
+            var plano = await _context.PlanosDeEstudo
+                .Include(p => p.Sessoes) // ← AQUI ESTÁ A CHAVE: Inclui as sessões relacionadas
+                .FirstOrDefaultAsync(p => p.Id == planoId && p.UserId == userId);
+
+            if (plano == null)
+            {
+                return NotFound(new { erro = "Plano não encontrado ou não pertence ao usuário." });
+            }
+
+            // 3. Se houver sessões, remove elas primeiro
+            if (plano.Sessoes != null && plano.Sessoes.Any())
+            {
+                _context.SessoesDeEstudo.RemoveRange(plano.Sessoes);
+            }
+
+            // 4. Remove o plano
+            _context.PlanosDeEstudo.Remove(plano);
+
+            // 5. Salva as mudanças
+            await _context.SaveChangesAsync();
+
+            return Ok(new { mensagem = "Plano e todas as sessões foram excluídos com sucesso." });
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { erro = $"Erro ao excluir plano: {ex.Message}" });
+        }
     }
 
     // Método para mapear o modelo do banco para o DTO do frontend

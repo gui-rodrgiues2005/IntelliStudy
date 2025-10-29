@@ -2,9 +2,10 @@
 
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Calendar, Plus, FileText, Target, X, Sparkles, Award, Moon } from 'lucide-react';
+import { Calendar, Plus, FileText, Target, X, Sparkles, Award, Moon, Trash } from 'lucide-react';
 import { useStudy } from '../../context/StudyContext';
 import { API_URL } from '../../../config';
+import { toast } from 'react-toastify';
 import './PlanoDeEstudo.scss';
 
 const getNomeDiaAtual = () => {
@@ -93,40 +94,50 @@ function PlanoDeEstudo() {
                 throw new Error('ID da requisição não foi retornado pelo servidor.');
             }
 
-            // 2. Função de Polling: Pergunta pelo resultado a cada 3 segundos
-            const pollForPlano = (retriesLeft = 20) => { // Tenta por até 60 segundos
-                if (retriesLeft === 0) {
-                    alert("A geração do plano está demorando mais que o esperado. A página será recarregada para verificar o resultado.");
-                    window.location.reload();
+            const pollForPlano = async (retriesLeft = 10) => {
+                if (retriesLeft <= 0) {
+                    console.warn("⏰ Tempo limite ao esperar o plano.");
+                    setIsLoading(false);
+                    toast.error("Tempo limite ao gerar o plano. Tente novamente.");
                     return;
                 }
 
-                // Pergunta pela rota /ativo, que retornará o plano quando estiver pronto
-                setTimeout(async () => {
-                    console.log(`Tentando buscar plano... Tentativas restantes: ${retriesLeft}`);
+                try {
                     const planoPronto = await fetchJSON(`${API_URL}/api/plano-de-estudo/ativo`, {
                         headers: { 'Authorization': `Bearer ${token}` }
                     });
 
-                    // Verifica se o plano retornado é realmente um novo plano (comparando a meta, por exemplo)
-                    // E se o plano antigo (se existia) é diferente do novo.
                     if (planoPronto && (!plano || plano.id !== planoPronto.id)) {
-                        console.log("Plano novo encontrado!", planoPronto);
-                        setPlano(planoPronto); // SUCESSO! Atualiza a tela.
-                        setIsLoading(false); // Esconde o loader.
+                        console.log("✅ Novo plano carregado:", planoPronto);
+                        setPlano(planoPronto);
+                        setIsLoading(false);
+                        setMeta('');
+                        setMaterias('');
+                        setHorasPorSemana(10);
                     } else {
-                        // Se não, tenta de novo
-                        pollForPlano(retriesLeft - 1);
+                        console.log("⌛ Aguardando novo plano...");
+                        setTimeout(() => pollForPlano(retriesLeft - 1), 3000);
                     }
-                }, 3000);
+                } catch (err) {
+                    console.error("Erro ao buscar plano:", err);
+                    setTimeout(() => pollForPlano(retriesLeft - 1), 3000);
+                }
             };
 
-            // Inicia o processo de polling
-            pollForPlano();
+            // 3. Inicia o polling após pequena pausa
+            setTimeout(() => pollForPlano(), 2000);
 
         } catch (error) {
             console.error("Falha ao criar plano.", error);
-            alert(`Erro ao criar plano: ${error.message}`);
+
+            let mensagemErro = error.message;
+
+            try {
+                const parsed = JSON.parse(error.message);
+                if (parsed.erro) mensagemErro = parsed.erro;
+            } catch { }
+
+            toast.error(mensagemErro);
             setIsLoading(false);
         }
     };
@@ -172,6 +183,132 @@ function PlanoDeEstudo() {
         }
     };
 
+    // --- EXCLUIR SESSÃO ---
+    // --- EXCLUIR SESSÃO ---
+    const handleExcluirSessao = async (sessaoId) => {
+        if (!plano) return;
+
+        // Toast de confirmação customizado
+        toast.info(
+            <div className="custom-toast-confirm">
+                <p>Deseja realmente excluir esta sessão do seu plano?</p>
+                <div className="toast-actions">
+                    <button
+                        onClick={() => {
+                            toast.dismiss();
+                            executarExclusaoSessao(sessaoId);
+                        }}
+                        className="toast-btn confirm"
+                    >
+                        confirmar
+                    </button>
+                    <button
+                        onClick={() => toast.dismiss()}
+                        className="toast-btn cancel"
+                    >
+                        Cancelar
+                    </button>
+                </div>
+            </div>,
+            {
+                position: "top-center",
+                autoClose: false,
+                closeOnClick: false,
+                draggable: false,
+                closeButton: true,
+                className: 'confirm-toast'
+            }
+        );
+    };
+
+    // Função separada para executar a exclusão da sessão
+    const executarExclusaoSessao = async (sessaoId) => {
+        const planoOriginal = JSON.parse(JSON.stringify(plano));
+        const novoPlano = { ...plano };
+
+        // Remove localmente para atualização imediata
+        novoPlano.cronogramaSemanal.forEach(dia => {
+            dia.sessoes = dia.sessoes?.filter(sessao => sessao.id !== sessaoId) || [];
+        });
+        setPlano(novoPlano);
+
+        try {
+            const token = localStorage.getItem("token");
+            const res = await fetch(`${API_URL}/api/plano-de-estudo/sessao/${sessaoId}/concluir`, {
+                method: 'DELETE',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+
+            if (!res.ok) {
+                throw new Error("Falha ao excluir a sessão.");
+            }
+
+            toast.success("Sessão excluída com sucesso!");
+        } catch (error) {
+            console.error("Erro ao excluir sessão:", error);
+            toast.error("Não foi possível excluir a sessão.");
+            setPlano(planoOriginal); // Restaura plano original em caso de erro
+        }
+    };
+
+    // --- EXCLUIR TODO O PLANO ---
+    const handleExcluirTodoPlano = async () => {
+        if (!plano) return;
+
+        // Toast de confirmação customizado
+        toast.info(
+            <div className="custom-toast-confirm">
+                <p>Deseja realmente excluir TODAS as sessões do seu plano? Você perferá todo o plano</p>
+                <div className="toast-actions">
+                    <button
+                        onClick={() => {
+                            toast.dismiss();
+                            executarExclusaoPlano();
+                        }}
+                        className="toast-btn confirm"
+                    >
+                        Confirmar
+                    </button>
+                    <button
+                        onClick={() => toast.dismiss()}
+                        className="toast-btn cancel"
+                    >
+                        Cancelar
+                    </button>
+                </div>
+            </div>,
+            {
+                position: "top-center",
+                autoClose: false,
+                closeOnClick: false,
+                draggable: false,
+                closeButton: true,
+                className: 'confirm-toast'
+            }
+        );
+    };
+
+    // Função separada para executar a exclusão do plano
+    const executarExclusaoPlano = async () => {
+        try {
+            const token = localStorage.getItem("token");
+            const res = await fetch(`${API_URL}/api/plano-de-estudo/${plano.id}`, {
+                method: 'DELETE',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+
+            if (!res.ok) {
+                throw new Error("Falha ao excluir o plano.");
+            }
+
+            toast.success("Plano excluído com sucesso!");
+            setPlano(null); // Limpa o plano da state
+        } catch (error) {
+            console.error("Erro ao excluir plano:", error);
+            toast.error("Não foi possível excluir o plano.");
+        }
+    };
+
     const handleGerarResumoDaSessao = (topico) => {
         localStorage.setItem('topicoInicial', topico);
         navigate('/dashboard');
@@ -204,15 +341,19 @@ function PlanoDeEstudo() {
         <>
             <div className="page-header">
                 <div className="header-content">
-                    <Calendar className="header-icon" />
-                    <div>
+                    <div className='tiltle-plano-estudo'>
                         <h1>Plano de Estudo Inteligente</h1>
                         <p>Cronograma de estudos personalizado com IA</p>
                     </div>
                 </div>
-                <button className="btn-novo-plano" onClick={() => setIsModalOpen(true)}>
-                    <Plus size={16} /> Novo Plano
-                </button>
+                <div className='buttons-action-plano'>
+                    <button className="btn-novo-plano" onClick={() => setIsModalOpen(true)}>
+                        <Plus size={16} /> Novo Plano de estudos
+                    </button>
+                    <button className="action-btn delete" onClick={handleExcluirTodoPlano}>
+                        <Trash size={16} /> Excluir todo o plano
+                    </button>
+                </div>
             </div>
 
             {isModalOpen && (
@@ -228,7 +369,7 @@ function PlanoDeEstudo() {
                             <X size={24} />
                         </button>
 
-                        <h2>Criar Novo Plano de Estudos</h2>
+                        <h2>Criar minha sessão de Estudos</h2>
                         <p>
                             Informe seus objetivos e a IA montará o cronograma ideal para você.
                         </p>
@@ -314,7 +455,26 @@ function PlanoDeEstudo() {
         </>
     );
 
-    if (isLoading) return <div className="plano-estudo-page">{renderHeaderEModais()}<p>Carregando plano...</p></div>;
+    if (isLoading) return (
+        <div className="plano-estudo-page">
+            {renderHeaderEModais()}
+            <div className="loading-container">
+                <div className="professional-loader">
+                    <div className="loader-spinner"></div>
+                    <div className="loader-content">
+                        <h3>Preparando seu plano de estudos</h3>
+                        <p>Estamos organizando seu cronograma personalizado...</p>
+                    </div>
+                </div>
+                <div className="loading-progress">
+                    <div className="progress-bar">
+                        <div className="progress-fill"></div>
+                    </div>
+                    <span className="progress-text">Carregando</span>
+                </div>
+            </div>
+        </div>
+    );
     if (!plano) return (
         <div className="plano-estudo-page">
             {renderHeaderEModais()}
@@ -363,10 +523,20 @@ function PlanoDeEstudo() {
                                                     <span>{sessao.topico}</span>
                                                     <small>{sessao.duracaoMinutos} min</small>
                                                 </div>
+                                                {/* BOTÃO DE EXCLUIR ADICIONADO AQUI */}
+                                                <button
+                                                    className="delete-btn"
+                                                    onClick={() => handleExcluirSessao(sessao.id)}
+                                                    title="Excluir sessão"
+                                                >
+                                                    <Trash size={20} />
+                                                    <span className="delete-tooltip">Remover sessão de estudo</span>
+                                                </button>
                                             </div>
                                             <div className="sessao-actions">
-                                                <button className="action-btn" onClick={() => handleGerarResumoDaSessao(sessao.topico)}><FileText size={16} /> Crie um Resumo </button>
-                                                {/* <button className="action-btn"><Target size={16} /> Simulado</button> */}
+                                                <button className="action-btn" onClick={() => handleGerarResumoDaSessao(sessao.topico)}>
+                                                    <FileText size={16} /> Crie um Resumo
+                                                </button>
                                             </div>
                                         </div>
                                     ))

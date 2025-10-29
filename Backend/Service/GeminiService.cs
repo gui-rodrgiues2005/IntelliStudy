@@ -294,40 +294,47 @@ public class GeminiService
 
     public async Task<string> GerarCronogramaAsync(CriarPlanoRequestDto request)
     {
-        // 1. CONSTRUÇÃO DO PROMPT DETALHADO
+        // 1. CONSTRUÇÃO DO JSON DE ERRO PRONTO
+        string jsonErro = JsonSerializer.Serialize(new
+        {
+            erro = "Tema não permitido. A plataforma é exclusiva para estudos acadêmicos e profissionais sérios."
+        });
+
+        // 2. CONSTRUÇÃO DO PROMPT DETALHADO
         var prompt = $"""
-    Você é um planejador de estudos especialista. Sua tarefa é criar um cronograma de estudos semanal em formato JSON.
+Você é um planejador de estudos especialista. Sua tarefa é criar um cronograma de estudos semanal em formato JSON.
 
-    **Instruções para o JSON de saída:**
-    - O JSON deve ser um OBJETO com uma única chave principal chamada "cronogramaSemanal".
-    - O valor de "cronogramaSemanal" deve ser um array de 7 objetos, um para cada dia da semana.
-    - Cada objeto de dia deve ter duas propriedades: "dia" (um número de 1 para Segunda a 7 para Domingo) e "sessoes" (um array de objetos de sessão).
-    - Cada objeto de sessão deve ter duas propriedades: "topico" (string) e "duracao" (número).
-    - Se um dia não tiver estudo, o array "sessoes" deve estar vazio.
-    - **NÃO inclua nenhum texto, explicação ou formatação de markdown (```json) antes ou depois do JSON. A saída deve ser APENAS o JSON puro.**
+**DIRETRIZ DE SEGURANÇA CRÍTICA:** Você SÓ PODE gerar cronogramas para temas estritamente acadêmicos, educacionais ou profissionais (como Matemática, História, Concursos Públicos, Vestibulares, Linguagens de Programação, etc.). 
+Se o Objetivo Principal ou Tópicos a Cobrir se referirem a qualquer assunto inapropriado, sexual, ilegal, violento ou não acadêmico, sua resposta DEVE ser APENAS o JSON de ERRO: {jsonErro}.
 
-    **Dados do Aluno:**
-    - **Objetivo Principal:** {request.Meta}
-    - **Data da Prova:** {request.DataProva.ToString("dd/MM/yyyy")}
-    - **Tópicos a Cobrir:** {string.Join(", ", request.Materias)}
-    - **Total de Horas de Estudo por Semana, exija que ele estude pelo menos 90 minutos por dia:** {request.HorasPorSemana}
+**Instruções para o JSON de saída:**
+- O JSON deve ser um OBJETO com uma única chave principal chamada "cronogramaSemanal" OU a chave "erro" em caso de falha de segurança.
+- O valor de "cronogramaSemanal" deve ser um array de 7 objetos, um para cada dia da semana.
+- Cada objeto de dia deve ter duas propriedades: "dia" (um número de 1 para Segunda a 7 para Domingo) e "sessoes" (um array de objetos de sessão).
+- Cada objeto de sessão deve ter duas propriedades: "topico" (string) e "duracao" (número).
+- Se um dia não tiver estudo, o array "sessoes" deve estar vazio.
+- **NÃO inclua nenhum texto, explicação ou formatação de markdown antes ou depois do JSON. A saída deve ser APENAS o JSON puro.**
 
-    **Tarefa:**
-    Com base nos dados do aluno, distribua os tópicos de forma equilibrada ao longo da semana. Gere o cronograma no formato de OBJETO JSON especificado.
-    """;
+**Dados do Aluno:**
+- **Objetivo Principal:** {request.Meta}
+- **Data da Prova:** {request.DataProva:dd/MM/yyyy}
+- **Tópicos a Cobrir:** {string.Join(", ", request.Materias)}
+- **Total de Horas de Estudo por Semana (mínimo 90 minutos por dia):** {request.HorasPorSemana}
 
+**Tarefa:**
+Com base nos dados do aluno, distribua os tópicos de forma equilibrada ao longo da semana. Gere o cronograma no formato de OBJETO JSON especificado.
+""";
+
+        // 3. GERAR CONTEÚDO COM IA
         string respostaBrutaDaIA = await GenerateContentAsync(prompt);
 
-        // --- INÍCIO DA MUDANÇA ---
-
-        // 2. LIMPEZA DA RESPOSTA
-        // Remove os blocos de código markdown (```json e ```) e espaços em branco extras.
+        // 4. LIMPEZA DA RESPOSTA
         var respostaLimpa = respostaBrutaDaIA
-            .Trim() // Remove espaços no início e no fim
-            .Replace("```json", "") // Remove o início do bloco de código
-            .Replace("```", ""); // Remove o fim do bloco de código
+            .Trim()
+            .Replace("```json", "")
+            .Replace("```", "");
 
-        // 3. RETORNO DA STRING JSON LIMPA
+        // 5. RETORNO DO JSON LIMPO
         return respostaLimpa.Trim();
     }
 }

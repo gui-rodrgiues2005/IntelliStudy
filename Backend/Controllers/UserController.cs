@@ -92,26 +92,35 @@ namespace SaaS_Aluno.Controllers
             if (user == null)
                 return Unauthorized("Email ou senha incorretos.");
 
-            bool passwordValid;
+            bool passwordValid = false;
+
+            // Tenta verificar senha normalmente
             try
             {
-                // Tenta verificar normalmente
                 passwordValid = BCrypt.Net.BCrypt.Verify(dto.Password, user.PasswordHash);
             }
             catch (BCrypt.Net.SaltParseException)
             {
-                passwordValid = BCrypt.Net.BCrypt.Verify(dto.Password, user.PasswordHash, true);
+                // Se hash antigo falhar, tenta no modo legacy
+                try
+                {
+                    passwordValid = BCrypt.Net.BCrypt.Verify(dto.Password, user.PasswordHash, true);
+                }
+                catch
+                {
+                    passwordValid = false;
+                }
             }
 
             if (!passwordValid)
                 return Unauthorized("Email ou senha incorretos.");
 
-            if (passwordValid && user.PasswordHash.StartsWith("$2a$"))
+            // Atualiza o hash para o novo formato, se necessário
+            if (passwordValid && !user.PasswordHash.StartsWith("$2b$"))
             {
                 user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password);
                 await _context.SaveChangesAsync();
             }
-
 
             // 🔹 Verifica se o plano expirou
             if (user.PlanoExpiraEm.HasValue && user.PlanoExpiraEm.Value <= DateTime.UtcNow)
@@ -121,7 +130,7 @@ namespace SaaS_Aluno.Controllers
                 await _context.SaveChangesAsync();
             }
 
-            // 🔹 Gera o token JWT normalmente
+            // 🔹 Gera o token JWT
             var tokenHandler = new JwtSecurityTokenHandler();
             var key = Encoding.ASCII.GetBytes(_config["Jwt:Key"]);
             var tokenDescriptor = new SecurityTokenDescriptor
@@ -157,6 +166,7 @@ namespace SaaS_Aluno.Controllers
                 }
             });
         }
+
 
         [Authorize]
         [HttpGet("profile")]

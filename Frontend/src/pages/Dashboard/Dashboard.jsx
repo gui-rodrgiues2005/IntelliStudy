@@ -1,3 +1,4 @@
+import React from 'react';
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate, NavLink } from 'react-router-dom'; // Para a função de logout
 import ReactMarkdown from 'react-markdown';
@@ -14,11 +15,104 @@ import {
   CheckCircle2,
   XCircle,
   Sparkles,
-  Clock
+  Clock,
+  Plus,
+  Send,
+  MoveUp,
+  Paperclip,
+  X
 } from 'lucide-react';
 import { useStudy } from '../../context/StudyContext';
 
 import './Dashboard.scss';
+
+
+
+// Componente de destaque dos resumos
+const ParagraphWithHighlights = ({ children, ...props }) => {
+  const highlightKeywords = (text) => {
+    if (typeof text !== 'string') return text;
+
+    // Lista de palavras-chave comuns em resumos
+    const keywords = [
+      'conceito', 'definição', 'princípio', 'teoria', 'fundamento', 'base',
+      'objetivo', 'finalidade', 'propósito', 'meta',
+      'característica', 'atributo', 'propriedade', 'qualidade',
+      'vantagem', 'benefício', 'vantagens', 'benefícios',
+      'desvantagem', 'limitação', 'desvantagens', 'limitações',
+      'importante', 'essencial', 'crucial', 'fundamental', 'significativo',
+      'principal', 'primordial', 'básico', 'central',
+      'diferente', 'distinto', 'específico', 'particular',
+      'exemplo', 'caso', 'instância', 'ilustração',
+      'portanto', 'consequentemente', 'assim', 'dessa forma',
+      'entretanto', 'contudo', 'porém', 'no entanto',
+      'além disso', 'adicionalmente', 'também', 'igualmente',
+      'análise', 'síntese', 'resumo', 'conclusão',
+      'método', 'metodologia', 'processo', 'procedimento',
+      'resultado', 'achado', 'descoberta', 'conclusão'
+    ];
+
+    // Cores para os destaques
+    const colors = [
+      'rgba(255, 200, 200, 0.3)',
+      'rgba(255, 235, 150, 0.4)',
+      'rgba(200, 230, 255, 0.4)',
+      'rgba(200, 255, 220, 0.4)',
+      'rgba(230, 210, 255, 0.4)',
+      'rgba(255, 220, 200, 0.4)',
+    ];
+
+    // Divide o texto em palavras
+    const words = text.split(/(\s+)/);
+
+    return words.map((word, index) => {
+      const cleanWord = word.toLowerCase().replace(/[.,!?;:()\[\]{}]/g, '');
+
+      if (keywords.includes(cleanWord) && cleanWord.length > 3) {
+        const colorIndex = Math.abs(cleanWord.split('').reduce((a, b) => {
+          return a + b.charCodeAt(0);
+        }, 0)) % colors.length;
+
+        return (
+          <span
+            key={index}
+            className="keyword-highlight"
+            style={{
+              backgroundColor: colors[colorIndex],
+              padding: '0.1rem 0.3rem',
+              borderRadius: '4px',
+              margin: '0 0.1rem',
+              borderBottom: `2px solid ${colors[colorIndex].replace('0.4', '0.8')}`,
+            }}
+          >
+            {word}
+          </span>
+        );
+      }
+
+      return word;
+    });
+  };
+
+  // CORREÇÃO: Processa children sem usar React.Children
+  const processChildren = (children) => {
+    if (typeof children === 'string') {
+      return highlightKeywords(children);
+    }
+
+    if (Array.isArray(children)) {
+      return children.map((child, index) => (
+        <span key={index}>{processChildren(child)}</span>
+      ));
+    }
+
+    return children;
+  };
+
+  return <p {...props}>{processChildren(children)}</p>;
+};
+
+
 
 function Dashboard() {
   const {
@@ -31,7 +125,7 @@ function Dashboard() {
     isGeneratingSummary,
     setIsGeneratingSummary,
     isGeneratingQuiz,
-    setIsGeneratingQuiz
+    setIsGeneratingQuiz,
   } = useStudy();
 
   // --- ESTADOS DO COMPONENTE ---
@@ -49,6 +143,60 @@ function Dashboard() {
   const [resumoId, setResumoId] = useState(null)
   const [isResumoDeArquivo, setIsResumoDeArquivo] = useState(false);
   const hasGeneratedFromLocalStorage = useRef(false);
+  const [showPointsText, setShowPointsText] = useState(false);
+
+  const inspiringPlaceholders = [
+    "Resuma seu texto para estudar melhor...",
+    "Estude uma matéria complexa de forma simples...",
+    "Aprenda de uma vez por todas com resumos inteligentes...",
+    "Transforme conteúdo difícil em aprendizado fácil...",
+    "Digite qualquer tópico e ganhe um resumo personalizado...",
+    "Cole um texto longo e veja ele se transformar em resumo...",
+    "Estude de forma mais eficiente com IA...",
+    "Conquiste seus objetivos de aprendizado...",
+    "Simplifique matérias complexas em minutos...",
+    "O poder do resumo inteligente na palma da sua mão..."
+  ];
+
+  const [placeholderIndex, setPlaceholderIndex] = useState(0);
+  const [typedPlaceholder, setTypedPlaceholder] = useState("");
+
+  useEffect(() => {
+    let charIndex = 0;
+    let forward = true; // controla digitar/apagar
+    let timeout;
+
+    const type = () => {
+      const currentText = inspiringPlaceholders[placeholderIndex];
+
+      if (forward) {
+        // Digita letra por letra
+        setTypedPlaceholder(currentText.slice(0, charIndex));
+        charIndex++;
+        if (charIndex > currentText.length) {
+          forward = false;
+          timeout = setTimeout(type, 1500); // pausa antes de apagar
+          return;
+        }
+      } else {
+        // Apaga letra por letra
+        setTypedPlaceholder(currentText.slice(0, charIndex));
+        charIndex--;
+        if (charIndex < 0) {
+          forward = true;
+          setPlaceholderIndex((prev) => (prev + 1) % inspiringPlaceholders.length);
+          return;
+        }
+      }
+
+      timeout = setTimeout(type, 100);
+    };
+
+    type();
+
+    return () => clearTimeout(timeout);
+  }, [placeholderIndex]);
+
 
   useEffect(() => {
     const fetchUserName = async () => {
@@ -75,31 +223,68 @@ function Dashboard() {
     }
   }, [quiz, isGeneratingQuiz]);
 
-  // --- FUNÇÕES DE MANIPULAÇÃO DE ARQUIVOS E SLIDER ---
-  const handleFileUpload = async (file) => {
+  // Mantém sua lógica de envio
+  const handleFileUpload = async (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    setUploadedFile(file);
+
     const formData = new FormData();
     formData.append("file", file);
 
-    const response = await fetch(`${API_URL}/api/Resumo/resumo-file`, {
-      method: "POST",
-      body: formData
-    });
+    try {
+      const token = localStorage.getItem("token"); // ← ADICIONE ESTA LINHA
+      const response = await fetch(`${API_URL}/api/Resumo/resumo-file`, {
+        method: "POST",
+        headers: {
+          'Authorization': `Bearer ${token}` // ← ADICIONE ESTE HEADER
+        },
+        body: formData,
+      });
 
-    const resumo = await response.json();
-    //console.log(resumo);
+      // VERIFICAÇÃO MELHORADA
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error("Erro na resposta:", errorText);
+        throw new Error(`Erro no upload: ${response.status} - ${errorText}`);
+      }
+
+      // TENTA LER COMO JSON, SE FALHAR, LÊ COMO TEXTO
+      let resumo;
+      const contentType = response.headers.get('content-type');
+
+      if (contentType && contentType.includes('application/json')) {
+        resumo = await response.json();
+      } else {
+        const text = await response.text();
+        console.warn("Resposta não é JSON:", text);
+        // Se não for JSON, talvez seja só uma mensagem de sucesso
+        resumo = { mensagem: text || "Upload realizado com sucesso" };
+      }
+
+      console.log("Upload bem-sucedido:", resumo);
+
+    } catch (err) {
+      console.error("Erro no upload:", err);
+      toast.error("Erro ao fazer upload do arquivo. Tente novamente.");
+    }
   };
 
+  // Drag & Drop para UX
   const handleDragOver = (e) => { e.preventDefault(); setIsDragOver(true); };
   const handleDragLeave = (e) => { e.preventDefault(); setIsDragOver(false); };
   const handleDrop = (e) => {
     e.preventDefault();
     setIsDragOver(false);
-    const files = e.dataTransfer.files;
-    if (files.length > 0) {
-      setUploadedFile(files[0]);
-      //console.log('Arquivo arrastado:', files[0].name);
-    }
+
+    const file = e.dataTransfer.files[0];
+    if (!file) return;
+
+    setUploadedFile(file); // Atualiza a UX
+    handleFileUpload({ target: { files: [file] } });
   };
+
   const handleSliderChange = (e) => { setNumQuestions(parseInt(e.target.value)); };
 
   const handleGenerateSummary = async (topicToGenerate, fileInput, text) => {
@@ -563,50 +748,127 @@ function Dashboard() {
         <div className="card">
           <div className="card-content">
             <div className="content-space">
-              <div className="form-group">
-                <label className="form-label" htmlFor="materia-textarea">
-                  <h3><FileText size={20} /> Entrada da Matéria</h3>
-                  <span>Cole ou digite aqui o conteúdo que você deseja estudar.</span>
-                </label>
-                <textarea
-                  id="materia-textarea"
-                  className="form-textarea"
-                  value={content}
-                  onChange={(e) => setContent(e.target.value)}
-                  placeholder="Ex: 'O que foi o Renascimento?' ou cole um texto completo....."
+              <div className="unified-search-bar">
+                <div
+                  className={`search-input-container ${isDragOver ? 'drag-over' : ''}`}
+                  onDragOver={handleDragOver}
+                  onDragLeave={handleDragLeave}
+                  onDrop={handleDrop}
+                >
+                  <input
+                    type="text"
+                    className="unified-search-input"
+                    value={content}
+                    onChange={(e) => setContent(e.target.value)}
+                    placeholder={typedPlaceholder}
+                    onKeyPress={(e) => e.key === 'Enter' && handleGenerateSummary(null, uploadedFile)}
+                  />
+
+                  {uploadedFile && (
+                    <div className="file-indicator">
+                      <FileText size={14} />
+                      <span>{uploadedFile.name}</span>
+                      <button onClick={() => setUploadedFile(null)} className="remove-file-btn">
+                        <X size={14} />
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                {/* BOTÕES DO LADO DIREITO */}
+                <div className="search-actions-right">
+                  <button
+                    className="options-resumo-btn"
+                    onClick={() => document.getElementById('file-upload').click()}
+                    title="Anexar arquivo"
+                  >
+                    <Paperclip size={20} />
+                  </button>
+
+                  <button
+                    className="btn-enviar-resumo"
+                    onClick={() => handleGenerateSummary(null, uploadedFile)}
+                    disabled={isGeneratingSummary || (!content && !uploadedFile)}
+                  >
+                    {isGeneratingSummary ? <div className="loading-spinner-mini"></div> : <MoveUp size={20} />}
+                  </button>
+                </div>
+
+                <input
+                  type="file"
+                  id="file-upload"
+                  accept=".pdf,.doc,.docx"
+                  onChange={handleFileUpload}
+                  className="file-input-hidden"
                 />
               </div>
-              <div className={`upload-area ${isDragOver ? 'drag-over' : ''}`} onDragOver={handleDragOver} onDragLeave={handleDragLeave} onDrop={handleDrop}>
-                <FileUp className="upload-icon" />
-                <p className="upload-text">{uploadedFile ? `Arquivo selecionado: ${uploadedFile.name}` : 'Ou faça upload de PDF/DOCX'}</p>
-                <input type="file" accept=".pdf,.doc,.docx" onChange={handleFileUpload} className="file-input" id="file-upload" />
-                <label htmlFor="file-upload" className="upload-link">Clique para selecionar arquivos</label>
-              </div>
 
-              <button
-                className="btn btn-primary"
-                onClick={() => handleGenerateSummary(null, uploadedFile)}
-                disabled={isGeneratingSummary}
+              {/* DICA DE PONTOS - VERSÃO COMPACTA */}
+              <div
+                className="points-tip-compact"
+                onClick={() => setShowPointsText(!showPointsText)}
+                style={{ cursor: 'pointer' }}
               >
-                <FileText size={20} />
-                {isGeneratingSummary ? loadingMessage : "Gerar Resumo"}
-              </button>
-
-              <div className="points-tip">
-                <Gift size={18} />
-                <span>Cada resumo equivale a <strong>+5 minutos</strong> de estudos nas suas conquistas !</span>
+                <Gift size={16} />
+                {showPointsText && (
+                  <span><strong>+5min</strong> de estudos por resumo</span>
+                )}
               </div>
+              {/* ÁREA DE RESULTADOS */}
               <div className="result-section">
                 {isGeneratingSummary ? (
-                  <div className="summary-placeholder">
-                    <div className="placeholder-line"></div>
-                    <div className="placeholder-line"></div>
-                    <div className="placeholder-line short"></div>
+                  <div className="professional-loader">
+                    <div className="loader-header">
+                      <div className="loader-icon">
+                        <div className="spinner"></div>
+                        <FileText className="file-icon" size={24} />
+                      </div>
+                      <div className="loader-text">
+                        <h3>Preparando seu Resumo Inteligente</h3>
+                        <p>{loadingMessage}</p>
+                      </div>
+                    </div>
+
+                    <div className="progress-container">
+                      <div className="progress-bar">
+                        <div className="progress-fill"></div>
+                      </div>
+                      <span className="progress-text">Processando conteúdo...</span>
+                    </div>
+
+                    <div className="loader-features">
+                      <div className="feature-item">
+                        <div className="feature-icon">🔍</div>
+                        <span>Analisando pontos-chave</span>
+                      </div>
+                      <div className="feature-item">
+                        <div className="feature-icon">📝</div>
+                        <span>Estruturando informações</span>
+                      </div>
+                      <div className="feature-item">
+                        <div className="feature-icon">✨</div>
+                        <span>Otimizando para estudo</span>
+                      </div>
+                    </div>
                   </div>
                 ) : (
                   resumoGerado && (
                     <div className="markdown-content">
-                      <ReactMarkdown>
+                      <ReactMarkdown
+                        components={{
+                          // Personaliza parágrafos para destacar palavras-chave
+                          p: ({ node, ...props }) => <ParagraphWithHighlights {...props} />,
+                          // Mantém outros elementos do markdown
+                          h1: ({ node, ...props }) => <h1 className="markdown-heading" {...props} />,
+                          h2: ({ node, ...props }) => <h2 className="markdown-heading" {...props} />,
+                          h3: ({ node, ...props }) => <h3 className="markdown-heading" {...props} />,
+                          ul: ({ node, ...props }) => <ul className="markdown-list" {...props} />,
+                          ol: ({ node, ...props }) => <ol className="markdown-list" {...props} />,
+                          li: ({ node, ...props }) => <li className="markdown-list-item" {...props} />,
+                          strong: ({ node, ...props }) => <strong className="markdown-strong" {...props} />,
+                          em: ({ node, ...props }) => <em className="markdown-emphasis" {...props} />,
+                        }}
+                      >
                         {typeof resumoGerado === "string"
                           ? resumoGerado
                           : resumoGerado.texto || resumoGerado.ResumoTexto || ""}
@@ -621,6 +883,14 @@ function Dashboard() {
 
         {/* Seção do Simulado */}
         <div className="card simulado-card">
+          <div class="practice-header">
+            <h2 class="practice-title">
+              <span class="title-emoji">🚀</span>
+              Hora de colocar conhecimento em ação!
+            </h2>
+            <p className='practice-text'>Vamos colocar em prática, tudo oque você viu no seu resumo</p>
+          </div>
+          
           <div className="card-header-gradient">
             <div className="header-icon-wrapper">
               <Target />
@@ -638,7 +908,6 @@ function Dashboard() {
               {/* 3. Card Interno de Configuração */}
               <div className="config-card">
                 <h4>Configurar Simulado</h4>
-
                 <div className="slider-container">
                   <label className="slider-label">
                     <span>Número de questões</span>
@@ -674,11 +943,16 @@ function Dashboard() {
                   }
                 </span>
               </button>
-
               {/* 5. Dica sobre os Pontos */}
-              <div className="points-tip">
-                <Clock size={18} />
-                <span>Cada acerto no simulado vale <strong>+10 pontos</strong> para o ranking!</span>
+              <div
+                className="points-tip-compact"
+                onClick={() => setShowPointsText(!showPointsText)}
+                style={{ cursor: 'pointer' }}
+              >
+                <Gift size={16} />
+                {showPointsText && (
+                  <span>Cada acerto no simulado <strong>+10 pontos no Hall da Fama</strong></span>
+                )}
               </div>
 
               <div ref={quizContainerRef}> {/* A REF É ANEXADA AQUI */}
@@ -732,7 +1006,7 @@ function Dashboard() {
                         </div>
                       );
                     })}
-                    {score === null && (<button className="btn btn-success" onClick={handleSubmitQuiz}>Finalizar e Corrigir</button>)}
+                    {score === null && (<button className="btn-submit-quiz" onClick={handleSubmitQuiz}>Finalizar e Corrigir</button>)}
                   </div>
                 )}
               </div>

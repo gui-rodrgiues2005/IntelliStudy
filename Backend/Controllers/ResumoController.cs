@@ -94,70 +94,54 @@ namespace Backend.Controllers
         [HttpPost("resumo-file")]
         public async Task<IActionResult> ResumirArquivo(IFormFile file)
         {
-            var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
-            var user = await _planoService.GetUserAsync(userId);
-
-            if (user == null)
-                return Unauthorized("Usuário não encontrado.");
-
-            if (!_planoService.PodeGerarResumo(user))
-                return Forbid("Limite diário de resumos atingido para o plano atual.");
-
             if (file == null || file.Length == 0)
                 return BadRequest("Arquivo inválido.");
 
-            var fileName = Path.GetFileNameWithoutExtension(file.FileName); // 🚨 Pegar o nome do arquivo SEM extensão para o título
-            var tempPath = Path.Combine(Path.GetTempPath(), file.FileName);
+            var tempFileName = $"{Guid.NewGuid()}_{file.FileName}";
+            var tempPath = Path.Combine(Path.GetTempPath(), tempFileName);
 
-            // Salvar o arquivo temporariamente
-            using (var stream = System.IO.File.Create(tempPath))
+            // Salvar temporariamente
+            using (var writeStream = System.IO.File.Create(tempPath))
             {
-                await file.CopyToAsync(stream);
+                await file.CopyToAsync(writeStream);
             }
 
             try
             {
-                // 1️⃣ Extrair o texto BRUTO do arquivo (o livro inteiro)
-                using var stream = System.IO.File.OpenRead(tempPath);
-                IFormFile arquivoFake = new FormFile(stream, 0, stream.Length, null, file.FileName);
-
-                var textoExtraidoBruto = await _geminiService.ExtractTextAsync(arquivoFake);
-
-                if (string.IsNullOrWhiteSpace(textoExtraidoBruto))
-                    return BadRequest("Não foi possível extrair texto do arquivo.");
-
-                // 2️⃣ Gerar resumo conciso com a IA (O TEXTO FINAL)
-                // Use o texto BRUTO extraído para pedir um resumo
-                var resumoConciso = await _geminiService.GenerateSummaryAsync(textoExtraidoBruto);
-
-                // 3️⃣ Criar o registro na tabela de Resumos
-                var novoResumo = new Resumo
+                // Ler arquivo para processar
+                using (var readStream = System.IO.File.OpenRead(tempPath))
                 {
-                    // 🚨 AJUSTE CRÍTICO: 
-                    // TopicoOriginal deve ser o título.
-                    TopicoOriginal = fileName,
+                    IFormFile arquivoFake = new FormFile(readStream, 0, readStream.Length, null, file.FileName);
 
-                    // ResumoTexto deve ser o conteúdo resumido.
-                    ResumoTexto = resumoConciso,
+                    // Extrair texto
+                    var textoExtraidoBruto = await _geminiService.ExtractTextAsync(arquivoFake);
+                    if (string.IsNullOrWhiteSpace(textoExtraidoBruto))
+                        return BadRequest("Não foi possível extrair texto do arquivo.");
 
-                    // ⚠️ O texto BRUTO não precisa ser salvo, mas se você precisar:
-                    // TextoBrutoDoArquivo = textoExtraidoBruto, 
+                    // Gerar resumo
+                    var resumoConciso = await _geminiService.GenerateSummaryAsync(textoExtraidoBruto);
 
-                    CreatedAt = DateTime.UtcNow,
-                    UserId = userId
-                };
+                    // Criar registro no banco
+                    var novoResumo = new Resumo
+                    {
+                        TopicoOriginal = Path.GetFileNameWithoutExtension(file.FileName),
+                        ResumoTexto = resumoConciso,
+                        CreatedAt = DateTime.UtcNow,
+                        UserId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier))
+                    };
 
-                _context.Resumos.Add(novoResumo);
-                await _context.SaveChangesAsync();
+                    _context.Resumos.Add(novoResumo);
+                    await _context.SaveChangesAsync();
 
-                // 5️⃣ Retornar o resumo pronto
-                return Ok(new
-                {
-                    message = "Resumo gerado com sucesso!",
-                    resumo = resumoConciso,
-                    titulo = fileName, // Retorne o título também
-                    resumoId = novoResumo.Id
-                });
+                    // Retornar JSON com o resumo
+                    return Ok(new
+                    {
+                        message = "Resumo gerado com sucesso!",
+                        resumo = resumoConciso,
+                        titulo = file.FileName,
+                        resumoId = novoResumo.Id
+                    });
+                }
             }
             catch (Exception ex)
             {
@@ -165,11 +149,11 @@ namespace Backend.Controllers
             }
             finally
             {
-                // Apagar arquivo temporário
                 if (System.IO.File.Exists(tempPath))
                     System.IO.File.Delete(tempPath);
             }
         }
+
         // GET: api/resumo
         [HttpGet]
         public async Task<IActionResult> GetResumosDoUsuario()

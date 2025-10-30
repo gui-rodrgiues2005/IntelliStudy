@@ -49,7 +49,7 @@ function Ranking() {
     return (
         <div className="ranking-page">
             <div className="ranking-header">
-                <h1>Tops Inteligentes</h1>
+                <h1>Hall da Fama</h1>
                 <p>Acompanhe os melhores estudantes e veja sua posição no ranking</p>
             </div>
 

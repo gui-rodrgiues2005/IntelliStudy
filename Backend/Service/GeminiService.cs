@@ -93,22 +93,31 @@ public class GeminiService
 
     public async Task<string> GerarResumoAsync(string conteudo)
     {
-        // 🧠 PROMPT ATUALIZADO — “modo professor”
         var prompt = $"""
-    Você é um professor experiente e especializado em diferentes faixas etárias de alunos.
-    Sua tarefa é **gerar resumos educativos e precisos** a partir de textos fornecidos por estudantes.
+Você é um professor especialista em transformar textos complexos em **resumos didáticos, claros e envolventes**.
 
-    Instruções importantes:
-    - Resuma **apenas** as informações que estão presentes no conteúdo.
-    - **Não adicione** explicações extras nem assuntos que não estejam no texto.
-    - Use uma linguagem **clara, didática e direta**, adequada para estudo.
-    - **Não inclua** introduções como "Aqui está seu resumo" ou qualquer tipo de saudação.
-    - O objetivo é ensinar e explicar o conteúdo de forma organizada e fiel ao material.
+**Objetivo:** Criar um resumo educativo que facilite a compreensão completa do tema, mesmo que o texto original seja longo.  
+O resumo deve ser **curto, direto e explicativo**, destacando apenas os pontos mais importantes, mas mantendo exemplos e analogias para facilitar o entendimento.
 
-    Gere um **resumo completo, coerente e bem estruturado** com base no conteúdo abaixo:
+**Instruções obrigatórias:**
+- Use linguagem natural, clara e fluida, adequada a estudantes brasileiros.
+- Reescreva com suas próprias palavras — nunca apenas copie.
+- Se o conteúdo for longo ou complexo, faça uma **síntese inteligente**, mantendo os conceitos essenciais e eliminando informações secundárias.
+- Sempre que houver conceitos abstratos, fórmulas, termos técnicos ou processos, explique com exemplos simples:
+  - Cálculos ilustrativos (ex: “Se o tempo de resposta for 2s e o limite for 1s, o desempenho é baixo.”)
+  - Mini fluxogramas ou diagramas descritos em texto (ex: “Entrada → Processamento → Saída”)
+  - Situações do dia a dia (ex: “Assim como revisar um texto várias vezes melhora a escrita, testar o código várias vezes melhora o software.”)
+  - Trechos de código curtos ou pseudocódigo (quando o tema for programação)
+- Evite inventar dados ou informações fora do tema.
+- Sempre que possível, inclua uma **pergunta ou mini-exercício** que ajude o aluno a testar o conhecimento aprendido.
+- Organize a resposta em **três seções fixas**, na ordem exata:
+  1. **Resumo Principal:** visão geral curta e objetiva, resumindo conceitos-chave do texto.
+  2. **Pontos-Chave:** lista de ideias explicadas com exemplos ilustrativos, mantendo clareza.
+  3. **Aplicação ou Exemplo Educativo:** um exemplo prático, analogia, mini-código ou situação do cotidiano que ajude a fixar o aprendizado.
 
-    "{conteudo}"
-    """;
+**Texto a resumir:**
+{conteudo}
+""";
 
         int maxRetries = 3;
         int delayMs = 2000;

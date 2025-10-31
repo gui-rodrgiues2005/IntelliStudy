@@ -1,0 +1,424 @@
+// Variáveis consistentes com o login
+$primary-color: #4361ee;
+$primary-light: #eef2ff;
+$text-dark: #1f2937;
+$text-gray: #6b7280;
+$border-color: #e5e7eb;
+$white: #ffffff;
+$background-light: #fafafa;
+
+// Container Principal
+.registro-container {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #f8fafc 0%, #eef2ff 100%);
+    padding: 2rem;
+    position: relative;
+    overflow: hidden;
+
+    // Efeito de background sutil
+    &::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -50%;
+        width: 100%;
+        height: 100%;
+        background:
+            radial-gradient(circle at 70% 30%, rgba(67, 97, 238, 0.03) 0%, transparent 50%),
+            radial-gradient(circle at 30% 70%, rgba(67, 97, 238, 0.02) 0%, transparent 50%);
+        animation: float 20s ease-in-out infinite;
+    }
+}
+
+// Card de Registro
+.registro-card {
+    background: $white;
+    padding: 3rem;
+    border-radius: 20px;
+    box-shadow:
+        0 10px 40px rgba(0, 0, 0, 0.08),
+        0 0 0 1px rgba(0, 0, 0, 0.02);
+    max-width: 450px;
+    width: 100%;
+    position: relative;
+    z-index: 2;
+
+    @media (max-width: 768px) {
+        padding: 2rem;
+        margin: 1rem;
+    }
+
+    @media (max-width: 480px) {
+        padding: 1.5rem;
+    }
+}
+
+// Botão Voltar
+.voltar-site {
+    position: absolute;
+    top: 4rem;
+    left: 1.5rem;
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: $white;
+    color: $text-dark;
+    border: 1.5px solid $border-color;
+    cursor: pointer;
+    transition: all 0.3s ease;
+
+    &:hover {
+        background: $primary-light;
+        border-color: $primary-color;
+        transform: translateX(-2px);
+        box-shadow: 0 4px 12px rgba(67, 97, 238, 0.15);
+    }
+}
+
+// Header do Registro
+.registro-header {
+    text-align: center;
+    margin-bottom: 1rem;
+    margin-top: 1rem;
+
+    .brand-logo {
+        width: 180px;
+        height: auto;
+        margin: 0 auto 1.5rem;
+        display: block;
+        filter: brightness(0) saturate(100%) invert(26%) sepia(89%) saturate(2015%) hue-rotate(225deg) brightness(95%) contrast(91%);
+    }
+
+    h2 {
+        font-size: 1.75rem;
+        font-weight: 700;
+        color: $text-dark;
+        margin-bottom: 0.50rem;
+        line-height: 1;
+    }
+
+    p {
+        color: $text-gray;
+        font-size: 1rem;
+        line-height: 1.5;
+    }
+}
+
+// Formulário
+.registro-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+// Grupos do Formulário
+.form-group {
+    display: flex;
+    flex-direction: column;
+
+    label {
+        font-weight: 600;
+        color: $text-dark;
+        margin-bottom: 0.5rem;
+        font-size: 0.9rem;
+        letter-spacing: 0.2px;
+    }
+
+    input {
+        padding: 1rem 1.25rem;
+        border: 1.5px solid $border-color;
+        border-radius: 12px;
+        font-size: 1rem;
+        transition: all 0.2s ease;
+        background: $white;
+
+        &:focus {
+            outline: none;
+            border-color: $primary-color;
+            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.1);
+        }
+
+        &::placeholder {
+            color: #9ca3af;
+            font-weight: 400;
+        }
+    }
+
+    // Grupo de Senha
+    &.password-group {
+        position: relative;
+
+        input {
+            padding-right: 3.5rem;
+        }
+
+        .password-toggle-icon {
+            position: absolute;
+            right: 1.25rem;
+            top: 70%;
+            transform: translateY(-50%);
+            color: $text-gray;
+            cursor: pointer;
+            transition: color 0.2s ease;
+            background: none;
+            border: none;
+            padding: 0.25rem;
+
+            &:hover {
+                color: $primary-color;
+            }
+        }
+    }
+}
+
+// Indicador de Força da Senha (Opcional)
+.password-strength {
+    margin-top: 0.5rem;
+
+    .strength-bar {
+        height: 4px;
+        background: #e5e7eb;
+        border-radius: 2px;
+        overflow: hidden;
+
+        .strength-fill {
+            height: 100%;
+            transition: all 0.3s ease;
+            border-radius: 2px;
+
+            &.weak {
+                background: #ef4444;
+                width: 25%;
+            }
+
+            &.medium {
+                background: #f59e0b;
+                width: 50%;
+            }
+
+            &.strong {
+                background: #10b981;
+                width: 75%;
+            }
+
+            &.very-strong {
+                background: #10b981;
+                width: 100%;
+            }
+        }
+    }
+
+    .strength-text {
+        font-size: 0.8rem;
+        color: $text-gray;
+        margin-top: 0.25rem;
+    }
+}
+
+// Botão de Criar Conta
+.registro-button {
+    background: $primary-color;
+    color: $white;
+    border: none;
+    padding: 1.125rem 2rem;
+    border-radius: 12px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-top: 0.5rem;
+
+    &:hover {
+        background: #3a56d4;
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(67, 97, 238, 0.3);
+    }
+
+    &:active {
+        transform: translateY(0);
+    }
+
+    &:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none;
+        box-shadow: none;
+    }
+}
+
+// Footer do Registro
+.registro-footer {
+    text-align: center;
+    margin-top: 2rem;
+    padding-top: 2rem;
+    border-top: 1px solid $border-color;
+
+    p {
+        color: $text-gray;
+        font-size: 0.9rem;
+
+        a {
+            color: $primary-color;
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.2s ease;
+
+            &:hover {
+                color: #3a56d4;
+                text-decoration: underline;
+            }
+        }
+    }
+}
+
+// Mensagens
+.registro-message {
+    padding: 1rem 1.25rem;
+    border-radius: 12px;
+    font-size: 0.9rem;
+    text-align: center;
+    font-weight: 500;
+
+    &.error {
+        background: rgba(239, 68, 68, 0.05);
+        color: #dc2626;
+        border: 1px solid rgba(239, 68, 68, 0.2);
+    }
+
+    &.success {
+        background: rgba(16, 185, 129, 0.05);
+        color: #059669;
+        border: 1px solid rgba(16, 185, 129, 0.2);
+    }
+
+    &.info {
+        background: rgba(67, 97, 238, 0.05);
+        color: $primary-color;
+        border: 1px solid rgba(67, 97, 238, 0.2);
+    }
+}
+
+// Animações
+@keyframes float {
+
+    0%,
+    100% {
+        transform: translate(0, 0) rotate(0deg);
+    }
+
+    33% {
+        transform: translate(30px, -30px) rotate(1deg);
+    }
+
+    66% {
+        transform: translate(-20px, 20px) rotate(-1deg);
+    }
+}
+
+@keyframes slideInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.registro-card {
+    width: 100%;
+    max-width: 800px;
+    animation: slideInUp 0.6s ease-out;
+}
+
+// Loading State
+.registro-button {
+    position: relative;
+
+    &.loading {
+        pointer-events: none;
+
+        .button-text {
+            opacity: 0;
+        }
+
+        &::after {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            top: 50%;
+            left: 50%;
+            margin-left: -10px;
+            margin-top: -10px;
+            border: 2px solid transparent;
+            border-top: 2px solid $white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+    }
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+// Responsividade
+@media (max-width: 768px) {
+    .registro-container {
+        padding: 1rem;
+        align-items: flex-start;
+        padding-top: 2rem;
+    }
+
+    .registro-card {
+        margin: 0;
+    }
+
+    .registro-header {
+        h2 {
+            font-size: 1.5rem;
+        }
+    }
+}
+
+@media (max-width: 480px) {
+    .registro-container {
+        padding: 0.5rem;
+    }
+
+    .registro-card {
+        padding: 1.5rem;
+    }
+
+    .voltar-site {
+        top: 1rem;
+        left: 1rem;
+        width: 40px;
+        height: 40px;
+    }
+
+    .form-group {
+        input {
+            padding: 0.875rem 1rem;
+        }
+    }
+
+    .registro-button {
+        padding: 1rem 1.5rem;
+    }
+}

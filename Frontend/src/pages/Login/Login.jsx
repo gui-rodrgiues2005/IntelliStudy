@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import NavigationSite from '../../components/Layout/NavigationSite/NavigationSite';
 import { API_URL } from '../../../config';
 import './Login.scss';
-import { Book, Brain, Target, FlaskConical, Lightbulb, Eye, EyeOff } from 'lucide-react';
+import { Eye, EyeOff, MoveLeft } from 'lucide-react';
+import imagemIlustration from '../../assets/ilustracao_login.jpg';
+import Logo from '../../assets/logo.png';
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -85,26 +86,20 @@ const Login = () => {
     }
   };
 
+  const handleNavigateSite = () => {
+    navigate('/')
+  }
+
   return (
     <div className="auth-container">
-      <NavigationSite />
-      <div className="aurora-background">
-        <div className="aurora-blob blob-1"></div>
-        <div className="aurora-blob blob-2"></div>
-        <div className="aurora-blob blob-3"></div>
-      </div>
-
-      <div className="floating-elements">
-        <Book className="float-icon icon-1" size={48} />
-        <Brain className="float-icon icon-2" size={64} />
-        <Target className="float-icon icon-3" size={40} />
-        <FlaskConical className="float-icon icon-4" size={56} />
-        <Lightbulb className="float-icon icon-5" size={44} />
+      <div className='imagem-container'>
+        <img src={imagemIlustration} alt='Ilustração'></img>
       </div>
 
       <div className="auth-card">
+        <button className='voltar-site' onClick={handleNavigateSite}><MoveLeft/></button>
         <div className="auth-header">
-          <h1 className="brand-name">IntelliStudy</h1>
+          <img src={Logo} alt='IntelliStudy Logo' className="brand-name"></img>
           <h2>Bem-vindo de volta!</h2>
           <p>Continue sua jornada de aprendizado.</p>
         </div>

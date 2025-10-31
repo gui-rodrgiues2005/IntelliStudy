@@ -6,6 +6,7 @@ using Backend.Models;
 using Backend.DTO;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Text;
 using BCrypt.Net;
 using Microsoft.AspNetCore.Authorization;
@@ -97,11 +98,9 @@ namespace SaaS_Aluno.Controllers
             {
                 string hash = user.PasswordHash;
 
-                // 🔹 Se for hash antigo ($2a$), converte pra $2b$ pra verificar
                 if (hash.StartsWith("$2a$"))
                     hash = "$2b$" + hash.Substring(4);
 
-                // Verifica normalmente
                 passwordValid = BCrypt.Net.BCrypt.Verify(dto.Password, hash);
             }
             catch (Exception ex)
@@ -113,14 +112,13 @@ namespace SaaS_Aluno.Controllers
             if (!passwordValid)
                 return Unauthorized("Email ou senha incorretos.");
 
-            // 🔹 Se o hash ainda for o formato antigo, atualiza para o novo
             if (user.PasswordHash.StartsWith("$2a$"))
             {
                 user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password);
                 await _context.SaveChangesAsync();
             }
 
-            // 🔹 Gera token JWT normalmente
+            // Gera token JWT
             var tokenHandler = new JwtSecurityTokenHandler();
             var key = Encoding.ASCII.GetBytes(_config["Jwt:Key"]);
             var tokenDescriptor = new SecurityTokenDescriptor
@@ -140,9 +138,24 @@ namespace SaaS_Aluno.Controllers
             var token = tokenHandler.CreateToken(tokenDescriptor);
             var tokenString = tokenHandler.WriteToken(token);
 
+            // Gera refresh token
+            string GenerateRefreshToken()
+            {
+                var randomNumber = new byte[64];
+                using var rng = RandomNumberGenerator.Create();
+                rng.GetBytes(randomNumber);
+                return Convert.ToBase64String(randomNumber);
+            }
+
+            var refreshToken = GenerateRefreshToken();
+            user.RefreshToken = refreshToken;
+            user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(30);
+            await _context.SaveChangesAsync();
+
             return Ok(new
             {
                 token = tokenString,
+                refreshToken,
                 user = new
                 {
                     user.Id,
@@ -151,13 +164,67 @@ namespace SaaS_Aluno.Controllers
                     user.Role,
                     user.Plano,
                     user.Ativo,
-                    user.NeedsPasswordUpdate,
                     PlanoExpiraEm = user.PlanoExpiraEm?.ToString("yyyy-MM-ddTHH:mm:ssZ")
                 }
             });
         }
 
+        [HttpPost("refresh-token")]
+        public async Task<IActionResult> RefreshToken([FromBody] TokenRequestDto tokenRequest)
+        {
+            if (tokenRequest is null)
+                return BadRequest("Requisição inválida.");
 
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.RefreshToken == tokenRequest.RefreshToken);
+            if (user == null || user.RefreshTokenExpiryTime <= DateTime.UtcNow)
+                return Unauthorized("Refresh token inválido ou expirado.");
+
+            // Verifica se o token e o refresh pertencem ao mesmo usuário
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var jwtToken = tokenHandler.ReadJwtToken(tokenRequest.Token);
+            var userId = jwtToken.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+
+            if (userId == null || user.Id.ToString() != userId)
+                return Unauthorized("Token e RefreshToken não correspondem ao mesmo usuário.");
+
+            // Gera novo JWT
+            var key = Encoding.ASCII.GetBytes(_config["Jwt:Key"]);
+            var tokenDescriptor = new SecurityTokenDescriptor
+            {
+                Subject = new ClaimsIdentity(new[]
+                {
+            new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+            new Claim(ClaimTypes.Email, user.Email),
+            new Claim(ClaimTypes.Role, user.Role)
+        }),
+                Expires = DateTime.UtcNow.AddDays(7),
+                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature),
+                Issuer = _config["Jwt:Issuer"],
+                Audience = _config["Jwt:Audience"]
+            };
+
+            var newJwt = tokenHandler.CreateToken(tokenDescriptor);
+            var jwtString = tokenHandler.WriteToken(newJwt);
+
+            // Atualiza refresh token
+            string GenerateRefreshToken()
+            {
+                var randomNumber = new byte[64];
+                using var rng = RandomNumberGenerator.Create();
+                rng.GetBytes(randomNumber);
+                return Convert.ToBase64String(randomNumber);
+            }
+
+            user.RefreshToken = GenerateRefreshToken();
+            user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(30);
+            await _context.SaveChangesAsync();
+
+            return Ok(new
+            {
+                token = jwtString,
+                refreshToken = user.RefreshToken
+            });
+        }
         // [HttpPost("update-password")]
         // public async Task<IActionResult> UpdatePassword([FromBody] UpdatePasswordDto dto)
         // {

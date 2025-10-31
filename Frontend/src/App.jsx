@@ -25,10 +25,12 @@ import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import AgradecimentoPage from "./pages/Agradecimento/Agradecimento";
 
-function App() {
+import AutoLogin from "./components/Auth/AuthLogin";
 
+function App() {
   return (
     <Router>
+      <AutoLogin/>
       <StudyProvider>
         <Routes>
           <Route path="/" element={<Inicio />} />

@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import NavigationSite from '../../components/Layout/NavigationSite/NavigationSite'
-import '../Login/Login.scss';
+import './Registro.scss';
 import { API_URL } from '../../../config';
 // --- MUDANÇA 1: Importe os ícones de olho ---
-import { Book, Brain, Target, FlaskConical, Lightbulb, Eye, EyeOff } from 'lucide-react';
+import { Book, Brain, Target, FlaskConical, Lightbulb, Eye, EyeOff, MoveLeft } from 'lucide-react';
+import Logo from '../../assets/logo.png';
 
 const validarNome = (nome) => {
   const nomeLimpo = nome.trim();
@@ -47,25 +47,21 @@ const validarNome = (nome) => {
   return { valido: true, motivo: "" };
 };
 
-
-
 const Registro = () => {
   const [nome, setNome] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [mensagem, setMensagem] = useState("");
-  const navigate = useNavigate();
-  // --- MUDANÇA 2: Adicione o estado para visibilidade da senha ---
   const [showPassword, setShowPassword] = useState(false);
+  const navigate = useNavigate();
 
   const handleRegister = async (e) => {
     e.preventDefault();
 
-    // Valida o nome antes de enviar
     const validacao = validarNome(nome);
     if (!validacao.valido) {
       setMensagem(validacao.motivo);
-      return; // impede o envio
+      return;
     }
 
     setMensagem("Criando sua conta...");
@@ -91,32 +87,24 @@ const Registro = () => {
     }
   };
 
+  const handleNavigateSite = () => {
+    navigate('/');
+  };
+
   return (
-    <div className="auth-container">
-      <NavigationSite />
-      <div className="aurora-background">
-        <div className="aurora-blob blob-1"></div>
-        <div className="aurora-blob blob-2"></div>
-        <div className="aurora-blob blob-3"></div>
-      </div>
+    <div className="registro-container">
+      <div className="registro-card">
+        <button className='voltar-site' onClick={handleNavigateSite}>
+          <MoveLeft size={20} />
+        </button>
 
-      <div className="floating-elements">
-        <Book className="float-icon icon-1" size={48} />
-        <Brain className="float-icon icon-2" size={64} />
-        <Target className="float-icon icon-3" size={40} />
-        <FlaskConical className="float-icon icon-4" size={56} />
-        <Lightbulb className="float-icon icon-5" size={44} />
-      </div>
-
-
-      <div className="auth-card">
-        <div className="auth-header">
-          <h1 className="brand-name">StudyAI</h1>
+        <div className="registro-header">
+          <img src={Logo} alt='IntelliStudy Logo' className="brand-logo" />
           <h2>Crie sua Conta</h2>
           <p>Comece sua jornada rumo à maestria.</p>
         </div>
 
-        <form onSubmit={handleRegister}>
+        <form onSubmit={handleRegister} className="registro-form">
           <div className="form-group">
             <label htmlFor="name">Nome</label>
             <input
@@ -128,6 +116,7 @@ const Registro = () => {
               required
             />
           </div>
+
           <div className="form-group">
             <label htmlFor="email">Email</label>
             <input
@@ -139,7 +128,7 @@ const Registro = () => {
               required
             />
           </div>
-          {/* --- MUDANÇA 3: Crie um wrapper para o campo de senha e o ícone --- */}
+
           <div className="form-group password-group">
             <label htmlFor="password">Senha</label>
             <input
@@ -150,15 +139,28 @@ const Registro = () => {
               onChange={(e) => setPassword(e.target.value)}
               required
             />
-            <div className="password-toggle-icon" onClick={() => setShowPassword(!showPassword)}>
+            <div
+              className="password-toggle-icon"
+              onClick={() => setShowPassword(!showPassword)}
+            >
               {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
             </div>
           </div>
-          {mensagem && <p className="auth-message">{mensagem}</p>}
-          <button type="submit" className="auth-button">Criar Conta</button>
+
+          {mensagem && (
+            <p className={`registro-message ${mensagem.includes('sucesso') ? 'success' :
+                mensagem.includes('Erro') ? 'error' : 'info'
+              }`}>
+              {mensagem}
+            </p>
+          )}
+
+          <button type="submit" className="registro-button">
+            Criar Conta
+          </button>
         </form>
 
-        <div className="auth-footer">
+        <div className="registro-footer">
           <p>Já tem uma conta? <Link to="/login">Faça login</Link></p>
         </div>
       </div>

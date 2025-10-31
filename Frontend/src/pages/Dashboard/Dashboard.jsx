@@ -885,7 +885,7 @@ function Dashboard() {
         <div className="card simulado-card">
           <div class="practice-header">
             <h2 class="practice-title">
-              <span class="title-emoji">🚀</span>
+              <span className="title-emoji">🚀</span>
               Hora de colocar conhecimento em ação!
             </h2>
             <p className='practice-text'>Vamos colocar em prática, tudo oque você viu no seu resumo</p>

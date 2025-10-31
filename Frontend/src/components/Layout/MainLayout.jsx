@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'; // Importe o useState
 import { NavLink, useNavigate } from 'react-router-dom';
-import Logo from '../../assets/logo.svg';
+import Logo from '../../assets/logo.png';
 import Logo_icon from '../../assets/logo_icon.svg';
 
 // Ícones: Adicionei ChevronsLeft para o botão de recolher

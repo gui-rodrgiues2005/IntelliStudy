@@ -1,19 +1,24 @@
 import { useState, useEffect } from 'react';
 import { Archive } from 'lucide-react';
 import './HistoricoDePlanos.scss';
+import { API_URL } from '../../../config';
 
 function HistoricoDePlanos() {
     const [planos, setPlanos] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
-    const API_URL = process.env.VITE_API_URL;
+    
     useEffect(() => {
         const fetchPlanosConcluidos = async () => {
             setIsLoading(true);
             try {
                 const token = localStorage.getItem("token");
                 const res = await fetch(`${API_URL}/api/plano-de-estudo/concluidos`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
                 });
+
                 if (res.ok) {
                     const data = await res.json();
                     setPlanos(data);
@@ -46,7 +51,7 @@ function HistoricoDePlanos() {
                         <div key={plano.id} className="historico-card">
                             <div className="card-content">
                                 <span className="card-data">
-                                    Concluído em: {new Date(plano.createdAt).toLocaleDateString()}
+                                    Concluído em: {new Date(plano.CreatedAt).toLocaleDateString()}
                                 </span>
                                 <h3 className="card-meta">{plano.meta}</h3>
                                 <p className="card-sessoes">{plano.totalSessoes} sessões completadas</p>

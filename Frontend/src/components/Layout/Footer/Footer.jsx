@@ -1,6 +1,6 @@
 import React from "react";
 import { Twitter, Instagram, Linkedin, Mail } from "lucide-react";
-import Logo from "../../../assets/logo.svg";
+import Logo from "../../../assets/logo.png";
 import "./Footer.scss";
 
 const Footer = () => {

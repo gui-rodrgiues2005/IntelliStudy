@@ -1,79 +1,398 @@
-// Supondo que você tenha um arquivo de variáveis, senão, defina a cor aqui.
-// Ex: $primary-color: #3b82f6;
+// Variáveis atualizadas para tema clean
+$primary-color: #4361ee;
+$primary-light: #eef2ff;
+$text-dark: #1f2937;
+$text-gray: #6b7280;
+$border-color: #e5e7eb;
+$white: #ffffff;
+$background-light: #fafafa;
 
-// Animação para os ícones flutuantes
-@keyframes float {
-    0% {
-        transform: translateY(0px) rotate(0deg);
-        opacity: 0.8;
-    }
-
-    50% {
-        transform: translateY(-25px) rotate(8deg);
-        opacity: 1;
-    }
-
-    100% {
-        transform: translateY(0px) rotate(0deg);
-        opacity: 0.8;
-    }
-}
-
-.boas-vindas {
-  margin-top: 1.5rem;
-  text-align: center;
-  font-size: 0.95rem;
-  color: #6b7280; /* cinza suave (Tailwind gray-500) */
-  line-height: 1.6;
-  font-weight: 400;
-  font-family: 'Inter', 'Segoe UI', Roboto, sans-serif;
-  background: rgba(255, 255, 255, 0.4);
-  padding: 0.75rem 1rem;
-  border-radius: 12px;
-  backdrop-filter: blur(6px);
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
-}
-
-
+// Container Principal
 .auth-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    align-items: stretch;
+    background: $white;
+    overflow: hidden;
+    height: 100vh;
+    max-height: 100vh;
+
+    @media (max-width: 768px) {
+        grid-template-columns: 1fr;
+    }
+}
+
+// Container da Imagem - Clean e Profissional
+.imagem-container {
     display: flex;
     justify-content: center;
     align-items: center;
-    min-height: 100vh;
-    background: #f0f4f8; // Um fundo off-white mais suave
-    overflow: hidden;
+    background: $primary-light;
     position: relative;
-    padding: 20px;
+    overflow: hidden;
+
+    // Efeito sutil e clean
+    &::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background:
+            radial-gradient(circle at 30% 70%, rgba(67, 97, 238, 0.05) 0%, transparent 50%),
+            radial-gradient(circle at 70% 30%, rgba(67, 97, 238, 0.03) 0%, transparent 50%);
+    }
+
+    img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: center;
+        filter: brightness(1.05) contrast(1.1);
+        transition: transform 0.3s ease;
+    }
+
+    @media (max-width: 768px) {
+        display: none;
+    }
 }
 
-// No arquivo AuthPage.scss
+// Card de Autenticação - Design Minimalista
+.auth-card {
+    background: $white;
+    padding: 4rem 3rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    max-width: 700px;
+    width: 100%;
+    margin: 0 auto;
+    position: relative;
 
-// --- Defina sua paleta de cores "Aurora" ---
-$aurora-color-1: #4f46e5; // Índigo/Roxo
-$aurora-color-2: #10b981; // Verde Esmeralda
-$aurora-color-3: #f59e0b; // Âmbar/Dourado
-
-// --- MUDANÇA 1: Atualize a animação 'float' ---
-// Agora ela também controla a opacidade para um efeito de "pulso"
-@keyframes float {
-    0% {
-        transform: translateY(0px) rotate(0deg);
-        opacity: 0.1; // Começa quase invisível
+    @media (max-width: 768px) {
+        padding: 3rem 2rem;
+        max-width: 100%;
     }
 
-    50% {
-        transform: translateY(-20px) rotate(8deg);
-        opacity: 0.25; // Fica um pouco mais visível no pico
-    }
-
-    100% {
-        transform: translateY(0px) rotate(0deg);
-        opacity: 0.1; // Volta a ser quase invisível
+    @media (max-width: 480px) {
+        padding: 2rem 1.5rem;
     }
 }
 
-// --- Novas Animações ---
-@keyframes rotate {
+// Header do Card - Tipografia Clean
+.auth-header {
+    text-align: center;
+    margin-bottom: 1rem;
+
+    .brand-name {
+        width: 20vw;
+
+        @media (max-width: 480px) {
+            width: 50vw;
+        }
+    }
+
+    h2 {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: $text-dark;
+        margin-bottom: 0.5rem;
+        line-height: 1.3;
+    }
+
+    p {
+        color: $text-gray;
+        font-size: 1rem;
+        line-height: 1.5;
+    }
+}
+
+// Formulário - Espaçamento Clean
+form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.75rem;
+}
+
+// Grupos do Formulário - Inputs Elegantes
+.form-group {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+
+    label {
+        font-weight: 500;
+        color: $text-dark;
+        margin-bottom: 0.5rem;
+        font-size: 0.9rem;
+        letter-spacing: 0.2px;
+    }
+
+    input {
+        padding: 1rem 1.25rem;
+        border: 1.5px solid $border-color;
+        border-radius: 10px;
+        font-size: 1rem;
+        transition: all 0.2s ease;
+        background: $white;
+
+        &:focus {
+            outline: none;
+            border-color: $primary-color;
+            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.08);
+        }
+
+        &::placeholder {
+            color: #9ca3af;
+            font-weight: 400;
+        }
+    }
+
+    // Grupo de Senha
+    &.password-group {
+        position: relative;
+
+        input {
+            padding-right: 3.5rem;
+        }
+
+        .password-toggle-icon {
+            position: absolute;
+            right: 1.25rem;
+            top: 70%;
+            transform: translateY(-50%);
+            color: $text-gray;
+            cursor: pointer;
+            transition: color 0.2s ease;
+            background: none;
+            border: none;
+            padding: 0.25rem;
+
+            &:hover {
+                color: $primary-color;
+            }
+        }
+    }
+}
+
+// Botão de Entrar - Design Sofisticado
+.auth-button {
+    background: $primary-color;
+    color: $white;
+    border: none;
+    padding: 1.125rem 2rem;
+    border-radius: 10px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    &:hover {
+        background: #3a56d4;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(67, 97, 238, 0.25);
+    }
+
+    &:active {
+        transform: translateY(0);
+    }
+
+    &:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none;
+        box-shadow: none;
+    }
+}
+
+// Footer do Auth - Minimalista
+.auth-footer {
+    text-align: center;
+    margin-top: 2.5rem;
+    padding-top: 2.5rem;
+    border-top: 1px solid $border-color;
+
+    p {
+        color: $text-gray;
+        font-size: 0.9rem;
+
+        a {
+            color: $primary-color;
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.2s ease;
+
+            &:hover {
+                color: #3a56d4;
+                text-decoration: underline;
+            }
+        }
+    }
+
+
+    @media (max-width: 480px) {
+        margin-top: 0;
+    }
+}
+
+// Mensagem de Boas-vindas - Discreta
+.boas-vindas {
+    margin-top: 1rem;
+    padding: 1.25rem;
+    background: rgba(67, 97, 238, 0.03);
+    border: 1px solid rgba(67, 97, 238, 0.1);
+    border-radius: 10px;
+    color: $text-gray;
+    font-size: 0.85rem;
+    text-align: center;
+    line-height: 1.5;
+
+    strong {
+        color: $primary-color;
+        font-weight: 600;
+    }
+}
+
+.voltar-site {
+    position: relative;
+    margin-top: -2rem;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    background-color: #1f2937;
+    color: #eef2ff;
+    cursor: pointer;
+    border: none;
+    position: relative;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    overflow: hidden;
+
+    // Ícone da seta
+    &::before {
+        font-size: 1.25rem;
+        font-weight: 600;
+        transition: transform 0.3s ease;
+    }
+
+    // Efeito de brilho no hover
+    &:hover {
+        background-color: #374151;
+        transform: translateY(-2px);
+        box-shadow:
+            0 8px 25px rgba(31, 41, 55, 0.3),
+            0 0 0 1px rgba(255, 255, 255, 0.1);
+
+        &::before {
+            transform: translateX(-2px);
+        }
+    }
+
+    // Efeito de clique
+    &:active {
+        transform: translateY(0) scale(0.95);
+        transition: transform 0.1s ease;
+    }
+
+    // Efeito de onda no clique
+    &::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 0;
+        height: 0;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.2);
+        transform: translate(-50%, -50%);
+        transition: width 0.3s ease, height 0.3s ease;
+    }
+
+    &:active::after {
+        width: 100%;
+        height: 100%;
+    }
+
+
+    @media (max-width: 480px) { 
+        top: 10px;
+        width: 30px ;
+        height: 30px;
+        padding: 6px;
+    }
+}
+
+// Mensagens de Feedback
+.auth-message {
+    padding: 1rem 1.25rem;
+    border-radius: 10px;
+    font-size: 0.9rem;
+    text-align: center;
+    font-weight: 500;
+
+    &.error {
+        background: rgba(239, 68, 68, 0.05);
+        color: #dc2626;
+        border: 1px solid rgba(239, 68, 68, 0.2);
+    }
+
+    &.success {
+        background: rgba(16, 185, 129, 0.05);
+        color: #059669;
+        border: 1px solid rgba(16, 185, 129, 0.2);
+    }
+}
+
+// Animações Suaves
+@keyframes slideInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.auth-card {
+    animation: slideInUp 0.6s ease-out;
+}
+
+// Loading State Elegante
+.auth-button {
+    position: relative;
+
+    &.loading {
+        pointer-events: none;
+
+        .button-text {
+            opacity: 0;
+        }
+
+        &::after {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            top: 50%;
+            left: 50%;
+            margin-left: -10px;
+            margin-top: -10px;
+            border: 2px solid transparent;
+            border-top: 2px solid $white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+    }
+}
+
+@keyframes spin {
     0% {
         transform: rotate(0deg);
     }
@@ -83,301 +402,95 @@ $aurora-color-3: #f59e0b; // Âmbar/Dourado
     }
 }
 
-
-// Agora ela também controla a opacidade para um efeito de "pulso"
-@keyframes float {
-    0% {
-        transform: translateY(0px) rotate(0deg);
-        opacity: 0.1; // Começa quase invisível
+// Estados de Validação Visual
+.form-group {
+    &.valid {
+        input {
+            border-color: #10b981;
+        }
     }
 
-    50% {
-        transform: translateY(-20px) rotate(8deg);
-        opacity: 0.25; // Fica um pouco mais visível no pico
-    }
-
-    100% {
-        transform: translateY(0px) rotate(0deg);
-        opacity: 0.1; // Volta a ser quase invisível
-    }
-}
-
-// --- MUDANÇA 2: Substitua todo o bloco .floating-elements ---
-.floating-elements {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    z-index: 2; // Fica na frente do fundo aurora
-
-    .float-icon {
-        position: absolute;
-        animation: float 8s ease-in-out infinite;
-
-        // Posicionamento e animações individuais
-        &.icon-1 {
-            // Book
-            top: 10%;
-            left: 15%;
-            animation-delay: 0s;
-            color: $aurora-color-1; // Cor roxa
-        }
-
-        &.icon-2 {
-            // Brain
-            top: 20%;
-            right: 10%;
-            animation-delay: -2s;
-            animation-duration: 10s;
-            color: $aurora-color-3; // Cor dourada
-        }
-
-        &.icon-3 {
-            // Target
-            bottom: 15%;
-            left: 25%;
-            animation-delay: -4s;
-            animation-duration: 7s;
-            color: $aurora-color-2; // Cor verde
-        }
-
-        &.icon-4 {
-            // FlaskConical
-            bottom: 25%;
-            right: 20%;
-            animation-delay: -6s;
-            animation-duration: 9s;
-            color: $aurora-color-1; // Cor roxa
-        }
-
-        &.icon-5 {
-            // Lightbulb
-            top: 60%;
-            left: 5%;
-            animation-delay: -1s;
-            color: $aurora-color-3; // Cor dourada
+    &.invalid {
+        input {
+            border-color: #ef4444;
         }
     }
 }
 
-// --- Estilo do Container Principal (Pequeno ajuste) ---
-.auth-container {
-    background-color: #f0f4f8; // Mantenha uma cor de fundo base
-    position: relative; // Garante que os elementos absolutos fiquem contidos
-    overflow: hidden; // Essencial para as bolhas não vazarem
-
-}
-
-// --- Estilo do Fundo Aurora ---
-.aurora-background {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    z-index: 0; // Fica atrás de tudo
-    filter: blur(100px); // O segredo da mágica: desfoque extremo
-    opacity: 0.4; // Deixa as cores suaves
-}
-
-.aurora-blob {
-    position: absolute;
-    border-radius: 50%;
-    animation: rotate 20s linear infinite; // Animação de rotação lenta
-
-    &.blob-1 {
-        width: 400px;
-        height: 400px;
-        top: -150px;
-        left: -100px;
-        background: radial-gradient(circle, $aurora-color-1, transparent 70%);
-        animation-duration: 25s;
-    }
-
-    &.blob-2 {
-        width: 500px;
-        height: 500px;
-        bottom: -200px;
-        right: -150px;
-        background: radial-gradient(circle, $aurora-color-2, transparent 70%);
-        animation-duration: 30s;
-        animation-delay: -5s;
-    }
-
-    &.blob-3 {
-        width: 300px;
-        height: 300px;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        background: radial-gradient(circle, $aurora-color-3, transparent 70%);
-        animation-duration: 20s;
+// Responsividade Refinada
+@media (max-width: 1024px) {
+    .auth-card {
+        padding: 3rem 2.5rem;
     }
 }
 
+@media (max-width: 768px) {
+    .imagem-container {
+        height: 40vh;
+        min-height: 300px;
 
-.floating-elements {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    z-index: 2;
-
-    .float-icon {
-        position: absolute;
-        color: rgba(13, 37, 85, 0.06);
-        animation: float 8s ease-in-out infinite;
-
-        &.icon-1 {
-            top: 10%;
-            left: 15%;
-            animation-delay: 0s;
-        }
-
-        &.icon-2 {
-            top: 20%;
-            right: 10%;
-            animation-delay: -2s;
-            animation-duration: 10s;
-        }
-
-        &.icon-3 {
-            bottom: 15%;
-            left: 25%;
-            animation-delay: -4s;
-            animation-duration: 7s;
-        }
-
-        &.icon-4 {
-            bottom: 25%;
-            right: 20%;
-            animation-delay: -6s;
-            animation-duration: 9s;
-        }
-
-        &.icon-5 {
-            top: 60%;
-            left: 5%;
-            animation-delay: -1s;
+        img {
+            object-position: center 30%;
         }
     }
-}
 
-.auth-card {
-    background: #ffffff;
-    border-radius: 20px;
-    padding: 40px;
-    width: 100%;
-    max-width: 620px;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.05);
-    border: 1px solid #e5e7eb;
-    z-index: 3;
-    text-align: center;
-    margin-top: 5rem;
+    .auth-card {
+        padding: 2.5rem 2rem;
+    }
 
     .auth-header {
-        margin-bottom: 30px;
+        margin-bottom: 2.5rem;
 
         .brand-name {
-            font-size: 2.5rem;
-            font-weight: 700;
-            color: #2563eb; // Cor primária
-            margin-bottom: 10px;
+            font-size: 2rem;
         }
 
         h2 {
+            font-size: 1.375rem;
+        }
+    }
+}
+
+@media (max-width: 480px) {
+    .auth-card {
+        padding: 2rem 1.5rem;
+    }
+
+    .auth-header {
+        margin-bottom: 2rem;
+
+        .brand-name {
             font-size: 1.75rem;
-            color: #1f2937;
-            margin-bottom: 5px;
         }
 
-        p {
-            color: #6b7280;
+        h2 {
+            font-size: 1.25rem;
         }
     }
 
     .form-group {
-        text-align: left;
-        margin-bottom: 20px;
-
-        label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 500;
-            color: #4b5563;
-        }
-
         input {
-            width: 100%;
-            padding: 12px 15px;
-            border-radius: 8px;
-            border: 1px solid #d1d5db;
-            background-color: #f9fafb;
-            transition: all 0.3s ease;
-
-            &:focus {
-                outline: none;
-                border-color: #2563eb;
-                box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
-            }
+            padding: 0.875rem 1rem;
         }
-
-        &.password-group {
-            position: relative;
-
-            .password-toggle-icon {
-                position: absolute;
-                top: 50%;
-                right: 15px;
-                transform: translateY(-50%);
-                cursor: pointer;
-                color: #9ca3af; // Cor cinza para o ícone
-                top: 60px; // Ajuste fino da posição vertical do ícone
-
-                &:hover {
-                    color: #4b5563;
-                }
-            }
-        }
-    }
-
-    .auth-message {
-        margin-bottom: 15px;
-        font-weight: 500;
-        color: #4b5563;
     }
 
     .auth-button {
-        width: 100%;
-        padding: 15px;
-        border: none;
-        border-radius: 8px;
-        background-color: #2563eb;
-        color: white;
-        font-size: 1rem;
-        font-weight: 600;
-        cursor: pointer;
-        transition: background-color 0.3s ease;
-
-        &:hover {
-            background-color: #1d4ed8;
-        }
+        padding: 1rem 1.5rem;
     }
+}
 
-    .auth-footer {
-        margin-top: 25px;
-        color: #6b7280;
-
-        a {
-            color: #2563eb;
-            text-decoration: none;
-            font-weight: 600;
-
-            &:hover {
-                text-decoration: underline;
-            }
-        }
+// Melhorias de Acessibilidade
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
     }
+}
+
+// Foco visível para acessibilidade
+button:focus-visible,
+input:focus-visible {
+    outline: 2px solid $primary-color;
+    outline-offset: 2px;
 }

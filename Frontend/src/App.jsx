@@ -30,8 +30,8 @@ import AutoLogin from "./components/Auth/AuthLogin";
 function App() {
   return (
     <Router>
-      <AutoLogin/>
       <StudyProvider>
+        <AutoLogin />
         <Routes>
           <Route path="/" element={<Inicio />} />
           <Route path="/sobre" element={<Sobre />} />

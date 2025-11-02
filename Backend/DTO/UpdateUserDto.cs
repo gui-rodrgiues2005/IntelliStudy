@@ -4,5 +4,6 @@ namespace Backend.DTO
     {
         public string? Cpf { get; set; }
         public string? Telefone { get; set; }
+        public string? Instagram { get; set; }
     }
 }

@@ -1,512 +1,493 @@
-// Em src/pages/Perfil/Perfil.jsx
-
-import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { User, BookOpen, Target, Clock, BarChart2, Trash2, Award, SwatchBook, Bell, CheckCircle, BookMarked, Star, LockIcon, Crown, Settings } from 'lucide-react';
-import './Perfil.scss';
+import React, { useState, useEffect, useRef } from "react";
+import {
+  User,
+  BookOpen,
+  Target,
+  Clock,
+  BarChart2,
+  Trash2,
+  Award,
+  BookMarked,
+  Star,
+  LockIcon,
+  Settings,
+  CheckCircle,
+  Instagram,
+  Github,
+  Linkedin,
+  FilmIcon
+} from "lucide-react";
 import { toast } from "react-toastify";
-import Swal from 'sweetalert2';
-import 'sweetalert2/dist/sweetalert2.min.css';
-import { API_URL } from '../../../config';
+import Swal from "sweetalert2";
+import "sweetalert2/dist/sweetalert2.min.css";
+import { API_URL } from "../../../config";
+import "./Perfil.scss";
 
-
+/**
+ * Componente Perfil
+ * - Busca /api/Profile
+ * - Modal de edição com campos para redes sociais (instagram, tiktok, linkedin, github)
+ * - Envia PUT para /api/User/atualizar-perfil
+ * - Exibe estatísticas, atividades e conquistas
+ */
 
 function Perfil() {
-    const [profileData, setProfileData] = useState(null);
-    const [isLoading, setIsLoading] = useState(true);
-    const [modalConfig, setModalConfig] = useState(false);
-    const [modalEdit, setModalEdit] = useState(false);
-    const [senhaAtual, setSenhaAtual] = useState("");
-    const [novaSenha, setNovaSenha] = useState("");
-    const [name, setName] = useState("");
-    const [email, setEmail] = useState("");
-    const [cpf, setCpf] = useState("");
-    const [telefone, setTelefone] = useState("");
-    const [notifications, setNotifications] = useState(false);
-    const [darkMode, setDarkMode] = useState(false);
+  const [profileData, setProfileData] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [modalEdit, setModalEdit] = useState(false);
+  const [modalConfig, setModalConfig] = useState(false);
+  const [errors, setErrors] = useState({});
+  const socialChipsRef = useRef(null);
 
-    const achievementIcons = {
-        PRIMEIRO_RESUMO: <BookMarked size={20} />,
-        PRIMEIRO_SIMULADO: <Target size={20} />,
-        DEZ_RESUMOS: <BookMarked size={20} />,
-        DEZ_SIMULADOS: <Target size={20} />,
-        CINQUENTA_RESUMOS: <BookMarked size={20} />,
-        NOTA_MAXIMA: <Star size={20} />,
-        default: <Award size={20} /> // Um ícone padrão caso o ID não seja encontrado
-    };
+  useEffect(() => {
+    // Adiciona animação de entrada staggerada
+    if (socialChipsRef.current) {
+      const chips = socialChipsRef.current.querySelectorAll('.social-chip');
+      chips.forEach((chip, index) => {
+        chip.style.animationDelay = `${index * 0.1}s`;
+      });
+    }
+  }, [profileData]); // Isso vai rodar sempre que profileData mudar
 
-    const openModalEdit = () => {
-        setName(profileData.nome);
-        setEmail(profileData.email);
-        setCpf(profileData.cpf);
-        setTelefone(profileData.telefone);
-        setModalEdit(true);
-    };
+  const [form, setForm] = useState({
+    name: "",
+    email: "",
+    cpf: "",
+    telefone: "",
+    instagram: "",
+    tiktok: "",
+    linkedin: "",
+    github: "",
+    currentPassword: "",
+    newPassword: ""
+  });
 
-    useEffect(() => {
-        const fetchProfileData = async () => {
-            try {
-                const token = localStorage.getItem("token");
-                const res = await fetch(`${API_URL}/api/Profile`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                if (!res.ok) throw new Error("Falha ao buscar dados do perfil.");
-                const data = await res.json();
-                console.log("Dados do aluno", data);
-                setProfileData(data);
-            } catch (error) {
-                console.error(error);
-                alert(error.message);
-            } finally {
-                setIsLoading(false);
-            }
-        };
-        fetchProfileData();
-    }, []);
+  // Ícones mapeados para conquistas (exemplo)
+  const achievementIcons = {
+    PRIMEIRO_RESUMO: <BookMarked size={18} />,
+    PRIMEIRO_SIMULADO: <Target size={18} />,
+    DEZ_RESUMOS: <BookMarked size={18} />,
+    DEZ_SIMULADOS: <Target size={18} />,
+    CINQUENTA_RESUMOS: <BookMarked size={18} />,
+    NOTA_MAXIMA: <Star size={18} />,
+    default: <Award size={18} />
+  };
 
-    // console.log("Renderizando perfil com dados:", profileData);
-
-    const validarNome = (nome) => {
-        const nomeLimpo = nome.trim();
-
-        if (!nomeLimpo) return { valido: false, motivo: "O nome não pode estar vazio" };
-        if (nomeLimpo.length < 2) return { valido: false, motivo: "O nome é muito curto" };
-        if (nomeLimpo.length > 13) return { valido: false, motivo: "O nome é muito longo" };
-
-        // Letras, números, acentos, hífen, apóstrofo e espaço
-        const regexValido = /^[A-Za-zÀ-ú0-9\s'-]+$/;
-        if (!regexValido.test(nomeLimpo)) return { valido: false, motivo: "O nome contém caracteres inválidos ou emojis" };
-
-        const nomeNormalizado = nomeLimpo.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
-        const nomeSemEspacos = nomeNormalizado.replace(/\s/g, "");
-
-        const palavrasProibidas = [
-            "xxx", "porn", "porno", "sex", "sexo", "nude", "nudes", "boobs", "tetas", "peitos", "puta", "foda", "fuck", "shit", "bitch", "slut", "cock", "dick", "pussy", "ass", "boobies",
-            "merda", "caralho", "cu", "burro", "idiota", "estupido", "imbecil", "otario", "babaca", "viado", "gayzinho", "gay", "retard", "bastard", "moron",
-            "admin", "moderator", "mod", "staff", "god", "root", "null", "undefined", "test", "teste", "user", "guest", "anonymous", "anon", "bot", "robot",
-            "noob", "hacker", "loli", "pedo", "pedophile", "pedofilo", "incest", "incestuoso", "kill", "murder", "terror", "fuckboy", "fuckgirl",
-            "p0rn", "x0x", "s3x", "f0d4", "b1tch", "c0ck", "d1ck", "pu55y"
-        ];
-
-        for (const palavra of palavrasProibidas) {
-            if (nomeSemEspacos.includes(palavra)) {
-                return { valido: false, motivo: "O nome contém palavras proibidas" };
-            }
-        }
-
-        if (/([a-zA-Z0-9])\1{2,}/.test(nomeSemEspacos)) {
-            return { valido: false, motivo: "O nome contém repetições de caracteres inválidas" };
-        }
-
-        return { valido: true, motivo: "" };
-    };
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const res = await fetch(`${API_URL}/api/Profile`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        if (!res.ok) throw new Error("Falha ao buscar dados do perfil.");
+        const data = await res.json();
+        console.log("📦 Dados do backend:", data);
 
 
-    const handleUpdate = async (e) => {
-        e.preventDefault();
-
-        // ✅ Validação do nome
-        const resultado = validarNome(name);
-        if (!resultado.valido) {
-            toast.error(resultado.motivo);
-            return; // impede envio se o nome não for válido
-        }
-
-        // Monta o payload apenas com campos preenchidos
-        const payload = {
-            name: name || undefined,
-            email: email || undefined,
-            cpf: cpf || undefined,
-            telefone: telefone || undefined
-        };
-
-        if (novaSenha && senhaAtual) {
-            payload.currentPassword = senhaAtual;
-            payload.newPassword = novaSenha;
-        }
-        try {
-            const token = localStorage.getItem("token");
-            const res = await fetch(`${API_URL}/api/User/atualizar-perfil`, {
-                method: "PUT",
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": `Bearer ${token}`
-                },
-                body: JSON.stringify(payload)
-            });
-
-            const data = await res.json();
-
-            if (!res.ok) {
-                throw new Error(data.message || "Erro ao atualizar perfil");
-            }
-
-            setProfileData(prev => ({
-                ...prev,
-                nome: data.user.Name || prev.nome,
-                email: data.user.Email || prev.email,
-                cpf: data.user.Cpf || prev.cpf,
-                telefone: data.user.Telefone || prev.telefone
-            }));
-
-            // Limpa campos e fecha modal
-            setSenhaAtual("");
-            setNovaSenha("");
-            setModalEdit(false);
-
-            toast.info("Perfil atualizado com sucesso, recarregue a página para atualizar !");
-
-        } catch (error) {
-            console.error("Erro:", error);
-            alert(error.message);
-        }
-    };
-
-    const handleDeleteAccount = async () => {
-        const { value: password } = await Swal.fire({
-            title: 'Excluir Conta',
-            text: 'Digite sua senha para confirmar a exclusão:',
-            input: 'password',
-            inputPlaceholder: 'Digite sua senha',
-            showCancelButton: true,
-            confirmButtonText: 'Excluir',
-            cancelButtonText: 'Cancelar',
-            confirmButtonColor: '#e63946',
-            cancelButtonColor: '#6c63ff',
-            background: '#1a1a2e',
-            color: '#fff'
+        // Ajuste de nomes de propriedades caso seu backend retorne diferente
+        // (ex.: user.Name vs nome). Aqui assumimos as propriedades que você vem usando.
+        setProfileData({
+          ...data,
+          nome: data.nome ?? data.Name ?? data.name,
+          email: data.email ?? data.Email,
+          membroDesde: data.createdAt ?? data.CreatedAt ?? data.membroDesde,
+          totalResumos: data.totalResumos ?? 0,
+          totalSimulados: data.totalSimulados ?? 0,
+          horasEstudo: data.horasEstudo ?? 0,
+          mediaAcertos: data.mediaAcertos ?? 0,
+          atividadesRecentes: Array.isArray(data.atividadesRecentes) ? data.atividadesRecentes : (data.activities ?? []),
+          conquistas: Array.isArray(data.conquistas) ? data.conquistas : (data.achievements ?? [])
         });
 
-        if (!password) return;
+        // Inicializa formulário com valores existentes (se houver)
+        setForm(prev => ({
+          ...prev,
+          name: (data.nome ?? data.Name ?? data.name) || "",
+          email: data.email ?? data.Email ?? "",
+          cpf: data.cpf ?? data.Cpf ?? "",
+          telefone: data.telefone ?? data.Telefone ?? "",
+          instagram: data.instagram ?? data.Instagram ?? "",
+          tiktok: data.tiktok ?? data.TikTok ?? "",
+          linkedin: data.linkedin ?? data.Linkedin ?? "",
+          github: data.gitHub ?? ""
+        }));
 
-        const confirmacao = await Swal.fire({
-            title: 'Tem certeza?',
-            text: 'Essa ação é irreversível!',
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonText: 'Sim, excluir!',
-            cancelButtonText: 'Cancelar',
-            confirmButtonColor: '#e63946',
-            cancelButtonColor: '#6c63ff',
-            background: '#1a1a2e',
-            color: '#fff'
-        });
 
-        if (!confirmacao.isConfirmed) return;
-
-        // aqui vem o fetch para deletar
-        try {
-            const token = localStorage.getItem('token');
-            const response = await fetch(`${API_URL}/api/User/deletar-conta`, {
-                method: 'DELETE',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
-                body: JSON.stringify({ password })
-            });
-
-            const data = await response.json();
-            if (!response.ok) throw new Error(data.message);
-
-            Swal.fire({
-                title: 'Conta excluída',
-                text: 'Sua conta foi excluída com sucesso.',
-                icon: 'success',
-                confirmButtonColor: '#6c63ff',
-                background: '#1a1a2e',
-                color: '#fff'
-            });
-
-            localStorage.removeItem('token');
-            window.location.href = '/login';
-        } catch (error) {
-            Swal.fire({
-                title: 'Erro',
-                text: error.message || 'Erro ao excluir conta.',
-                icon: 'error',
-                confirmButtonColor: '#e63946',
-                background: '#1a1a2e',
-                color: '#fff'
-            });
-        }
+      } catch (err) {
+        console.error(err);
+        toast.error("Erro ao carregar perfil");
+      } finally {
+        setIsLoading(false);
+      }
     };
 
+    fetchProfile();
+  }, []);
 
-    if (isLoading) {
-        return <p>Carregando perfil...</p>;
+  // Validação básica do nome (pode manter a sua função complexa)
+  const validarNome = (nome) => {
+    const n = (nome ?? "").trim();
+    if (!n) return { valido: false, motivo: "Nome não pode ficar vazio" };
+    if (n.length < 2) return { valido: false, motivo: "Nome muito curto" };
+    if (n.length > 40) return { valido: false, motivo: "Nome muito longo" };
+    return { valido: true, motivo: "" };
+  };
+
+  const handleUpdate = async (e) => {
+    e.preventDefault();
+
+    const { valido, motivo } = validarNome(form.name);
+    if (!valido) {
+      toast.error(motivo);
+      return;
     }
 
-    if (!profileData) {
-        return <p>Não foi possível carregar os dados do perfil.</p>;
+    // Monta payload apenas com os campos que queremos enviar
+    const payload = {
+      name: form.name || undefined,
+      email: form.email || undefined,
+      cpf: form.cpf || undefined,
+      telefone: form.telefone || undefined,
+      instagram: form.instagram || undefined,
+      tiktok: form.tiktok || undefined,
+      linkedin: form.linkedin || undefined,
+      github: form.github || undefined
+    };
+
+    if (form.newPassword && form.currentPassword) {
+      payload.currentPassword = form.currentPassword;
+      payload.newPassword = form.newPassword;
     }
 
-    return (
-        <div className="perfil-page">
-            {/* Card Principal do Perfil */}
-            <div className="profile-header-card">
-                <div className="profile-main">
-                    <div className="avatar">
-                        {profileData.nome.substring(0, 2).toUpperCase()}
-                    </div>
+    try {
+      const token = localStorage.getItem("token");
+      const res = await fetch(`${API_URL}/api/User/atualizar-perfil`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify(payload)
+      });
 
-                    <div className="user-info">
-                        <h2 className="nomeUser">{profileData.nome}</h2>
-                        <p className="emailUser">
-                            {profileData.email} - Membro desde{" "}
-                            {new Date(profileData.membroDesde).toLocaleDateString("pt-BR", {
-                                month: "long",
-                                year: "numeric",
-                            })}
-                        </p>
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message ?? "Erro ao atualizar");
 
-                        <div className="tags">
-                            <span className="tag student">Estudante Ativo</span>
-                        </div>
-                    </div>
-                </div>
+      // Backend deve retornar objeto user — adaptamos caso retorne diferente
+      const returnedUser = data.user ?? data.user ?? data;
+      // Atualiza estado local com os novos valores (tenta vários caminhos)
+      setProfileData(prev => ({
+        ...prev,
+        nome: returnedUser.Name ?? returnedUser.name ?? returnedUser.nome ?? prev.nome,
+        email: returnedUser.Email ?? returnedUser.email ?? prev.email,
+        cpf: returnedUser.Cpf ?? returnedUser.cpf ?? prev.cpf,
+        telefone: returnedUser.Telefone ?? returnedUser.telefone ?? prev.telefone,
+        instagram: returnedUser.Instagram ?? returnedUser.instagram ?? form.instagram ?? prev.instagram,
+        tiktok: returnedUser.TikTok ?? returnedUser.tiktok ?? prev.tiktok,
+        linkedin: returnedUser.Linkedin ?? returnedUser.linkedin ?? prev.linkedin,
+        github: returnedUser.gitHub ?? prev.github
+      }));
 
-                <div className="profile-actions">
-                    <button className="action-button edit" onClick={() => setModalEdit(true)}>
-                        <User size={18} />
-                        Editar Perfil
-                    </button>
+      setModalEdit(false);
+      toast.success("Perfil atualizado com sucesso!");
+    } catch (err) {
+      console.error(err);
+      toast.error(err.message ?? "Erro ao atualizar perfil");
+    }
+  };
 
-                    <button className="action-button settings" onClick={() => setModalConfig(true)}>
-                        <Settings size={18} />
-                    </button>
-                </div>
+  const handleDeleteAccount = async () => {
+    const { value: password } = await Swal.fire({
+      title: "Excluir Conta",
+      input: "password",
+      inputPlaceholder: "Digite sua senha",
+      showCancelButton: true,
+      confirmButtonText: "Excluir",
+      cancelButtonText: "Cancelar",
+      confirmButtonColor: "#e63946",
+      cancelButtonColor: "#6c63ff"
+    });
 
-                {modalEdit && (
-                    <div className="modal-overlay">
-                        <div className="modalEdit">
-                            <h2>Atualize suas informações pessoais</h2>
-                            <form className="edit-form">
-                                <label className="profile-picture">
-                                    <div className="avatar large">
-                                        {profileData.nome.substring(0, 2).toUpperCase()}
-                                    </div>
-                                    <span className="change-photo">Alterar foto de perfil (Em Breve)</span>
-                                    <input type="file" accept="image/*" />
-                                </label>
+    if (!password) return;
 
-                                <label>
-                                    Seu Nome
-                                    <input
-                                        type="text"
-                                        value={name}
-                                        placeholder={profileData.nome}
-                                        onChange={(e) => setName(e.target.value)}
-                                    />
-                                </label>
+    const confirm = await Swal.fire({
+      title: "Tem certeza?",
+      text: "A exclusão é irreversível.",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Sim, excluir",
+      cancelButtonText: "Cancelar",
+      confirmButtonColor: "#e63946",
+      cancelButtonColor: "#6c63ff"
+    });
 
-                                <label>
-                                    <input
-                                        type="email"
-                                        value={email}
-                                        placeholder={profileData.email}
-                                        onChange={(e) => setEmail(e.target.value)}
-                                    />
-                                </label>
+    if (!confirm.isConfirmed) return;
 
-                                <label>
-                                    CPF
-                                    <input
-                                        type="text"
-                                        value={cpf}
-                                        placeholder={profileData.cpf}
-                                        onChange={(e) => setCpf(e.target.value)}
-                                    />
-                                </label>
+    try {
+      const token = localStorage.getItem("token");
+      const res = await fetch(`${API_URL}/api/User/deletar-conta`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({ password })
+      });
 
-                                <label>
-                                    Telefone
-                                    <input
-                                        type="text"
-                                        value={telefone}
-                                        placeholder={profileData.telefone}
-                                        onChange={(e) => setTelefone(e.target.value)}
-                                    />
-                                </label>
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message ?? "Erro ao excluir conta");
 
-                                <p>Alterar minha senha (opcional)</p>
+      Swal.fire("Conta excluída", "Sua conta foi removida.", "success");
+      localStorage.removeItem("token");
+      window.location.href = "/login";
+    } catch (err) {
+      console.error(err);
+      Swal.fire("Erro", err.message ?? "Erro ao excluir conta", "error");
+    }
+  };
 
-                                <label>
-                                    Senha Atual
-                                    <input
-                                        type="password"
-                                        value={senhaAtual}
-                                        onChange={(e) => setSenhaAtual(e.target.value)}
-                                    />
-                                    <Link to="/recuperar-senha" className="forgot-password">Esqueceu a senha?</Link>
-                                </label>
+  if (isLoading) return <p className="loading">Carregando perfil...</p>;
+  if (!profileData) return <p>Não foi possível carregar o perfil.</p>;
 
-                                <label>
-                                    Nova Senha
-                                    <input
-                                        type="password"
-                                        value={novaSenha}
-                                        onChange={(e) => setNovaSenha(e.target.value)}
-                                    />
-                                </label>
+  // Função utilitária para formatar handle (remover @ ou espaços)
+  const normalizeHandle = (v) => (v ?? "").toString().trim().replace(/^@+/, "");
 
-                                <label>
-                                    Confirmar nova senha
-                                    <input type="password" />
-                                </label>
+  return (
+    <div className="perfil-page">
+      <div className="profile-header-card">
+        <div className="profile-main">
+          <div className="avatar">
+            {String(profileData.nome ?? profileData.Name ?? "U").substring(0, 2).toUpperCase()}
+          </div>
 
-                                <div className='buttons'>
-                                    <button type="button" className='cancelar' onClick={() => setModalEdit(false)}>Cancelar</button>
-                                    <button type="submit" className='salvar_alteracoes' onClick={handleUpdate}>Salvar Alterações</button>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
-                )}
+          <div className="user-info">
+            <h2 className="nomeUser">{profileData.nome ?? profileData.Name}</h2>
+            <p className="emailUser">
+              {profileData.email} • Membro desde{" "}
+              {profileData.membroDesde
+                ? new Date(profileData.membroDesde).toLocaleDateString("pt-BR", { month: "long", year: "numeric" })
+                : "—"}
+            </p>
 
-                {modalConfig && (
-                    <div className="modal-overlay">
-                        <div className="modalConfig">
-                            <h2>Configurações</h2>
-                            <p>Gerencie suas preferências e configurações da conta</p>
-
-                            {/* Sessão de Informações da Conta */}
-                            <section className="account-info">
-                                <h2 className="tema-title"><SwatchBook className='icon-tema' /> Aparência</h2>
-
-                                <div className="preference-item">
-                                    <label className="switch disabled">
-                                        <input
-                                            type="checkbox"
-                                            checked={false}
-                                            disabled
-                                            className="ui-checkbox"
-                                        />
-                                        <span className="slider"></span>
-                                        <span className="label-text">Tema Escuro (em breve)</span>
-                                    </label>
-                                </div>
-                            </section>
-
-                            <section className="preferences">
-                                <h3 className='notificacao-title'><Bell className='icon-notificacao' />Notficações</h3>
-
-                                <div className="preference-item">
-                                    <label className="switch disabled">
-                                        <input
-                                            type="checkbox"
-                                            checked={notifications}
-                                            onChange={(e) => setNotifications(e.target.checked)}
-                                            disabled
-                                            className="ui-checkbox"
-                                        />
-                                        <span className="slider"></span>
-                                        <span className="label-text">Receber Notificações no Email(Em breve)</span>
-
-                                    </label>
-                                </div>
-                            </section>
-
-
-                            {/* Sessão de Segurança */}
-                            <section className="security">
-                                <h3 className='title-seguranca'><Trash2 className='icon-seguranca' />Minha Conta</h3>
-                                <div className="campo-conta">
-                                    <h2>Excluir conta</h2>
-                                    <p>Uma vez excluída, sua conta não poderá ser recuperada. Todos os seus dados serão permanentemente removidos.</p>
-                                    <button className="logout-btn" onClick={handleDeleteAccount}>Excluir Conta</button>
-                                </div>
-                            </section>
-
-                            {/* Botões de ação */}
-                            <div className="modal-buttons">
-                                <button className="cancel-btn" onClick={() => setModalConfig(false)}>Cancelar</button>
-                                <button className="save-btn">Salvar Alterações</button>
-                            </div>
-                        </div>
-                    </div>
-                )}
-
-
+            <div
+              className="social-chips"
+              ref={socialChipsRef}
+            >
+              {profileData.instagram && (
+                <a
+                  className="social-chip"
+                  href={`https://instagram.com/${normalizeHandle(profileData.instagram)}`}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  <Instagram size={16} /> @{normalizeHandle(profileData.instagram)}
+                </a>
+              )}
+              {profileData.linkedin && (
+                <a
+                  className="social-chip"
+                  href={`https://linkedin.com/in/${normalizeHandle(profileData.linkedin)}`}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  <Linkedin size={16} /> {normalizeHandle(profileData.linkedin)}
+                </a>
+              )}
+              {profileData.gitHub && (
+                <a
+                  className="social-chip"
+                  href={`https://github.com/${normalizeHandle(profileData.gitHub)}`}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  <Github size={16} /> {normalizeHandle(profileData.gitHub)}
+                </a>
+              )}
             </div>
-            {/* Cards de Estatísticas */}
-            <div className="stats-grid">
-                <div className="stat-card"><BookOpen /><div><span>Resumos</span><strong>{profileData.totalResumos}</strong></div></div>
-                <div className="stat-card"><Target /><div><span>Simulados</span><strong>{profileData.totalSimulados}</strong></div></div>
-                <div className="stat-card"><Clock /><div><span>Horas de Estudo</span><strong>{profileData.horasEstudo}</strong></div></div>
-                <div className="stat-card"><BarChart2 /><div><span>Média</span><strong>{profileData.mediaAcertos}</strong></div></div>
-            </div>
-
-            {/* Grid de Atividades e Conquistas */}
-            <div className="details-grid">
-                <div className="activities-card">
-                    <h3>Atividades Recentes</h3>
-                    <ul>
-                        {Array.isArray(profileData.atividadesRecentes) && profileData.atividadesRecentes.length > 0 ? (
-                            profileData.atividadesRecentes.map((act, index) => (
-                                <li key={index} className="activity-item">
-                                    <div className="activity-icon">
-                                        <BookOpen size={20} />
-                                    </div>
-                                    <div className="activity-info">
-                                        <span className="activity-title">{act.titulo}</span>
-                                        <small className="activity-date">{new Date(act.data).toLocaleDateString('pt-BR')}</small>
-                                    </div>
-                                </li>
-                            ))
-                        ) : (
-                            <li className="no-activities">Nenhuma atividade recente</li>
-                        )}
-                    </ul>
-                </div>
-
-                <div className="achievements-card">
-                    <h3>Conquistas</h3>
-                    <ul>
-                        {Array.isArray(profileData.conquistas) && profileData.conquistas.length > 0 ? (
-                            profileData.conquistas.map((conq) => {
-                                const codigo = conq.codigo || conq.Codigo;
-                                const nome = conq.nome || conq.Nome;
-                                const plano = conq.plano || conq.Plano;
-                                const desbloqueada = conq.desbloqueada ?? conq.Desbloqueada;
-
-                                const isPremium = plano === "Premium";
-                                const isUnlocked = desbloqueada;
-                                const showLock = isPremium && !isUnlocked && profileData.plano !== "Premium";
-
-                                return (
-                                    <li
-                                        key={codigo}
-                                        className={`achievement-item ${isUnlocked ? 'unlocked' : ''} ${showLock ? 'locked-premium' : ''}`}
-                                    >
-                                        <div className="achievement-icon">
-                                            {showLock
-                                                ? <LockIcon />
-                                                : achievementIcons[codigo] || achievementIcons.default
-                                            }
-                                        </div>
-                                        <div className="achievement-details">
-                                            <span>{nome}</span>
-                                            <small className={isUnlocked ? "unlocked-text" : showLock ? "premium-text" : ""}>
-                                                {isUnlocked
-                                                    ? 'Desbloqueada'
-                                                    : showLock
-                                                        ? 'Premium necessário'
-                                                        : 'Bloqueada'}
-                                            </small>
-                                        </div>
-                                        {isUnlocked && <CheckCircle className="check-icon" />}
-                                    </li>
-                                );
-                            })
-                        ) : (
-                            <li className="no-achievements">Nenhuma conquista disponível</li>
-                        )}
-                    </ul>
-                </div>
-            </div>
+          </div>
         </div>
-    );
+
+        <div className="profile-actions">
+          <button className="action-button edit" onClick={() => setModalEdit(true)}>
+            <User size={16} /> Editar Perfil
+          </button>
+          <button className="action-button settings" onClick={() => setModalConfig(true)}>
+            <Settings size={16} />
+          </button>
+        </div>
+      </div>
+
+      {/* Cards de estatísticas */}
+      <div className="stats-grid">
+        <div className="stat-card">
+          <BookOpen />
+          <div>
+            <span>Resumos</span>
+            <strong>{profileData.totalResumos ?? 0}</strong>
+          </div>
+        </div>
+        <div className="stat-card">
+          <Target />
+          <div>
+            <span>Simulados</span>
+            <strong>{profileData.totalSimulados ?? 0}</strong>
+          </div>
+        </div>
+        <div className="stat-card">
+          <Clock />
+          <div>
+            <span>Horas de Estudo</span>
+            <strong>{profileData.horasEstudo ?? 0}</strong>
+          </div>
+        </div>
+        <div className="stat-card">
+          <BarChart2 />
+          <div>
+            <span>Média</span>
+            <strong>{profileData.mediaAcertos ?? "—"}</strong>
+          </div>
+        </div>
+      </div>
+
+      <div className="details-grid">
+        <div className="activities-card">
+          <h3>Atividades Recentes</h3>
+          <ul>
+            {Array.isArray(profileData.atividadesRecentes) && profileData.atividadesRecentes.length > 0 ? (
+              profileData.atividadesRecentes.map((a, i) => (
+                <li key={i} className="activity-item">
+                  <div className="activity-icon">
+                    <BookOpen size={16} />
+                  </div>
+                  <div className="activity-info">
+                    <div className="activity-title">{a.titulo ?? a.title ?? "Atividade"}</div>
+                    <small className="activity-date">
+                      {a.data ? new Date(a.data).toLocaleDateString("pt-BR") : ""}
+                    </small>
+                  </div>
+                </li>
+              ))
+            ) : (
+              <li className="no-activities">Nenhuma atividade recente</li>
+            )}
+          </ul>
+        </div>
+
+        <div className="achievements-card">
+          <h3>Conquistas</h3>
+          <ul>
+            {Array.isArray(profileData.conquistas) && profileData.conquistas.length > 0 ? (
+              profileData.conquistas.map((c) => {
+                const code = c.codigo ?? c.Codigo ?? c.key;
+                const name = c.nome ?? c.Nome ?? c.title;
+                const unlocked = c.desbloqueada ?? c.Desbloqueada ?? c.unlocked;
+                const isPremium = (c.plano ?? c.Plano ?? "").toLowerCase() === "premium";
+                const showLock = isPremium && !unlocked && (profileData.plano ?? "") !== "Premium";
+
+                return (
+                  <li key={code} className={`achievement-item ${unlocked ? "unlocked" : ""} ${showLock ? "locked" : ""}`}>
+                    <div className="achievement-icon">{showLock ? <LockIcon size={16} /> : (achievementIcons[code] || achievementIcons.default)}</div>
+                    <div className="achievement-details">
+                      <span>{name}</span>
+                      <small className={unlocked ? "unlocked-text" : showLock ? "premium-text" : ""}>
+                        {unlocked ? "Desbloqueada" : showLock ? "Premium necessário" : "Bloqueada"}
+                      </small>
+                    </div>
+                    {unlocked && <CheckCircle className="check-icon" />}
+                  </li>
+                );
+              })
+            ) : (
+              <li className="no-achievements">Nenhuma conquista disponível</li>
+            )}
+          </ul>
+        </div>
+      </div>
+
+      {/* MODAL DE EDIÇÃO */}
+      {modalEdit && (
+        <div className="modal-overlay">
+          <div className="modalEdit">
+            <h2>Atualize suas informações</h2>
+            <form className="edit-form" onSubmit={handleUpdate}>
+              <label>
+                Seu Nome
+                <input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
+              </label>
+
+              <label>
+                Email
+                <input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
+              </label>
+
+              <label>
+                Instagram
+                <input value={form.instagram} onChange={(e) => setForm({ ...form, instagram: e.target.value })} placeholder="@seuuser" />
+              </label>
+
+              <label>
+                LinkedIn (handle)
+                <input value={form.linkedin} onChange={(e) => setForm({ ...form, linkedin: e.target.value })} placeholder="seu-linkedin" />
+              </label>
+
+              <label>
+                GitHub
+                <input value={form.github} onChange={(e) => setForm({ ...form, github: e.target.value })} placeholder="seu-usuario" />
+              </label>
+
+              <label>
+                CPF (opcional)
+                <input value={form.cpf} onChange={(e) => setForm({ ...form, cpf: e.target.value })} />
+              </label>
+
+              <label>
+                Telefone (opcional)
+                <input value={form.telefone} onChange={(e) => setForm({ ...form, telefone: e.target.value })} />
+              </label>
+
+              <p className="small-title">Alterar senha (opcional)</p>
+
+              <label>
+                Senha Atual
+                <input type="password" value={form.currentPassword} onChange={(e) => setForm({ ...form, currentPassword: e.target.value })} />
+              </label>
+
+              <label>
+                Nova Senha
+                <input type="password" value={form.newPassword} onChange={(e) => setForm({ ...form, newPassword: e.target.value })} />
+              </label>
+
+              <div className="buttons">
+                <button type="button" className="cancelar" onClick={() => setModalEdit(false)}>Cancelar</button>
+                <button type="submit" className="salvar_alteracoes">Salvar Alterações</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL CONFIG */}
+      {modalConfig && (
+        <div className="modal-overlay">
+          <div className="modalConfig">
+            <h2>Configurações</h2>
+            <p>Gerencie preferências</p>
+            <section className="security">
+              <h3>Minha Conta</h3>
+              <div className="campo-conta">
+                <p>Excluir conta (irreversível)</p>
+                <button className="logout-btn" onClick={handleDeleteAccount}><Trash2 /> Excluir Conta</button>
+              </div>
+            </section>
+            <div className="modal-buttons">
+              <button className="cancel-btn" onClick={() => setModalConfig(false)}>Fechar</button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
 }
 
 export default Perfil;

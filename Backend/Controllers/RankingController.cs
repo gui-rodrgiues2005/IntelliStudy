@@ -26,11 +26,14 @@ public class RankingController : ControllerBase
 
         var rankingCompleto = await _context.Users
             .OrderByDescending(u => u.Pontos)
-            .Select(u => new RankingDto 
+            .Select(u => new RankingDto
             {
                 Id = u.Id,
                 Nome = u.Name,
-                Pontos = u.Pontos
+                Pontos = u.Pontos,
+                Instagram = u.Instagram,
+                Linkedin = u.Linkedin,
+                GitHub = u.GitHub  
             })
             .ToListAsync();
 

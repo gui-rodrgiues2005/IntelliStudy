@@ -53,10 +53,6 @@ namespace SaaS_Aluno.Controllers
             if (existe)
                 return (false, "Nome já está em uso.");
 
-            // 3️⃣ Verifica caracteres inválidos (somente letras e números, opcional)
-            if (!System.Text.RegularExpressions.Regex.IsMatch(nome, @"^[a-zA-Z0-9 ]+$"))
-                return (false, "Nome contém caracteres inválidos.");
-
             return (true, null);
         }
 
@@ -274,6 +270,9 @@ namespace SaaS_Aluno.Controllers
                 user.Email,
                 user.Role,
                 user.Cpf,
+                user.Instagram,
+                user.GitHub,
+                user.Linkedin,
                 user.Telefone,
                 user.CreatedAt
             });
@@ -299,42 +298,15 @@ namespace SaaS_Aluno.Controllers
                 user.Cpf,
                 user.Telefone,
                 user.Plano,
+                user.Instagram,
+                user.Linkedin,
+                user.GitHub,
                 user.UltimoPagamento,
                 user.Ativo
             });
         }
 
         // Atualizando dados do usuário e retornando assinatura também
-        [Authorize]
-        [HttpPost("atualizar-dados")]
-        public async Task<IActionResult> AtualizarDados([FromBody] UpdateUserDataDto dto)
-        {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (string.IsNullOrEmpty(userId))
-                return Unauthorized();
-
-            var user = await _context.Users.FindAsync(int.Parse(userId));
-            if (user == null)
-                return NotFound("Usuário não encontrado.");
-
-
-            user.Cpf = dto.Cpf ?? user.Cpf;
-            user.Telefone = dto.Telefone ?? user.Telefone;
-
-            _context.Users.Update(user);
-            await _context.SaveChangesAsync();
-
-            return Ok(new
-            {
-                message = "Dados atualizados com sucesso!",
-                user.Cpf,
-                user.Telefone,
-                user.Plano,
-                user.UltimoPagamento,
-                user.Ativo
-            });
-        }
-
         [Authorize]
         [HttpPut("atualizar-perfil")]
         public async Task<IActionResult> AtualizarPerfil([FromBody] UpdateUserProfileDto dto)
@@ -355,22 +327,12 @@ namespace SaaS_Aluno.Controllers
                 user.Name = dto.Name.Trim();
             }
 
-            // Só valida senha se estiver tentando alterar
             if (!string.IsNullOrWhiteSpace(dto.NewPassword))
             {
                 if (string.IsNullOrWhiteSpace(dto.CurrentPassword))
                     return BadRequest(new { message = "Senha atual é obrigatória para alterar a senha." });
 
-                bool currentPasswordValid;
-                try
-                {
-                    currentPasswordValid = BCrypt.Net.BCrypt.Verify(dto.CurrentPassword, user.PasswordHash);
-                }
-                catch (BCrypt.Net.SaltParseException)
-                {
-                    currentPasswordValid = false;
-                }
-
+                bool currentPasswordValid = BCrypt.Net.BCrypt.Verify(dto.CurrentPassword, user.PasswordHash);
                 if (!currentPasswordValid)
                     return BadRequest(new { message = "Senha atual incorreta." });
 
@@ -378,10 +340,12 @@ namespace SaaS_Aluno.Controllers
             }
 
             // Atualiza outros campos se fornecidos
-            if (!string.IsNullOrWhiteSpace(dto.Name)) user.Name = dto.Name;
             if (!string.IsNullOrWhiteSpace(dto.Email)) user.Email = dto.Email;
             if (!string.IsNullOrWhiteSpace(dto.Cpf)) user.Cpf = dto.Cpf;
             if (!string.IsNullOrWhiteSpace(dto.Telefone)) user.Telefone = dto.Telefone;
+            if (!string.IsNullOrWhiteSpace(dto.Instagram)) user.Instagram = dto.Instagram;
+            if (!string.IsNullOrWhiteSpace(dto.Linkedin)) user.Linkedin = dto.Linkedin;
+            if (!string.IsNullOrWhiteSpace(dto.GitHub)) user.GitHub = dto.GitHub;
 
             try
             {
@@ -396,7 +360,10 @@ namespace SaaS_Aluno.Controllers
                         user.Name,
                         user.Email,
                         user.Cpf,
-                        user.Telefone
+                        user.Telefone,
+                        user.Instagram,
+                        user.Linkedin,
+                        user.GitHub,
                     }
                 });
             }

@@ -16,9 +16,11 @@ namespace Backend.Models
         public string? Telefone { get; set; }
         public string? RefreshToken { get; set; }
         public DateTime? RefreshTokenExpiryTime { get; set; }
+        public string? Instagram { get; set; }
+        public string? Linkedin { get; set; }
+        public string? GitHub { get; set; }
 
-
-        // "Gratuito" ou "Premium"
+        // "Gratuito" ou "P0remium"
         public string Plano { get; set; } = "Gratuito";
 
         // Data do último pagamento confirmado

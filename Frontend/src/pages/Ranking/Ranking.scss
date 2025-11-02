@@ -1,167 +1,560 @@
-// --- ESTILOS PARA A PÁGINA DE RANKING ---
 // src/pages/Ranking/Ranking.scss
 
-// Importe suas variáveis globais se as tiver em um arquivo separado
-// @import '../../styles/variables.scss';
+// Variáveis de cores e temas
+$primary-color: #6366f1;
+$primary-gradient: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+$secondary-color: #f59e0b;
+$accent-color: #10b981;
+$text-dark: #1f2937;
+$text-medium: #6b7280;
+$text-light: #9ca3af;
+$bg-light: #f8fafc;
+$bg-white: #ffffff;
+$border-color: #e5e7eb;
+$shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+$shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+$shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+$border-radius: 12px;
+$transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 
-// --- CABEÇALHO DA PÁGINA ---
+// Mixins para responsividade - CORRIGIDO
+@mixin mobile {
+  @media (max-width: 768px) {
+    @content;
+  }
+}
+
+@mixin tablet {
+  @media (max-width: 1024px) {
+    @content;
+  }
+}
+
+@mixin mobile-small {
+  @media (max-width: 400px) {
+    @content;
+  }
+}
+
+// Estilos principais
 .ranking-page {
-    // Animação sutil para a página aparecer
-    animation: fadeIn 0.5s ease-in-out;
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 2rem 1rem;
+  animation: fadeInUp 0.6s ease-out;
 
-    .ranking-header {
-        margin-top: 3rem;
-        margin-bottom: 2.5rem;
+  @include mobile {
+    padding: 1rem 0.5rem;
+  }
 
-        h1 {
-            font-size: 2rem; // 32px
-            font-weight: 700;
-            color: #1f2937; // $gray-800
-            margin-bottom: 0.5rem;
-        }
+  @include mobile-small {
+    padding: 0.5rem 0.25rem;
+  }
+}
 
-        p {
-            font-size: 1rem; // 16px
-            color: #6b7280; // $gray-500
-        }
+.ranking-header {
+  text-align: center;
+  margin-bottom: 3rem;
+  position: relative;
+
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: -1rem;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60px;
+    height: 4px;
+    background: $primary-gradient;
+    border-radius: 2px;
+  }
+
+  h1 {
+    font-size: 2.5rem;
+    font-weight: 800;
+    background: $primary-gradient;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 0.5rem;
+
+    @include mobile {
+      font-size: 2rem;
     }
+
+    @include mobile-small {
+      font-size: 1.75rem;
+      margin-bottom: 0.25rem;
+    }
+  }
+
+  p {
+    font-size: 1.125rem;
+    color: $text-medium;
+    line-height: 1.6;
+
+    @include mobile {
+      font-size: 1rem;
+    }
+
+    @include mobile-small {
+      font-size: 0.875rem;
+      line-height: 1.4;
+    }
+  }
+
+  @include mobile-small {
+    margin-bottom: 2rem;
+
+    &::after {
+      bottom: -0.5rem;
+      width: 40px;
+      height: 3px;
+    }
+  }
 }
 
-// --- LISTA DO RANKING ---
-.ranking-list {
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem; // 12px
-}
+// Card da posição do usuário
+.rank-item.user-highlight {
+  background: linear-gradient(135deg, $bg-white 0%, #f0f4ff 100%);
+  border: 2px solid $primary-color;
+  border-radius: $border-radius;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+  position: relative;
+  box-shadow: $shadow-lg;
+  transition: $transition;
 
-// --- ITEM INDIVIDUAL DO RANKING ---
-.rank-item {
-    display: grid;
-    grid-template-columns: 50px 50px 1fr; // Posição | Avatar | Detalhes
-    align-items: center;
-    gap: 1rem; // 16px
+  // Grid para desktop
+  display: grid;
+  grid-template-columns: 60px 60px 1fr auto;
+  align-items: center;
+  gap: 1rem;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 20px 25px -5px rgba(99, 102, 241, 0.1), 0 10px 10px -5px rgba(99, 102, 241, 0.04);
+  }
+
+  .user-tag {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background: $primary-gradient;
+    color: $bg-white;
+    padding: 0.375rem 1rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+
+    @include mobile {
+      position: static;
+      grid-column: 4;
+      grid-row: 1;
+      justify-self: end;
+      margin-bottom: 0;
+      padding: 0.25rem 0.75rem;
+      font-size: 0.7rem;
+    }
+
+    @include mobile-small {
+      padding: 0.2rem 0.5rem;
+      font-size: 0.6rem;
+      letter-spacing: 0.25px;
+    }
+  }
+
+  @include mobile {
+    grid-template-columns: 50px 50px 1fr auto;
+    gap: 0.75rem;
+    padding: 1.25rem;
+    margin-bottom: 1.5rem;
+  }
+
+  @include mobile-small {
+    grid-template-columns: 40px 40px 1fr auto;
+    gap: 0.5rem;
     padding: 1rem;
-    background-color: #ffffff; // $white
-    border: 1px solid #e5e7eb; // $gray-200
-    border-radius: 0.75rem; // 12px
-    transition: all 0.2s ease-in-out;
-
-    &:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
-        border-color: #d1d5db; // $gray-300
-    }
-
-    // Estilo especial para o primeiro colocado
-    &:first-child {
-        background: linear-gradient(to right, #f3f4f6, #ffffff);
-        border-color: #9ca3af; // $gray-400
-    }
+    margin-bottom: 1rem;
+    border-width: 1px;
+  }
 }
 
-// --- POSIÇÃO NO RANKING (1, 2, 3, etc.) ---
-.rank-position {
-    display: flex;
-    justify-content: center;
+// Lista do ranking
+.ranking-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+
+  @include mobile-small {
+    gap: 0.75rem;
+  }
+}
+
+// Itens do ranking
+.rank-item {
+  display: grid;
+  grid-template-columns: 60px 60px 1fr auto;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.25rem;
+  background: $bg-white;
+  border: 1px solid $border-color;
+  border-radius: $border-radius;
+  transition: $transition;
+  position: relative;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: $shadow-md;
+    border-color: $primary-color;
+  }
+
+  // Top 3 com destaque especial
+  &:nth-child(-n+3) {
+    background: linear-gradient(135deg, $bg-white 0%, #f8faff 100%);
+    border-color: #d1d5db;
+
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: $primary-gradient;
+      border-radius: $border-radius $border-radius 0 0;
+    }
+  }
+
+  @include mobile {
+    display: grid;
+    grid-template-columns: 50px 1fr; // posição + conteúdo
+    grid-template-rows: auto auto; // duas linhas
     align-items: center;
+    gap: 0.5rem;
 
-    .rank-number {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        width: 36px;
-        height: 36px;
-        background-color: #eef2ff; // $blue-50
-        color: #4338ca; // Um roxo/azul escuro
-        border-radius: 50%;
-        font-weight: 600;
+    .rank-position {
+      grid-column: 1;
+      grid-row: 1;
+      justify-self: center;
     }
 
-    // Ícones para o Top 3
-    .rank-icon {
-        width: 24px;
-        height: 24px;
-
-        &.gold {
-            color: #f59e0b;
-        }
-
-        // Amarelo/Ouro
-        &.silver {
-            color: #9ca3af;
-        }
-
-        // Cinza/Prata
-        &.bronze {
-            color: #a16207;
-        }
-
-        // Marrom/Bronze
+    .rank-avatar {
+      grid-column: 1;
+      grid-row: 1;
+      justify-self: center;
     }
+
+    .rank-details {
+      grid-column: 2;
+      grid-row: 1;
+      align-self: center;
+    }
+
+    .user-tag {
+      grid-column: 2;
+      grid-row: 1;
+      justify-self: end;
+    }
+
+    // 🔽 força os ícones para baixo
+    .rank-socials {
+      grid-column: 1 / -1; // ocupa toda a largura
+      grid-row: 2; // vai para a linha de baixo
+      display: flex;
+      justify-content: center; // centraliza horizontalmente
+      margin-top: 0.5rem;
+    }
+  }
+
+  @include mobile-small {
+    grid-template-columns: 35px 35px 1fr auto;
+    gap: 0.5rem;
+    padding: 0.75rem;
+    border-radius: 10px;
+  }
 }
 
-// --- AVATAR DO USUÁRIO (com as iniciais) ---
-.rank-avatar {
+// Posição no ranking
+.rank-position {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  .rank-number {
     display: flex;
     justify-content: center;
     align-items: center;
     width: 40px;
     height: 40px;
-    background-color: #e0e7ff; // $indigo-100 (exemplo)
-    color: #4338ca; // $indigo-700 (exemplo)
+    background: $bg-light;
+    color: $text-dark;
     border-radius: 50%;
-    font-weight: 600;
-    font-size: 0.875rem; // 14px
+    font-weight: 700;
+    font-size: 0.875rem;
+    transition: $transition;
+  }
+
+  .rank-icon {
+    width: 32px;
+    height: 32px;
+    transition: $transition;
+
+    &.gold {
+      color: #f59e0b;
+      filter: drop-shadow(0 2px 4px rgba(245, 158, 11, 0.3));
+    }
+
+    &.silver {
+      color: #9ca3af;
+      filter: drop-shadow(0 2px 4px rgba(156, 163, 175, 0.3));
+    }
+
+    &.bronze {
+      color: #a16207;
+      filter: drop-shadow(0 2px 4px rgba(161, 98, 7, 0.3));
+    }
+  }
+
+  @include mobile {
+    .rank-number {
+      width: 36px;
+      height: 36px;
+      font-size: 0.75rem;
+    }
+
+    .rank-icon {
+      width: 28px;
+      height: 28px;
+    }
+  }
+
+  @include mobile-small {
+    .rank-number {
+      width: 30px;
+      height: 30px;
+      font-size: 0.7rem;
+    }
+
+    .rank-icon {
+      width: 22px;
+      height: 22px;
+    }
+  }
 }
 
-// --- DETALHES (NOME E PONTOS) ---
+// Avatar do usuário
+.rank-avatar {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 48px;
+  height: 48px;
+  background: $primary-gradient;
+  color: $bg-white;
+  border-radius: 50%;
+  font-weight: 700;
+  font-size: 1rem;
+  box-shadow: $shadow-sm;
+  transition: $transition;
+
+  .rank-item.user-highlight & {
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+  }
+
+  @include mobile {
+    width: 42px;
+    height: 42px;
+    font-size: 0.875rem;
+  }
+
+  @include mobile-small {
+    width: 32px;
+    height: 32px;
+    font-size: 0.75rem;
+  }
+}
+
+// Detalhes do usuário
 .rank-details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+
+  .rank-name {
+    font-weight: 700;
+    color: $text-dark;
+    font-size: 1.125rem;
+
+    @include mobile {
+      font-size: 1rem;
+    }
+
+    @include mobile-small {
+      font-size: 0.875rem;
+    }
+  }
+
+  .rank-points {
+    font-size: 0.875rem;
+    color: $accent-color;
+    font-weight: 600;
+
+    @include mobile {
+      font-size: 0.75rem;
+    }
+
+    @include mobile-small {
+      font-size: 0.7rem;
+    }
+  }
+}
+
+// Redes sociais - PADRÃO CORRIGIDO
+.rank-socials {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  justify-self: end; // garante ficar na coluna final do grid
+  margin-top: 0; // removed 40px que empurrava pra baixo
+  align-self: center; // centraliza verticalmente dentro do grid cell
+  margin-top: 40px;
+
+  a {
     display: flex;
-    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    background: $bg-light;
+    color: $text-medium;
+    transition: $transition;
+    position: relative;
 
-    .rank-name {
-        font-weight: 600;
-        color: #374151; // $gray-700
+    &:hover {
+      transform: translateY(-2px);
+      background: $primary-color;
+      color: $bg-white;
+      box-shadow: $shadow-md;
     }
 
-    .rank-points {
-        font-size: 0.875rem; // 14px
-        color: #6b7280; // $gray-500
+    // Cores específicas para cada rede social
+    &:first-child:hover {
+      /* Instagram */
+      background: linear-gradient(45deg, #405DE6, #5851DB, #833AB4, #C13584, #E1306C, #FD1D1D);
     }
+
+    &:nth-child(2):hover {
+      /* LinkedIn */
+      background: #0077b5;
+    }
+
+    &:last-child:hover {
+      /* GitHub */
+      background: #333;
+    }
+
+    svg {
+      width: 18px;
+      height: 18px;
+    }
+  }
+
+  @include mobile {
+    gap: 0.5rem;
+
+    a {
+      width: 32px;
+      height: 32px;
+
+      svg {
+        width: 16px;
+        height: 16px;
+      }
+    }
+  }
+
+  @include mobile-small {
+    gap: 0.25rem;
+
+    a {
+      width: 28px;
+      height: 28px;
+      border-radius: 6px;
+
+      svg {
+        width: 14px;
+        height: 14px;
+      }
+    }
+  }
 }
 
-.rank-item.user-highlight {
-    background-color: #eef2ff; // Um azul bem claro
-    border: 2px solid #4338ca; // Um azul/roxo mais forte
-    margin-bottom: 2rem; // Espaço extra para separar da lista principal
-    position: relative; // Necessário para a tag
 
-    .rank-name {
-        font-weight: 700;
-    }
+// Animações
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
-.user-tag {
-    position: absolute;
-    top: 1rem;
-    right: 1rem;
-    background-color: #4338ca;
-    color: #ffffff;
-    padding: 0.25rem 0.75rem;
-    border-radius: 9999px; // Formato de pílula
-    font-size: 0.75rem; // 12px
-    font-weight: 500;
+@keyframes pulse {
+
+  0%,
+  100% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(1.05);
+  }
 }
 
-// Animação de Fade In (pode estar em um arquivo global)
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(10px);
-    }
+// Estados de loading
+.ranking-loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 200px;
+  font-size: 1.125rem;
+  color: $text-medium;
 
-    to {
-        opacity: 1;
-        transform: translateY(0);
+  @include mobile-small {
+    height: 150px;
+    font-size: 1rem;
+  }
+}
+
+// Empty state
+.ranking-empty {
+  text-align: center;
+  padding: 3rem 1rem;
+  color: $text-medium;
+
+  @include mobile-small {
+    padding: 2rem 0.5rem;
+  }
+
+  svg {
+    width: 64px;
+    height: 64px;
+    margin-bottom: 1rem;
+    opacity: 0.5;
+
+    @include mobile-small {
+      width: 48px;
+      height: 48px;
+      margin-bottom: 0.75rem;
     }
+  }
 }

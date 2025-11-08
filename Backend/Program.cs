@@ -145,7 +145,6 @@ builder.Services.AddHealthChecks();
 
 var app = builder.Build();
 
-// Aplica as migrações na inicialização
 using (var scope = app.Services.CreateScope())
 {
     var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
@@ -156,10 +155,32 @@ using (var scope = app.Services.CreateScope())
         {
             dbContext.Database.Migrate();
             Console.WriteLine("Migrações aplicadas com sucesso.");
+
+            // 🔧 Adiciona a coluna manualmente se ainda não existir
+            var connection = dbContext.Database.GetDbConnection();
+            connection.Open();
+
+            using var command = connection.CreateCommand();
+            command.CommandText = @"
+    DO $$
+    BEGIN
+        IF NOT EXISTS (
+            SELECT 1
+            FROM information_schema.columns
+            WHERE table_name = 'GenerationRequests'
+            AND column_name = 'OutputMetadata'
+        ) THEN
+            ALTER TABLE ""GenerationRequests"" ADD COLUMN ""OutputMetadata"" TEXT;
+        END IF;
+    END $$;
+";
+            command.ExecuteNonQuery();
+
+            Console.WriteLine("Verificação da coluna OutputMetadata concluída.");
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Erro ao aplicar migrações: {ex.Message}");
+            Console.WriteLine($"Erro ao aplicar migrações ou ajustar colunas: {ex.Message}");
         }
     }
 }

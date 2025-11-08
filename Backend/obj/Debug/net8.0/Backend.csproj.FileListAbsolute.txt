@@ -1,3 +1,4 @@
+C:\Users\guilh\Documents\StudyAI\backend\bin\Debug\net8.0\out\out\web.config
 C:\Users\guilh\Documents\StudyAI\backend\bin\Debug\net8.0\out\web.config
 C:\Users\guilh\Documents\StudyAI\backend\bin\Debug\net8.0\appsettings.Development.json
 C:\Users\guilh\Documents\StudyAI\backend\bin\Debug\net8.0\appsettings.json
@@ -7,6 +8,11 @@ C:\Users\guilh\Documents\StudyAI\backend\bin\Debug\net8.0\out\appsettings.json
 C:\Users\guilh\Documents\StudyAI\backend\bin\Debug\net8.0\out\Backend.deps.json
 C:\Users\guilh\Documents\StudyAI\backend\bin\Debug\net8.0\out\Backend.runtimeconfig.json
 C:\Users\guilh\Documents\StudyAI\backend\bin\Debug\net8.0\out\global.json
+C:\Users\guilh\Documents\StudyAI\backend\bin\Debug\net8.0\out\out\appsettings.Development.json
+C:\Users\guilh\Documents\StudyAI\backend\bin\Debug\net8.0\out\out\appsettings.json
+C:\Users\guilh\Documents\StudyAI\backend\bin\Debug\net8.0\out\out\Backend.deps.json
+C:\Users\guilh\Documents\StudyAI\backend\bin\Debug\net8.0\out\out\Backend.runtimeconfig.json
+C:\Users\guilh\Documents\StudyAI\backend\bin\Debug\net8.0\out\out\global.json
 C:\Users\guilh\Documents\StudyAI\backend\bin\Debug\net8.0\Backend.exe
 C:\Users\guilh\Documents\StudyAI\backend\bin\Debug\net8.0\Certificado\producao-842013-IntelliStudy.p12
 C:\Users\guilh\Documents\StudyAI\backend\bin\Debug\net8.0\Backend.deps.json

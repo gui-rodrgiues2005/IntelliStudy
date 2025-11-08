@@ -35,7 +35,7 @@ function conteudos() {
 
   // Efeito que busca a lista de conteudos quando a página carrega
   useEffect(() => {
-    const fetchListaConteudo = async () => {
+    const fetchListaResumo = async () => {
       try {
         const token = localStorage.getItem("token");
         const res = await fetch(`${API_URL}/api/Resumo`, {
@@ -53,7 +53,7 @@ function conteudos() {
       }
     };
 
-    fetchListaConteudo();
+    fetchListaResumo();
   }, []); // O array vazio [] garante que isso só roda uma vez
 
   // Função para buscar um conteudo completo quando o usuário clica em um item da lista
@@ -101,7 +101,7 @@ function conteudos() {
       }
 
       // Se deletou com sucesso, remove o conteudo da lista no estado.
-      setListaResumos(listaConteudos.filter(r => r.id !== resumoId));
+      setListaResumos(listaResumos.filter(r => r.id !== resumoId));
       // Se o conteudo deletado era o que estava selecionado, limpa a tela.
       if (resumoSelecionado?.id === resumoId) {
         setResumoSelecionado(null);
@@ -140,7 +140,7 @@ function conteudos() {
       <aside className={`conteudos-sidebar ${isMobile ? (isMobileOpen ? 'open' : 'closed') : ''}`}>
         <h3>Conteudos</h3>
         <ul className="conteudos-list">
-          {listaConteudos.map(resumo => (
+          {listaResumos.map(resumo => (
             <li
               key={resumo.id}
               onClick={() => handleSelecionarResumo(resumo.id)}

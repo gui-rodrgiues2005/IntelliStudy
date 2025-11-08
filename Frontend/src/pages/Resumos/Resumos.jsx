@@ -61,7 +61,7 @@ function Resumos() {
 
     try {
       const token = localStorage.getItem("token");
-      const res = await fetch(`${API_URL}/api/resumo/meus-resumos/${resumoId}`, {
+      const res = await fetch(`${API_URL}/api/Resumo/meus-resumos/${resumoId}`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (!res.ok) throw new Error("Falha ao buscar o conteudo selecionado.");

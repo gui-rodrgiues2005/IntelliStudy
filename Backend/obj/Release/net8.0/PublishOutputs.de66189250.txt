@@ -1,8 +1,14 @@
 C:\Users\guilh\Documents\StudyAI\backend\out\Certificado\producao-842013-IntelliStudy.p12
 C:\Users\guilh\Documents\StudyAI\backend\out\Backend.exe
+C:\Users\guilh\Documents\StudyAI\backend\out\out\web.config
 C:\Users\guilh\Documents\StudyAI\backend\out\appsettings.Development.json
 C:\Users\guilh\Documents\StudyAI\backend\out\appsettings.json
 C:\Users\guilh\Documents\StudyAI\backend\out\global.json
+C:\Users\guilh\Documents\StudyAI\backend\out\out\appsettings.Development.json
+C:\Users\guilh\Documents\StudyAI\backend\out\out\appsettings.json
+C:\Users\guilh\Documents\StudyAI\backend\out\out\Backend.deps.json
+C:\Users\guilh\Documents\StudyAI\backend\out\out\Backend.runtimeconfig.json
+C:\Users\guilh\Documents\StudyAI\backend\out\out\global.json
 C:\Users\guilh\Documents\StudyAI\backend\out\Backend.dll
 C:\Users\guilh\Documents\StudyAI\backend\out\Backend.runtimeconfig.json
 C:\Users\guilh\Documents\StudyAI\backend\out\Backend.pdb

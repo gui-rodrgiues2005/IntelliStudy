@@ -224,7 +224,7 @@ function Dashboard() {
       }
     };
   }, [placeholderIndex]);
-  
+
   useEffect(() => {
     const savedText = localStorage.getItem('resumoDigitacao');
     const savedIndex = localStorage.getItem('resumoIndex');
@@ -519,19 +519,22 @@ function Dashboard() {
 
       if (!res.ok) {
         let errorMessage = "Erro ao gerar resumo.";
+        const body = await res.text();
+
         try {
-          const data = await res.json();
+          const data = JSON.parse(body);
           errorMessage = data.mensagem || errorMessage;
           if (data.sugestao) safeToast("info", data.sugestao);
         } catch {
-          const fallback = await res.text();
-          errorMessage = fallback || errorMessage;
+          errorMessage = body || errorMessage;
         }
+
         stopAllIntervals();
         if (isMountedRef.current) setIsGeneratingSummary(false);
         safeToast("error", errorMessage);
         return;
       }
+
 
       const { requestId, resumoId: resumoIdBackend } = await res.json();
       if (isMountedRef.current) setActiveRequestId(requestId);

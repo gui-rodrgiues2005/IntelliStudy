@@ -152,3 +152,10 @@ C:\Users\guilh\Documents\StudyAI\Backend\bin\Release\net8.0\out\out\Backend.deps
 C:\Users\guilh\Documents\StudyAI\Backend\bin\Release\net8.0\out\out\Backend.runtimeconfig.json
 C:\Users\guilh\Documents\StudyAI\Backend\bin\Release\net8.0\out\out\Backend.staticwebassets.endpoints.json
 C:\Users\guilh\Documents\StudyAI\Backend\bin\Release\net8.0\out\out\global.json
+C:\Users\guilh\Documents\StudyAI\backend\bin\Release\net8.0\out\out\out\web.config
+C:\Users\guilh\Documents\StudyAI\backend\bin\Release\net8.0\out\out\out\appsettings.Development.json
+C:\Users\guilh\Documents\StudyAI\backend\bin\Release\net8.0\out\out\out\appsettings.json
+C:\Users\guilh\Documents\StudyAI\backend\bin\Release\net8.0\out\out\out\Backend.deps.json
+C:\Users\guilh\Documents\StudyAI\backend\bin\Release\net8.0\out\out\out\Backend.runtimeconfig.json
+C:\Users\guilh\Documents\StudyAI\backend\bin\Release\net8.0\out\out\out\Backend.staticwebassets.endpoints.json
+C:\Users\guilh\Documents\StudyAI\backend\bin\Release\net8.0\out\out\out\global.json

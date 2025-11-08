@@ -318,7 +318,7 @@ export default function Desempenho() {
                 }
             } catch (err) {
                 console.error("Erro ao carregar dados:", err);
-                toast.error("Não foi possível carregar as análises.");
+                toast.error("Estamos trabalhando nessa página, ela foi pré lançada, estamos finalizando os detalhes.");
             } finally {
                 setLoading(false);
             }

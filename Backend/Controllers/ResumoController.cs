@@ -218,13 +218,13 @@ namespace Backend.Controllers
         }
 
         // GET: api/resumo/meus-resumos/{id}
-        [HttpGet("meus-resumos/{id}")]
-        public async Task<IActionResult> GetResumoPorId(int id)
+        [HttpGet("meus-resumos/{resumoid}")]
+        public async Task<IActionResult> GetResumoPorId(int resumoid)
         {
             var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
 
             var resumo = await _context.ConteudoIAs
-                .FirstOrDefaultAsync(c => c.Id == id && c.UserId == userId);
+                .FirstOrDefaultAsync(c => c.Id == resumoid && c.UserId == userId);
 
             if (resumo == null)
                 return NotFound("Conteudo não encontrado ou não pertence ao usuário.");

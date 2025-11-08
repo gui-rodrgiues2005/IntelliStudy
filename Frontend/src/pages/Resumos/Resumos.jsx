@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
 import { Trash2, Download, Menu, X, AlignStartVertical, ArrowRight, List, AlignHorizontalJustifyEnd } from 'lucide-react';
 import { API_URL } from '../../../config';
-import './resumos.scss';
+import './Resumos.scss';
 
 function conteudos() {
   const [listaConteudos, setListaConteudos] = useState([]);

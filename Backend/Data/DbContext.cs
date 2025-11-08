@@ -26,7 +26,7 @@ namespace Backend.Data
         {
             modelBuilder.Entity<GenerationRequest>()
                 .Property(g => g.OutputMetadata)
-                .HasColumnName("outputmetadata"); // nome real da coluna no banco
+                .HasColumnName("OutputMetadata"); // nome real da coluna no banco
         }
     }
 }

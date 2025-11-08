@@ -13,6 +13,7 @@ import HistoricoDePlanos from "./pages/HistoricoDePlanos/HistoricoDePlanos";
 import PricingPage from "./pages/PricingPage/PricingPage";
 import PixPage from "./pages/Agradecimento/Agradecimento";
 import MainLayout from "./components/Layout/MainLayout";
+import Desenvolvimento from "./pages/Desenvolvimento/Desenvolvimento";
 
 import Inicio from "./pages/SITE/Inicio/Inicio";
 import Contato from "./pages/SITE/Contato/Contato";
@@ -103,6 +104,17 @@ function App() {
           />
 
           <Route
+            path="/desenvolvimento"
+            element={
+              <PrivateRoute>
+                <MainLayout>
+                  <Desenvolvimento />
+                </MainLayout>
+              </PrivateRoute>
+            }
+          />
+
+          <Route
             path="/historico-de-planos"
             element={
               <PrivateRoute>
@@ -138,7 +150,19 @@ function App() {
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
       </StudyProvider>
-      <ToastContainer position="top-right" autoClose={3000} />
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light"
+        limit={3} // limita número de toasts simultâneos
+      />
     </Router>
   );
 }

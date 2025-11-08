@@ -52,17 +52,22 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 // --- Serviços customizados ---
 builder.Services.AddHostedService<GeminiWorker>();
 builder.Services.AddScoped<PlanoService>();
+builder.Services.AddScoped<ConquistaService>();
+builder.Services.AddScoped<TempoEstudoService>();
 
 StripeConfiguration.ApiKey = configuration["Stripe:SecretKey"];
-// --- HttpClient para GeminiService ---
 builder.Services.AddHttpClient();
 
 var geminiApiKey = builder.Configuration["Gemini:ApiKey"];
-builder.Services.AddSingleton<GeminiService>(sp =>
+builder.Services.AddScoped<GeminiService>(sp =>
 {
-    var httpClient = sp.GetRequiredService<HttpClient>();
-    // ATENÇÃO: Verifique a chave da API no appsettings ou ambiente
-    return new GeminiService(httpClient, geminiApiKey);
+    var http = sp.GetRequiredService<HttpClient>();
+    var logger = sp.GetRequiredService<ILogger<GeminiService>>();
+    var config = sp.GetRequiredService<IConfiguration>();
+
+    var apiKey = config["Gemini:ApiKey"];
+
+    return new GeminiService(http, apiKey, logger);
 });
 
 // --- JWT ---

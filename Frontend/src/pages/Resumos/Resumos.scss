@@ -1,4 +1,4 @@
-/* src/pages/MeusResumos.scss */
+/* src/pages/Meusconteudos.scss */
 
 // --- Variáveis de Cor e Estilo (para fácil customização) ---
 $primary-color: #0056b3;
@@ -15,14 +15,14 @@ $border-radius: 8px;
 $sidebar-width: 320px;
 
 // --- Estilo Principal da Página ---
-.meus-resumos-page {
+.meus-conteudos-page {
   display: flex;
   height: 100%;
   background-color: $gray-100;
   position: relative;
 
   // Botão de menu mobile
-  .resumos-mobile-menu-btn {
+  .conteudos-mobile-menu-btn {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -42,7 +42,7 @@ $sidebar-width: 320px;
   }
 
   // --- Barra Lateral (Sidebar) ---
-  .resumos-sidebar {
+  .conteudos-sidebar {
     width: $sidebar-width;
     flex-shrink: 0;
     border-right: 1px solid $border-color;
@@ -90,8 +90,8 @@ $sidebar-width: 320px;
     }
   }
 
-  // --- Lista de Resumos ---
-  .resumos-list {
+  // --- Lista de conteudos ---
+  .conteudos-list {
     list-style: none;
     padding: 0;
     margin: 0;
@@ -219,7 +219,7 @@ $sidebar-width: 320px;
   }
 
   // --- Área de Conteúdo do Resumo ---
-  .resumo-content {
+  .conteudo-content {
     flex-grow: 1;
     padding: 2.5rem;
     overflow-y: auto;
@@ -259,7 +259,7 @@ $sidebar-width: 320px;
       }
     }
 
-    .resumo-header {
+    .conteudo-header {
       margin-bottom: 2rem;
       padding-bottom: 1rem;
       border-bottom: 1px solid $border-color;

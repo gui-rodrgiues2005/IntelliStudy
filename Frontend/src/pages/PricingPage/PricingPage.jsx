@@ -13,32 +13,49 @@ const PricingPage = () => {
     const [plano, setPlano] = useState('Gratuito');
     const [ultimoPagamento, setUltimoPagamento] = useState(null);
     const token = localStorage.getItem('token');
+    const [isLoading, setIsLoading] = useState(true);
     const stripePromise = loadStripe("pk_live_51SMXVsDqJgnRbRyfDQ9I407VCxFu17n8fCE05ECZ1enEz6AdMy4MuGnzM6hgWeNjHCdx1XI0BYCwEzSoK0URFuNb00QBsgadsz");
 
     useEffect(() => {
         const carregarDadosUsuario = async () => {
-            if (!token) return;
+            setIsLoading(true);
+            if (!token) {
+                setIsLoading(false);
+                return;
+            }
+
             try {
                 const response = await fetch(`${API_URL}/api/User/meus-dados`, {
-                    headers: { Authorization: `Bearer ${token}` }
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
                 });
-                if (!response.ok) return;
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`Erro ${response.status}: ${errorText}`);
+                }
 
                 const data = await response.json();
+                console.log("Dados do usuário carregados:", data);
+
                 setCpf(data.cpf || '');
                 setTelefone(data.telefone || '');
                 setPlano(data.plano || 'Gratuito');
                 setUltimoPagamento(data.ultimoPagamento ? new Date(data.ultimoPagamento) : null);
                 setUsuarioCarregado(true);
-            } catch (e) {
-                // console.error('Erro ao carregar dados do usuário:', e);
+
+            } catch (error) {
+                console.error('Erro ao carregar dados do usuário:', error);
+                toast.error('Não foi possível carregar seus dados. Por favor, recarregue a página.');
+                setUsuarioCarregado(false);
+                setIsLoading(false);
             }
         };
 
         carregarDadosUsuario();
     }, [token]);
-
-
 
     useEffect(() => {
         const confirmarPagamento = async () => {
@@ -159,7 +176,7 @@ const PricingPage = () => {
             const res = await fetch(`${API_URL}/api/Pagamento/criar-checkout`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ userId: userData.id, valor })
+                body: JSON.stringify({ userId: userData.id, valor, plano })
             });
 
             // console.log("[LOG] Resposta do backend - Status:", res.status);
@@ -206,40 +223,80 @@ const PricingPage = () => {
                         <button className="plan-button disabled">Seu Plano Atual</button>
                     </div>
                     <ul className="features-list">
-                        <li><Check size={18} className="check-icon" /> 5 Resumos por dia</li>
-                        <li><Check size={18} className="check-icon" /> 5 Simulados por dia </li>
+                        <li><Check size={18} className="check-icon" /> 5 Prompts por dia</li>
+                        <li><Check size={18} className="check-icon" /> 5 Simulados por dia</li>
                         <li><Check size={18} className="check-icon" /> 1 Plano de Estudos por semana</li>
-                        <li><Check size={18} className="check-icon" /> Conquistas da plataforma são limitadas</li>
+                        <li><Check size={18} className="check-icon" /> Conquistas básicas</li>
                     </ul>
                 </div>
 
-                {/* --- PLANO PREMIUM --- */}
-                <div className={`plan-card premium${plano === 'Premium' || plano === 'Mestre' ? ' atual' : ''}`}>
-                    {(plano === 'Premium' || plano === 'Mestre') && (
-                        <span className="badge-atual">Plano Atual Ativo</span>
-                    )}
+                {/* --- PLANO BÁSICO --- */}
+                <div className={`plan-card${plano === 'Basico' ? ' atual' : ''}`}>
+                    {plano === 'Basico' && <span className="badge-atual">Plano Atual</span>}
+                    <div className="plan-header">
+                        <h3>Básico</h3>
+                        <p className="price">R$9<span>/mês</span></p>
+                        <button
+                            className={`plan-button ${plano === 'Basico' ? 'disabled' : ''}`}
+                            onClick={() => plano === 'Basico' ? toast.info('Você já possui este plano') : handlePagamento(9)}
+                        >
+                            {plano === 'Basico' ? 'Seu Plano' : 'Assinar R$9/mês'}
+                        </button>
+                    </div>
+                    <ul className="features-list">
+                        <li><Check size={18} className="check-icon" /> 20 Prompts por dia</li>
+                        <li><Check size={18} className="check-icon" /> 10 Simulados por dia</li>
+                        <li><Check size={18} className="check-icon" /> 2 Planos de Estudo por semana</li>
+                        <li><Check size={18} className="check-icon" /> Exportar resumos (limitado)</li>
+                        <li><Check size={18} className="check-icon" /> Suporte padrão</li>
+                    </ul>
+                </div>
+
+                {/* --- PLANO PRO --- */}
+                <div className={`plan-card pro${plano === 'Pro' ? ' atual' : ''}`}>
+                    {plano === 'Pro' && <span className="badge-atual">Plano Atual</span>}
+                    <div className="plan-header">
+                        <h3>Pro</h3>
+                        <p className="price">R$19<span>/mês</span></p>
+                        <button
+                            className={`plan-button pro-button ${plano === 'Pro' ? 'disabled' : ''}`}
+                            onClick={() => plano === 'Pro' ? toast.info('Você já possui este plano') : handlePagamento(19)}
+                        >
+                            {plano === 'Pro' ? 'Seu Plano' : 'Assinar R$19/mês'}
+                        </button>
+                    </div>
+                    <ul className="features-list">
+                        <li><Check size={18} className="check-icon pro-check" /> Tudo no Básico, e mais:</li>
+                        <li className="pro-feature"><Crown size={18} /> Conteudos e Prompts ilimitados</li>
+                        <li className="pro-feature"><Crown size={18} /> Simulados até 50/mês</li>
+                        <li className="pro-feature"><Crown size={18} /> Planos de Estudo ilimitados</li>
+                        <li className="pro-feature"><Crown size={18} /> Exportar resumos (PDF/DOCX)</li>
+                        <li className="pro-feature"><Crown size={18} /> Analytics básico de desempenho</li>
+                    </ul>
+                </div>
+
+                {/* --- PLANO MESTRE (POPULAR) --- */}
+                <div className={`plan-card premium${plano === 'Mestre' ? ' atual' : ''}`}>
+                    {plano === 'Mestre' && <span className="badge-atual">Plano Atual</span>}
                     <div className="premium-badge">
                         <Star size={14} /> POPULAR
                     </div>
                     <div className="plan-header">
                         <h3>Mestre</h3>
-                        <p className="price">R$12<span>/mês</span></p>
+                        <p className="price">R$39<span>/mês</span></p>
                         <button
-                            className="plan-button premium-button"
-                            onClick={() => handlePagamento(12)}
+                            className={`plan-button premium-button ${plano === 'Mestre' ? 'disabled' : ''}`}
+                            onClick={() => plano === 'Mestre' ? toast.info('Você já possui este plano') : handlePagamento(39)}
                         >
-                            <Zap size={16} /> Fazer Upgrade Agora
+                            {plano === 'Mestre' ? 'Seu Plano' : <><Zap size={16} /> Fazer Upgrade</>}
                         </button>
-
                     </div>
                     <ul className="features-list">
-                        <li><Check size={18} className="check-icon premium-check" /> Tudo no plano Aprendiz, e mais:</li>
-                        <li className="premium-feature"><Crown size={18} /> Resumos e Simulados Ilimitados</li>
-                        <li className="premium-feature"><Crown size={18} /> Planos de Estudo Ilimitados</li>
-                        <li className="premium-feature"><Crown size={18} /> Simulados com até 20 questões</li>
-                        <li className="premium-feature"><Crown size={18} /> Desbloqueie todas as Conquistas</li>
-                        <li className="premium-feature"><Crown size={18} /> Experiência única</li>
-                        {/* <li className="premium-feature"><Crown size={18} /> Exporte seus resumos (PDF/DOCX)</li> */}
+                        <li><Check size={18} className="check-icon premium-check" /> Tudo no Pro, e mais:</li>
+                        <li className="premium-feature"><Crown size={18} /> Simulados até 200/mês ou ilimitado</li>
+                        <li className="premium-feature"><Crown size={18} /> Export em massa e integrações</li>
+                        <li className="premium-feature"><Crown size={18} /> Suporte prioritário e onboarding</li>
+                        <li className="premium-feature"><Crown size={18} /> Conquistas desbloqueadas</li>
                     </ul>
                 </div>
             </div>
@@ -259,7 +316,6 @@ const PricingPage = () => {
                             placeholder="Digite seu CPF"
                             maxLength={14}
                         />
-
 
                         <label>Telefone</label>
                         <input

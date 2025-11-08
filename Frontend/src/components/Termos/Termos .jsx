@@ -5,7 +5,7 @@ import NavigationSite from "../Layout/NavigationSite/NavigationSite";
 const TermosDeUso = () => {
   return (
     <div className="termos-container">
-      <NavigationSite/>
+      <NavigationSite />
       <div className="termos-content">
         <h1>Termos de Uso</h1>
         <p className="update-date">Última atualização: Outubro de 2025</p>
@@ -23,9 +23,9 @@ const TermosDeUso = () => {
           <h2>2. Sobre a Plataforma</h2>
           <p>
             O IntelliStudy é uma plataforma digital desenvolvida com o objetivo de oferecer
-            ferramentas para apoio aos estudos, como resumos inteligentes, simulados e
-            planos de estudo otimizados. A plataforma é mantida por <strong>Guilherme Rodrigues Costa</strong>,
-            desenvolvedor independente e criador do projeto.
+            ferramentas para apoio aos estudos, como tipos de pesquisas diretas, simulados e
+            planos de estudo otimizados. A plataforma é mantida pela <strong>IdeiaFish</strong>,
+            empresa de tecnologia e desenvolvimento de software.
           </p>
         </section>
 
@@ -91,8 +91,8 @@ const TermosDeUso = () => {
           <h2>9. Contato</h2>
           <p>
             Em caso de dúvidas sobre estes Termos, entre em contato através do e-mail:{" "}
-            <a href="mailto:rodriguesguidev@gmail.com">
-              rodriguesguidev@gmail.com
+            <a href="mailto:ideiafish2025@gmail.com">
+              ideiafish2025@gmail.com
             </a>
           </p>
         </section>

@@ -106,6 +106,14 @@ $background-light: #fafafa;
         font-size: 1rem;
         line-height: 1.5;
     }
+
+    .order-by {
+        font-size: 0.9rem;
+        color: #666; // cor discreta, corporativa
+        margin-top: 0.5rem;
+        font-style: italic;
+        text-align: center;
+    }
 }
 
 // Formulário - Espaçamento Clean
@@ -318,9 +326,9 @@ form {
     }
 
 
-    @media (max-width: 480px) { 
+    @media (max-width: 480px) {
         top: 10px;
-        width: 30px ;
+        width: 30px;
         height: 30px;
         padding: 6px;
     }

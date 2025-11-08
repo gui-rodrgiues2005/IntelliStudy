@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
-using System.Text.Json;
 using Backend.Data;
 using Backend.Models;
 
@@ -22,7 +21,6 @@ namespace Backend.Controllers
             _context = context;
         }
 
-        // GET: api/generation/status/{id}
         [HttpGet("status/{id}")]
         public async Task<IActionResult> GetStatusDoPedido(int id)
         {
@@ -31,57 +29,41 @@ namespace Backend.Controllers
             var pedido = await _context.GenerationRequests.FindAsync(id);
 
             if (pedido == null || pedido.UserId != userId)
-            {
                 return NotFound("Pedido não encontrado ou não pertence ao usuário.");
-            }
 
-            // Se o pedido estiver concluído, retornamos o resultado completo
+            // 🔹 Pedido concluído
             if (pedido.Status == RequestStatus.Concluido)
             {
-                // Para resumos, incluir o resumoId extraído do OutputTexto
-                if (pedido.Tipo == GenerationType.Resumo)
-                {
-                    try
-                    {
-                        var resumo = JsonSerializer.Deserialize<Resumo>(pedido.OutputTexto);
-                        return Ok(new
-                        {
-                            pedido.Id,
-                            pedido.Status,
-                            pedido.Tipo,
-                            Resultado = pedido.OutputTexto,
-                            resumoId = resumo?.Id
-                        });
-                    }
-                    catch
-                    {
-                        // Fallback se não conseguir desserializar
-                        return Ok(new
-                        {
-                            pedido.Id,
-                            pedido.Status,
-                            pedido.Tipo,
-                            Resultado = pedido.OutputTexto
-                        });
-                    }
-                }
+                // Busca simulado relacionado (se houver)
+                var simulado = await _context.Simulados
+                    .AsNoTracking()
+                    .FirstOrDefaultAsync(s => s.GenerationRequestId == pedido.Id);
+
+                // Normaliza outputMetadata (pode estar salvo no pedido)
+                string outputMetadata = pedido.OutputMetadata ?? (simulado != null
+                    ? System.Text.Json.JsonSerializer.Serialize(new { SimuladoId = simulado.Id, RequestId = pedido.Id })
+                    : null);
+
+                // Resultado: prioriza questões do Simulado salvo, senão usa OutputTexto do pedido
+                var resultado = simulado != null ? simulado.QuestoesJson : pedido.OutputTexto;
 
                 return Ok(new
                 {
-                    pedido.Id,
-                    pedido.Status,
-                    pedido.Tipo,
-                    Resultado = pedido.OutputTexto // O resultado gerado pela IA
+                    id = pedido.Id,
+                    status = (int)pedido.Status,
+                    tipo = (int)pedido.Tipo,
+                    resultado = resultado, // já em formato JSON/string conforme salvo
+                    outputMetadata = outputMetadata
                 });
             }
 
-            // Se ainda estiver pendente, processando, ou se falhou, retornamos apenas o status
+            // Pedido ainda em andamento ou falhou
             return Ok(new
             {
-                pedido.Id,
-                pedido.Status,
-                pedido.Tipo,
-                MensagemErro = pedido.MensagemErro
+                id = pedido.Id,
+                status = (int)pedido.Status,
+                tipo = (int)pedido.Tipo,
+                mensagemErro = pedido.MensagemErro
             });
         }
     }

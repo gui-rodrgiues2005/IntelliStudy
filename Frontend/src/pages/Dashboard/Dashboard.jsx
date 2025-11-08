@@ -1,9 +1,9 @@
 import React from 'react';
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate, NavLink } from 'react-router-dom'; // Para a função de logout
-import ReactMarkdown from 'react-markdown';
 import { toast } from "react-toastify";
 import { API_URL } from '../../../config';
+import ReactMarkdown from 'react-markdown';
 
 import {
   BookOpen,
@@ -25,8 +25,6 @@ import {
 import { useStudy } from '../../context/StudyContext';
 
 import './Dashboard.scss';
-
-
 
 // Componente de destaque dos resumos
 const ParagraphWithHighlights = ({ children, ...props }) => {
@@ -112,8 +110,6 @@ const ParagraphWithHighlights = ({ children, ...props }) => {
   return <p {...props}>{processChildren(children)}</p>;
 };
 
-
-
 function Dashboard() {
   const {
     resumoGerado,
@@ -144,6 +140,36 @@ function Dashboard() {
   const [isResumoDeArquivo, setIsResumoDeArquivo] = useState(false);
   const hasGeneratedFromLocalStorage = useRef(false);
   const [showPointsText, setShowPointsText] = useState(false);
+  const [showOptions, setShowOptions] = useState(false);
+  const [selectedTipo, setSelectedTipo] = useState("Resumo");
+  const [typingComplete, setTypingComplete] = useState(false);
+  // refs para controlar intervalos e montagem
+  const placeholderIntervalRef = useRef(null);
+  const pollIntervalRef = useRef(null);
+  const messageIntervalRef = useRef(null);
+  const isMountedRef = useRef(true);
+  const currentToastIdRef = useRef(null);
+  const [typedText, setTypedText] = useState('');
+  const [isTyping, setIsTyping] = useState(false);
+  const [displayText, setDisplayText] = useState('');
+  const previousResumo = useRef('');
+
+  useEffect(() => {
+    // marca componente montado
+    isMountedRef.current = true;
+    return () => {
+      // cleanup ao desmontar ou HMR
+      isMountedRef.current = false;
+      if (pollIntervalRef.current) {
+        clearInterval(pollIntervalRef.current);
+        pollIntervalRef.current = null;
+      }
+      if (messageIntervalRef.current) {
+        clearInterval(messageIntervalRef.current);
+        messageIntervalRef.current = null;
+      }
+    };
+  }, []);
 
   const inspiringPlaceholders = [
     "Resuma seu texto para estudar melhor...",
@@ -161,67 +187,136 @@ function Dashboard() {
   const [placeholderIndex, setPlaceholderIndex] = useState(0);
   const [typedPlaceholder, setTypedPlaceholder] = useState("");
 
+  // Efeito do placeholder com cleanup adequado
   useEffect(() => {
     let charIndex = 0;
-    let forward = true; // controla digitar/apagar
-    let timeout;
+    let forward = true;
 
     const type = () => {
       const currentText = inspiringPlaceholders[placeholderIndex];
 
       if (forward) {
-        // Digita letra por letra
         setTypedPlaceholder(currentText.slice(0, charIndex));
         charIndex++;
         if (charIndex > currentText.length) {
           forward = false;
-          timeout = setTimeout(type, 1500); // pausa antes de apagar
+          placeholderIntervalRef.current = setTimeout(type, 1500);
           return;
         }
       } else {
-        // Apaga letra por letra
         setTypedPlaceholder(currentText.slice(0, charIndex));
         charIndex--;
         if (charIndex < 0) {
           forward = true;
           setPlaceholderIndex((prev) => (prev + 1) % inspiringPlaceholders.length);
-          return;
+          charIndex = 0; // Reset para próxima frase
         }
       }
 
-      timeout = setTimeout(type, 100);
+      placeholderIntervalRef.current = setTimeout(type, 100);
     };
 
     type();
 
-    return () => clearTimeout(timeout);
+    return () => {
+      if (placeholderIntervalRef.current) {
+        clearTimeout(placeholderIntervalRef.current);
+      }
+    };
   }, [placeholderIndex]);
+  
+  useEffect(() => {
+    const savedText = localStorage.getItem('resumoDigitacao');
+    const savedIndex = localStorage.getItem('resumoIndex');
+
+    if (savedText) {
+      setDisplayText(savedText);
+    }
+
+    // Se quiser reiniciar o typing quando o texto acabar, limpe o storage aqui
+    if (savedIndex && resumoGerado) {
+      const texto = typeof resumoGerado === 'string' ? resumoGerado : resumoGerado.texto;
+      const i = parseInt(savedIndex, 10);
+
+      if (i < texto.length) {
+        let currentIndex = i;
+        const timer = setInterval(() => {
+          if (currentIndex < texto.length) {
+            const newText = texto.substring(0, currentIndex + 1);
+            setDisplayText(newText);
+            localStorage.setItem('resumoDigitacao', newText);
+            localStorage.setItem('resumoIndex', currentIndex.toString());
+            currentIndex++;
+          } else {
+            clearInterval(timer);
+          }
+        }, 15);
+
+        return () => clearInterval(timer);
+      }
+    }
+  }, [resumoGerado]);
 
 
+  //Busca do nome do usuário com tratamento de erro
   useEffect(() => {
     const fetchUserName = async () => {
       try {
         const token = localStorage.getItem("token");
-        // Reutilizando o endpoint de perfil que já busca o nome
+        if (!token) return;
+
         const res = await fetch(`${API_URL}/api/Profile`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
+
         if (res.ok) {
           const data = await res.json();
-          setUserName(data.nome); // Salva o nome no estado
+          setUserName(data.nome);
         }
       } catch (error) {
-        //console.error("Falha ao buscar nome do usuário", error);
+        console.error("Falha ao buscar nome do usuário", error);
       }
     };
+
     fetchUserName();
   }, []);
 
+  // CORREÇÃO: Scroll para quiz com dependências corretas
   useEffect(() => {
     if (quiz.length > 0 && !isGeneratingQuiz) {
-      quizContainerRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      setTimeout(() => {
+        quizContainerRef.current?.scrollIntoView({
+          behavior: 'smooth',
+          block: 'start'
+        });
+      }, 100);
     }
   }, [quiz, isGeneratingQuiz]);
+
+  useEffect(() => {
+    if (resumoGerado) {
+      setIsTyping(true);
+      setTypedText('');
+
+      // Garante que temos uma string
+      const texto = typeof resumoGerado === 'string'
+        ? resumoGerado
+        : resumoGerado.texto || '';
+
+      let i = 0;
+      const timer = setInterval(() => {
+        if (i < texto.length) {
+          setTypedText(prev => prev + texto[i]);
+          i++;
+        } else {
+          clearInterval(timer);
+          setIsTyping(false);
+        }
+      }, 20); // Velocidade da digitação
+
+      return () => clearInterval(timer);
+    }
+  }, [resumoGerado]);
 
   // Mantém sua lógica de envio
   const handleFileUpload = async (event) => {
@@ -235,7 +330,7 @@ function Dashboard() {
 
     try {
       const token = localStorage.getItem("token"); // ← ADICIONE ESTA LINHA
-      const response = await fetch(`${API_URL}/api/Resumo/resumo-file`, {
+      const response = await fetch(`${API_URL}/api/Conteudo/resumo-file`, {
         method: "POST",
         headers: {
           'Authorization': `Bearer ${token}` // ← ADICIONE ESTE HEADER
@@ -285,23 +380,29 @@ function Dashboard() {
     handleFileUpload({ target: { files: [file] } });
   };
 
+  function handleSelectTipo(tipo) {
+    setSelectedTipo(tipo);
+    setShowOptions(false); // fecha o menu
+  }
+
   const handleSliderChange = (e) => { setNumQuestions(parseInt(e.target.value)); };
 
   const handleGenerateSummary = async (topicToGenerate, fileInput, text) => {
-    // //console.log("⚠️ handleGenerateSummary disparado!", { text });
-
     const topic = topicToGenerate || content;
     const fileToSend = fileInput || uploadedFile;
 
     if (!topic && !fileToSend) {
-      toast.info('Digite um tópico ou envie um arquivo para gerar o resumo!');
+      toast.info("Digite um tópico ou envie um arquivo para gerar o resumo!");
       return;
     }
 
-    setIsGeneratingSummary(true);
-    setResumoGerado(null);
-    setQuiz([]);
-    setScore(null);
+    // Reset e flags iniciais
+    if (isMountedRef?.current) {
+      setIsGeneratingSummary(true);
+      setResumoGerado(null);
+      setQuiz([]);
+      setScore(null);
+    }
 
     const loadingMessages = [
       "Analisando a matéria...",
@@ -310,148 +411,220 @@ function Dashboard() {
       "Revisando e refinando o texto...",
       "Quase pronto!"
     ];
-    let messageIndex = 0;
-    setLoadingMessage(loadingMessages[messageIndex]);
 
-    const messageInterval = setInterval(() => {
-      messageIndex = (messageIndex + 1) % loadingMessages.length;
-      setLoadingMessage(loadingMessages[messageIndex]);
-    }, 3000);
+    let messageIndex = 0;
+
+    // Mantém as funções aqui dentro onde são usadas
+    const startMessageInterval = (messages) => {
+      if (messageIntervalRef.current) {
+        clearInterval(messageIntervalRef.current);
+        messageIntervalRef.current = null;
+      }
+      messageIndex = 0;
+      if (isMountedRef.current) setLoadingMessage(messages[messageIndex]);
+      messageIntervalRef.current = setInterval(() => {
+        messageIndex = (messageIndex + 1) % messages.length;
+        if (isMountedRef.current) setLoadingMessage(messages[messageIndex]);
+      }, 3000);
+    };
+
+    const stopAllIntervals = () => {
+      if (messageIntervalRef.current) {
+        clearInterval(messageIntervalRef.current);
+        messageIntervalRef.current = null;
+      }
+      if (pollIntervalRef.current) {
+        clearInterval(pollIntervalRef.current);
+        pollIntervalRef.current = null;
+      }
+    };
+
+    const safeToast = (type, msg) => {
+      try {
+        if (!currentToastIdRef.current || !toast.isActive(currentToastIdRef.current)) {
+          currentToastIdRef.current = toast[type](msg);
+        }
+      } catch {
+        toast[type](msg);
+      }
+    };
+
+    startMessageInterval(loadingMessages);
 
     try {
       const token = localStorage.getItem("token");
 
-      // --- FLUXO DE ARQUIVO ---
+      // === FLUXO DE ARQUIVO ===
       if (fileToSend) {
-        setIsResumoDeArquivo(true);
+        if (isMountedRef.current) setIsResumoDeArquivo(true);
+        startMessageInterval(["Processando arquivo...", "Extraindo conteúdo...", "Gerando resumo..."]);
+
         const formData = new FormData();
         formData.append("file", fileToSend);
 
-        const fileRes = await fetch(`${API_URL}/api/Resumo/resumo-file`, {
+        const fileRes = await fetch(`${API_URL}/api/Conteudo/resumo-file`, {
           method: "POST",
-          headers: { 'Authorization': `Bearer ${token}` },
+          headers: { Authorization: `Bearer ${token}` },
           body: formData
         });
 
-        if (!fileRes.ok) throw new Error(await fileRes.text());
+        if (!fileRes.ok) {
+          const errText = await fileRes.text();
+          throw new Error(errText || "Erro ao processar arquivo");
+        }
+
         const data = await fileRes.json();
 
-        // Busca resumo completo pelo ID retornado
-        const resumoRes = await fetch(`${API_URL}/api/Resumo/por-id/${data.resumoId}`, {
-          headers: { 'Authorization': `Bearer ${token}` }
+        // Busca o resumo final (por id)
+        const resumoRes = await fetch(`${API_URL}/api/Conteudo/por-id/${data.resumoId}`, {
+          headers: { Authorization: `Bearer ${token}` }
         });
 
-        if (!resumoRes.ok) throw new Error(await resumoRes.text());
+        if (!resumoRes.ok) {
+          const errText = await resumoRes.text();
+          throw new Error(errText || "Erro ao buscar resumo gerado");
+        }
+
         const resumoData = await resumoRes.json();
 
         const textoResumo = resumoData.ResumoTexto || data.resumo || "";
-        const resumoIdFinal = data.resumoId;
+        const resumoIdFinal = data.resumoId || resumoData.Id || resumoData.id || null;
 
-        setResumoGerado({ texto: textoResumo, id: resumoIdFinal });
-        setResumoId(resumoIdFinal);
+        if (isMountedRef.current) {
+          setResumoGerado({ texto: textoResumo, id: resumoIdFinal });
+          if (resumoIdFinal) setResumoId(resumoIdFinal);
+        }
 
-        toast.success("Resumo gerado a partir do arquivo!");
-        clearInterval(messageInterval);
-        setIsGeneratingSummary(false);
+        stopAllIntervals();
+        if (isMountedRef.current) setIsGeneratingSummary(false);
+        safeToast("success", "Resumo gerado a partir do arquivo!");
         return;
       }
 
-      // --- FLUXO DE TEXTO ---
-      setIsResumoDeArquivo(false);
-      const res = await fetch(`${API_URL}/api/Resumo/gerar`, {
-        method: 'POST',
+      // === FLUXO DE TEXTO ===
+      if (isMountedRef.current) setIsResumoDeArquivo(false);
+      startMessageInterval(loadingMessages);
+
+      const res = await fetch(`${API_URL}/api/Conteudo/gerar`, {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`
         },
-        body: JSON.stringify({ Topico: topic })
+        body: JSON.stringify({
+          Topico: topic,
+          Tipo: text || selectedTipo
+        })
       });
 
       if (!res.ok) {
         let errorMessage = "Erro ao gerar resumo.";
-
         try {
           const data = await res.json();
           errorMessage = data.mensagem || errorMessage;
-
-          // Se tiver sugestão, dá pra exibir junto:
-          if (data.sugestao) {
-            toast.info(data.sugestao, { autoClose: 8000 });
-          }
-
+          if (data.sugestao) safeToast("info", data.sugestao);
         } catch {
-          // fallback se o backend não retornar JSON
-          const text = await res.text();
-          errorMessage = text || errorMessage;
+          const fallback = await res.text();
+          errorMessage = fallback || errorMessage;
         }
-
-        toast.error(errorMessage);
-        clearInterval(messageInterval);
-        setIsGeneratingSummary(false);
+        stopAllIntervals();
+        if (isMountedRef.current) setIsGeneratingSummary(false);
+        safeToast("error", errorMessage);
         return;
       }
 
       const { requestId, resumoId: resumoIdBackend } = await res.json();
-      setActiveRequestId(requestId);
+      if (isMountedRef.current) setActiveRequestId(requestId);
 
-      // //Acho que é o ID certo
-      // //console.log('request_Id', requestId)
+      // certifica-se de limpar poll anterior
+      if (pollIntervalRef.current) {
+        clearInterval(pollIntervalRef.current);
+        pollIntervalRef.current = null;
+      }
 
-      const pollInterval = setInterval(async () => {
+      // === POLLING DO STATUS ===
+      pollIntervalRef.current = setInterval(async () => {
         try {
           const statusRes = await fetch(`${API_URL}/api/generation/status/${requestId}`, {
-            headers: { 'Authorization': `Bearer ${token}` }
+            headers: { Authorization: `Bearer ${token}` }
           });
 
-          if (!statusRes.ok) return;
+          if (!statusRes.ok) {
+            // se status endpoint temporariamente falhar, não encerra imediatamente; log para debug
+            console.warn("Status check falhou:", statusRes.status);
+            return;
+          }
+
           const statusData = await statusRes.json();
+          console.log("Status do polling:", statusData);
 
           if (statusData.status === 2) {
-            clearInterval(pollInterval);
-            clearInterval(messageInterval);
-            setIsGeneratingSummary(false);
-            setActiveRequestId(null);
+            // sucesso
+            stopAllIntervals();
+            if (!isMountedRef.current) return;
+            if (isMountedRef.current) setIsGeneratingSummary(false);
+            if (isMountedRef.current) setActiveRequestId(null);
 
-            let parsedResultado = {};
-            try {
-              parsedResultado = JSON.parse(statusData.resultado);
-            } catch {
-              parsedResultado = { texto: statusData.resultado };
+            let parsedResultado = statusData.resultado;
+            if (typeof parsedResultado === "string") {
+              try {
+                parsedResultado = JSON.parse(parsedResultado);
+              } catch {
+                parsedResultado = { texto: parsedResultado };
+              }
             }
 
-            const resumoFinalId = statusData.resumoId || parsedResultado.id || parsedResultado.Id || requestId;
-            const resumoTexto = parsedResultado.texto || parsedResultado.ResumoTexto || parsedResultado.resumo || parsedResultado;
+            const resumoFinalId =
+              statusData.resumoId ||
+              parsedResultado?.id ||
+              parsedResultado?.Id ||
+              resumoIdBackend ||
+              requestId;
 
-            // //console.log('ResumoFinalId', resumoFinalId);
-            // //console.log('resumoTexto', resumoTexto);
+            const resumoTexto =
+              parsedResultado?.TextoGerado ||
+              parsedResultado?.texto ||
+              parsedResultado?.ResumoTexto ||
+              "Houve algum problema com a IA";
 
-            setResumoGerado({
-              texto: typeof resumoTexto === "string" ? resumoTexto : JSON.stringify(resumoTexto),
-              id: resumoFinalId
-            });
-            setResumoId(resumoFinalId);
-            // //console.log('Resumo id final guardado', resumoFinalId)
+            if (isMountedRef.current) {
+              setResumoGerado({ texto: resumoTexto, id: resumoFinalId });
+              if (resumoFinalId) setResumoId(resumoFinalId);
+            }
 
-            toast.success("Resumo gerado com sucesso!");
+            safeToast("success", "Resumo gerado com sucesso!");
           } else if (statusData.status === 3) {
-            clearInterval(pollInterval);
-            clearInterval(messageInterval);
-            toast.error(`Erro ao gerar resumo: ${statusData.mensagemErro}`);
-            setIsGeneratingSummary(false);
-            setActiveRequestId(null);
+            // erro no processamento
+            stopAllIntervals();
+            if (!isMountedRef.current) return;
+            if (isMountedRef.current) {
+              setIsGeneratingSummary(false);
+              setActiveRequestId(null);
+            }
+            const msg = statusData.mensagemErro || "Erro ao gerar resumo";
+            safeToast("error", `Erro ao gerar resumo: ${msg}`);
           }
         } catch (pollError) {
-          // //console.error("Erro durante o polling:", pollError);
+          console.error("Erro durante o polling:", pollError);
+          stopAllIntervals();
+          if (isMountedRef.current) setIsGeneratingSummary(false);
+          safeToast("error", "Erro durante o processamento");
         }
-      }, 5000);
-
+      }, 2500); // polling mais reativo
     } catch (err) {
-      // //console.error(err);
-      toast.error('Erro: ' + err.message);
-      clearInterval(messageInterval);
-      setIsGeneratingSummary(false);
+      console.error(err);
+      stopAllIntervals();
+      if (isMountedRef.current) setIsGeneratingSummary(false);
+      safeToast("error", "Erro: " + (err.message || err));
     }
   };
+
+  useEffect(() => {
+    return () => {
+      clearInterval(messageIntervalRef.current);
+      clearInterval(pollIntervalRef.current);
+    };
+  }, []);
 
   useEffect(() => {
     const topicoFromLocalStorage = localStorage.getItem('topicoInicial');
@@ -517,6 +690,8 @@ function Dashboard() {
       return;
     }
 
+    console.log("🚀 Iniciando geração de simulado...");
+
     setIsGeneratingQuiz(true);
     setQuiz([]);
     setUserAnswers({});
@@ -529,6 +704,10 @@ function Dashboard() {
 
       // --- FLUXO DE ARQUIVO (direto) ---
       if (isResumoDeArquivo) {
+        // console.log("📂 Modo arquivo — enviando requisição direta para gerar simulado...");
+        // console.log("ResumoId:", resumoGerado.id || resumoGerado.Id);
+        // console.log("Número de questões:", numQuestions);
+
         res = await fetch(`${API_URL}/api/Simulado/gerar-direto`, {
           method: "POST",
           headers: {
@@ -541,9 +720,13 @@ function Dashboard() {
           })
         });
 
-        data = await res.json();
+        console.log("📨 Resposta recebida do backend (gerar-direto):", res.status);
+
+        data = await res.json().catch(() => ({}));
+        console.log("📦 Dados retornados:", data);
 
         if (!res.ok) {
+          console.error("❌ Erro do backend:", data.mensagem);
           toast.error(data.mensagem || "Ocorreu um erro ao gerar o resumo");
           return;
         }
@@ -551,7 +734,6 @@ function Dashboard() {
         let questoesJson = data.QuestoesJson || data.questoesJson;
         if (!questoesJson) throw new Error("Questões do simulado estão vazias");
 
-        // ✅ Backend agora retorna JSON puro
         const questoesArray = parseQuestoesJson(questoesJson);
 
         if (!Array.isArray(questoesArray)) throw new Error("Formato inválido de questões");
@@ -564,7 +746,10 @@ function Dashboard() {
       }
 
       // --- FLUXO DE TEXTO (com fila) ---
-      //console.log('Simulado pra criar', resumoGerado.id)
+      // console.log("🧾 Modo texto — enviando simulado para fila...");
+      // console.log("ResumoId:", resumoGerado?.id || resumoGerado?.Id);
+      // console.log("Número de questões:", numQuestions);
+
       const response = await fetch(`${API_URL}/api/Simulado/gerar`, {
         method: "POST",
         headers: {
@@ -572,78 +757,158 @@ function Dashboard() {
           "Content-Type": "application/json"
         },
         body: JSON.stringify({
-          resumoId: resumoGerado?.id || resumoGerado?.Id,
+          conteudoId: resumoGerado?.id || resumoGerado?.Id,
           numeroDeQuestoes: numQuestions
         })
-
       });
 
-      if (!response.ok) throw new Error(await response.text());
-      const { requestId } = await response.json();
-      //console.log('🧩 Simulado enviado para fila. Request ID:', requestId);
+      // console.log("📨 Resposta recebida (gerar):", response.status);
 
-      // Polling
+      if (!response.ok) {
+        const text = await response.text();
+        console.error("❌ Erro ao enviar simulado:", text);
+        throw new Error(text);
+      }
+
+      const { requestId } = await response.json();
+      console.log("🧩 Simulado enviado para fila. Request ID:", requestId);
+
+      // --- POLLING ---
+      console.log("🔁 Iniciando polling para verificar status da geração...");
+
       const pollInterval = setInterval(async () => {
         try {
           const statusRes = await fetch(`${API_URL}/api/generation/status/${requestId}`, {
             headers: { 'Authorization': `Bearer ${token}` }
           });
 
-          if (!statusRes.ok) return;
+          console.log("📬 Verificando status:", statusRes.status);
+
+
+          if (!statusRes.ok) {
+            console.warn("⚠️ Status não OK no polling");
+            return;
+          }
+
           const statusData = await statusRes.json();
+          console.log("📊 Dados do status:", statusData);
 
           if (statusData.status === 2) {
             clearInterval(pollInterval);
-
             if (!statusData.resultado) throw new Error("Simulado gerado mas resultado vazio");
+            console.log("✅ Simulado gerado com sucesso. Processando resultado...");
 
-            // ✅ Resultado vem como string JSON — converter
+            if (!statusData.resultado) throw new Error("Resultado vazio");
+
             let resultadoParsed = statusData.resultado;
             if (typeof resultadoParsed === "string") {
               try {
                 resultadoParsed = JSON.parse(resultadoParsed);
               } catch (err) {
-                //console.warn("⚠️ Resultado não era JSON válido:", resultadoParsed);
+                console.warn("⚠️ Resultado não era JSON válido:", resultadoParsed);
+                // Se for string com array JSON, tenta extrair array:
+                try {
+                  resultadoParsed = JSON.parse(resultadoParsed.trim());
+                } catch {
+                  // fallback: mantém como string
+                }
               }
             }
 
-            let questoesJson = resultadoParsed.QuestoesJson || resultadoParsed.questoesJson;
-            if (!questoesJson) throw new Error("Questões do simulado ausentes no resultado");
+            const questoesArray =
+              resultadoParsed?.QuestoesJson ||
+              resultadoParsed?.questoesJson ||
+              resultadoParsed?.questoes ||
+              (Array.isArray(resultadoParsed) ? resultadoParsed : null);
 
-            const questoesArray = parseQuestoesJson(questoesJson);
-            if (!Array.isArray(questoesArray)) throw new Error("Formato inválido de questões");
+            if (!questoesArray) throw new Error("Questões ausentes no resultado");
 
-            setQuiz(questoesArray);
-            setSimuladoGerado(resultadoParsed);
+            let simuladoId = null;
+            let parsedOutputMetadata = null;
 
+            // 1) tenta extrair outputMetadata vindo no statusData (forma mais confiável)
+            if (statusData.outputMetadata) {
+              try {
+                parsedOutputMetadata = typeof statusData.outputMetadata === "string"
+                  ? JSON.parse(statusData.outputMetadata)
+                  : statusData.outputMetadata;
+                simuladoId = parsedOutputMetadata?.SimuladoId ?? parsedOutputMetadata?.simuladoId ?? null;
+              } catch (e) {
+                console.warn("Não foi possível parsear statusData.outputMetadata", e);
+              }
+            }
+
+            // 2) se não encontrou, tenta olhar dentro do resultado retornado (alguns fluxos gravam metadata ali)
+            if (!simuladoId && resultadoParsed) {
+              const possibleMeta = resultadoParsed.outputMetadata ?? resultadoParsed.metadata ?? resultadoParsed.OutputMetadata;
+              if (possibleMeta) {
+                try {
+                  const pm = typeof possibleMeta === "string" ? JSON.parse(possibleMeta) : possibleMeta;
+                  simuladoId = pm?.SimuladoId ?? pm?.simuladoId ?? simuladoId;
+                  if (!parsedOutputMetadata) parsedOutputMetadata = pm;
+                } catch (e) {
+                  // ignore
+                }
+              }
+
+              // também tenta campos diretos no resultado (algumas implementações usam SimuladoId direto)
+              simuladoId = simuladoId || resultadoParsed.SimuladoId || resultadoParsed.simuladoId || null;
+            }
+
+            // 3) fallback final: se houver um campo específico statusData.simuladoId use ele,
+            // mas NUNCA trate statusData.id como SimuladoId (requestId)
+            simuladoId = simuladoId || statusData.simuladoId || null;
+
+            // Prepara um objeto consistente para simuladoGerado
+            const novoSimulado = {
+              outputMetadata: parsedOutputMetadata
+                ? JSON.stringify(parsedOutputMetadata)
+                : JSON.stringify({
+                  SimuladoId: simuladoId || null,
+                  RequestId: requestId || null
+                }),
+              id: simuladoId || null,
+              rawResult: resultadoParsed
+            };
+
+            console.log("🔎 simuladoId determinado:", simuladoId, "parsedOutputMetadata:", parsedOutputMetadata);
+            setQuiz(Array.isArray(questoesArray) ? questoesArray : []);
+            setSimuladoGerado(novoSimulado);
             toast.success("Simulado gerado com sucesso!");
             setIsGeneratingQuiz(false);
+
           } else if (statusData.status === 3) {
             clearInterval(pollInterval);
+            console.error("❌ Erro ao gerar simulado:", statusData.mensagemErro);
             toast.error(`Erro ao gerar simulado: ${statusData.mensagemErro}`);
             setIsGeneratingQuiz(false);
+          } else {
+            console.log("⏳ Status ainda em andamento...");
           }
         } catch (pollError) {
-          //console.error("Erro durante o polling:", pollError);
+          console.error("🚨 Erro durante o polling:", pollError);
           clearInterval(pollInterval);
           setIsGeneratingQuiz(false);
         }
       }, 5000);
 
     } catch (err) {
-      //console.error("Erro geral no handleGenerateQuiz:", err);
+      console.error("🔥 Erro geral no handleGenerateQuiz:", err);
       toast.error('Erro: ' + err.message);
       setIsGeneratingQuiz(false);
     }
   };
 
-
   const handleSubmitQuiz = async () => {
-    //console.log("📘 Submetendo simulado:", simuladoGerado);
+    const metadata = simuladoGerado.outputMetadata
+      ? JSON.parse(simuladoGerado.outputMetadata)
+      : null;
 
     // ✅ Garante que existe algum identificador
-    const simuladoId = simuladoGerado?.id || simuladoGerado?.Id;
-    const requestId = simuladoGerado?.requestId || simuladoGerado?.RequestId;
+    const simuladoId = metadata?.SimuladoId;
+    const requestId = metadata?.RequestId;
+
+    // console.log("🧩 simuladoGerado recebido:", simuladoGerado);
 
     if (!simuladoId && !requestId) {
       alert("Nenhum identificador de simulado encontrado (nem id nem requestId).");
@@ -655,12 +920,13 @@ function Dashboard() {
 
       // 🔹 Se houver ID direto do simulado (gerado ou vindo do backend)
       if (simuladoId) {
-        //console.log("🎯 Enviando respostas para simulado ID:", simuladoId);
+        // CORRIGIDO: rota singular "simulado" (controller SimuladoController)
+        console.log('Simulado para finalizar', simuladoId)
         const res = await fetch(`${API_URL}/api/Simulado/${simuladoId}/finalizar`, {
-          method: 'POST',
+          method: "POST",
           headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`
           },
           body: JSON.stringify(userAnswers)
         });
@@ -749,19 +1015,81 @@ function Dashboard() {
           <div className="card-content">
             <div className="content-space">
               <div className="unified-search-bar">
-                <div
-                  className={`search-input-container ${isDragOver ? 'drag-over' : ''}`}
+                {/* BOTÃO + OPCÕES */}
+                <div className="options-dropdown">
+                  <button className="options-btn" onClick={() => setShowOptions(!showOptions)} title="Escolher tipo">
+                    <Plus size={20} />
+                  </button>
+
+                  {showOptions && (
+                    <div className="options-menu modern-menu">
+                      <div className="menu-header">
+                        <span className="menu-title">Escolha o formato</span>
+                        <div className="menu-subtitle">Como você quer estudar?</div>
+                      </div>
+
+                      <div className="menu-items">
+                        <div
+                          className="menu-item"
+                          onClick={() => handleSelectTipo("Resumo")}
+                        >
+                          <div className="item-icon">📝</div>
+                          <div className="item-content">
+                            <span className="item-title">Resumo</span>
+                            <span className="item-description">Resumo estruturado do conteúdo</span>
+                          </div>
+                        </div>
+
+                        <div
+                          className="menu-item"
+                          onClick={() => handleSelectTipo("PerguntaDireta")}
+                        >
+                          <div className="item-icon">❓</div>
+                          <div className="item-content">
+                            <span className="item-title">Pergunta Direta</span>
+                            <span className="item-description">Resposta objetiva para dúvidas</span>
+                          </div>
+                        </div>
+
+                        <div
+                          className="menu-item"
+                          onClick={() => handleSelectTipo("PesquisaCientifica")}
+                        >
+                          <div className="item-icon">🔬</div>
+                          <div className="item-content">
+                            <span className="item-title">Pesquisa Científica</span>
+                            <span className="item-description">Análise detalhada e referências</span>
+                          </div>
+                        </div>
+
+                        <div
+                          className="menu-item"
+                          onClick={() => handleSelectTipo("EstudarParaProva")}
+                        >
+                          <div className="item-icon">📚</div>
+                          <div className="item-content">
+                            <span className="item-title">Estudar Para Prova</span>
+                            <span className="item-description">Foco em revisão e exercícios</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* CONTAINER DO INPUT (deve ter position: relative) */}
+                <div className={`search-input-container ${isDragOver ? 'drag-over' : ''}`}
                   onDragOver={handleDragOver}
                   onDragLeave={handleDragLeave}
-                  onDrop={handleDrop}
-                >
+                  onDrop={handleDrop}>
+
                   <input
                     type="text"
                     className="unified-search-input"
                     value={content}
                     onChange={(e) => setContent(e.target.value)}
                     placeholder={typedPlaceholder}
-                    onKeyPress={(e) => e.key === 'Enter' && handleGenerateSummary(null, uploadedFile)}
+                    onKeyPress={(e) => e.key === 'Enter' && handleGenerateSummary(null, uploadedFile, selectedTipo)}
                   />
 
                   {uploadedFile && (
@@ -773,47 +1101,43 @@ function Dashboard() {
                       </button>
                     </div>
                   )}
+
+                  {/* ✅ BADGE DENTRO DO CONTAINER DO INPUT (AQUI ESTÁ CORRETO) */}
+                  {selectedTipo && (
+                    <div className="selected-option-indicator">
+                      <div className="badge-content">
+                        <div className="badge-dot"></div>
+                        <span className="selected-option-text">{selectedTipo}</span>
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 {/* BOTÕES DO LADO DIREITO */}
                 <div className="search-actions-right">
-                  <button
-                    className="options-resumo-btn"
-                    onClick={() => document.getElementById('file-upload').click()}
-                    title="Anexar arquivo"
-                  >
+                  {/* BOTÃO ANEXAR ARQUIVO */}
+                  <button className="options-resumo-btn" onClick={() => document.getElementById('file-upload').click()} title="Anexar arquivo">
                     <Paperclip size={20} />
                   </button>
 
+                  {/* BOTÃO ENVIAR */}
                   <button
                     className="btn-enviar-resumo"
-                    onClick={() => handleGenerateSummary(null, uploadedFile)}
-                    disabled={isGeneratingSummary || (!content && !uploadedFile)}
-                  >
-                    {isGeneratingSummary ? <div className="loading-spinner-mini"></div> : <MoveUp size={20} />}
+                    onClick={() => handleGenerateSummary(null, uploadedFile, selectedTipo)}
+                    disabled={isGeneratingSummary || (!content && !uploadedFile)}>
+
+                    {isGeneratingSummary ? (
+                      <div className="loading-spinner-mini"></div>
+                    ) : (
+                      <MoveUp size={20} />
+                    )}
                   </button>
                 </div>
 
-                <input
-                  type="file"
-                  id="file-upload"
-                  accept=".pdf,.doc,.docx"
-                  onChange={handleFileUpload}
-                  className="file-input-hidden"
-                />
+
+                <input type="file" id="file-upload" accept=".pdf,.doc,.docx" onChange={handleFileUpload} className="file-input-hidden" />
               </div>
 
-              {/* DICA DE PONTOS - VERSÃO COMPACTA */}
-              <div
-                className="points-tip-compact"
-                onClick={() => setShowPointsText(!showPointsText)}
-                style={{ cursor: 'pointer' }}
-              >
-                <Gift size={16} />
-                {showPointsText && (
-                  <span><strong>+5min</strong> de estudos por resumo</span>
-                )}
-              </div>
               {/* ÁREA DE RESULTADOS */}
               <div className="result-section">
                 {isGeneratingSummary ? (
@@ -824,7 +1148,7 @@ function Dashboard() {
                         <FileText className="file-icon" size={24} />
                       </div>
                       <div className="loader-text">
-                        <h3>Preparando seu Resumo Inteligente</h3>
+                        <h3>Estamos trabalhando na sua resposta</h3>
                         <p>{loadingMessage}</p>
                       </div>
                     </div>
@@ -856,9 +1180,7 @@ function Dashboard() {
                     <div className="markdown-content">
                       <ReactMarkdown
                         components={{
-                          // Personaliza parágrafos para destacar palavras-chave
                           p: ({ node, ...props }) => <ParagraphWithHighlights {...props} />,
-                          // Mantém outros elementos do markdown
                           h1: ({ node, ...props }) => <h1 className="markdown-heading" {...props} />,
                           h2: ({ node, ...props }) => <h2 className="markdown-heading" {...props} />,
                           h3: ({ node, ...props }) => <h3 className="markdown-heading" {...props} />,
@@ -869,10 +1191,10 @@ function Dashboard() {
                           em: ({ node, ...props }) => <em className="markdown-emphasis" {...props} />,
                         }}
                       >
-                        {typeof resumoGerado === "string"
-                          ? resumoGerado
-                          : resumoGerado.texto || resumoGerado.ResumoTexto || ""}
+                        {typedText}
                       </ReactMarkdown>
+
+                      {isTyping && <span className="typing-cursor"></span>}
                     </div>
                   )
                 )}
@@ -890,7 +1212,7 @@ function Dashboard() {
             </h2>
             <p className='practice-text'>Vamos colocar em prática, tudo oque você viu no seu resumo</p>
           </div>
-          
+
           <div className="card-header-gradient">
             <div className="header-icon-wrapper">
               <Target />
@@ -944,16 +1266,7 @@ function Dashboard() {
                 </span>
               </button>
               {/* 5. Dica sobre os Pontos */}
-              <div
-                className="points-tip-compact"
-                onClick={() => setShowPointsText(!showPointsText)}
-                style={{ cursor: 'pointer' }}
-              >
-                <Gift size={16} />
-                {showPointsText && (
-                  <span>Cada acerto no simulado <strong>+10 pontos no Hall da Fama</strong></span>
-                )}
-              </div>
+
 
               <div ref={quizContainerRef}> {/* A REF É ANEXADA AQUI */}
                 {isGeneratingQuiz ? (

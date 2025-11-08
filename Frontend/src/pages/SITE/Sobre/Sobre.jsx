@@ -42,8 +42,8 @@ const Sobre = () => {
 
       <div className='sobre'>
         <h1>Sobre o <span>IntelliStudy</span></h1>
-        <p>Transforme suas sessões de estudo com IA. Crie resumos inteligentes, faça simulados personalizados e siga um plano de estudos otimizado para seus objetivos.</p>
-
+        <p>Uma plataforma de educação digital desenvolvida pela <strong>IdeiaFish</strong>, empresa focada em criar soluções tecnológicas inovadoras para transformar a forma como as pessoas aprendem.</p>
+        <p>Nossa missão é democratizar o acesso a ferramentas profissionais, ajudando pessoas a alcançarem seus objetivos de forma mais eficiente.</p>
         <div className='buttons-action'>
           <button className='btn-primary' onClick={handlePlataform}>Comece Agora</button>
         </div>
@@ -53,16 +53,19 @@ const Sobre = () => {
         <div className='card'>
           <h2>Nossa História</h2>
           <p>
-            O IntelliStudy surgiu como um desafio pessoal: criar uma plataforma que fosse útil, prática
-            e que agregasse valor real aos estudantes. Desenvolvi tudo do zero, unindo IA, design e
-            programação em um só projeto.
+            O <strong>IntelliStudy</strong> nasceu como um projeto ambicioso de educação digital, idealizado para tornar o estudo mais inteligente e eficiente. A plataforma é um produto da <strong>IdeiaFish</strong>, empresa de tecnologia da qual sou <strong>CEO</strong>, junto com <strong>Pedro Augusto Dias, CEO & Fundador</strong>.
           </p>
           <p>
-            O objetivo sempre foi tornar o estudo mais acessível e eficiente, com recursos que realmente
-            ajudem quem busca aprender de forma independente. Hoje, o IntelliStudy continua evoluindo com
-            base no feedback dos usuários e no compromisso de melhorar sempre, marcando um passo importante
-            na minha jornada como desenvolvedor.
+            Como CEO e desenvolvedor principal, fui responsável por criar toda a arquitetura e funcionalidades do sistema, unindo inteligência artificial, design e programação full stack. Nosso foco sempre foi entregar uma solução que realmente faça diferença na vida dos estudantes.
           </p>
+          <p>
+            Além de nós, a <strong>IdeiaFish</strong> conta com uma equipe de Desenvolvedores dedicados em inovar e garantir que a plataforma continue evoluindo com qualidade e confiabilidade. Cada nova funcionalidade reflete nosso compromisso com educação, tecnologia e experiência do usuário.
+          </p>
+          <div className='empresa'>
+            <a href='https://ideiafish.com.br/' target='_blank' rel='noopener noreferrer'>
+              <button className='btn-secondary'>Conheça a IdeiaFish</button>
+            </a>
+          </div>
         </div>
       </section>
 
@@ -80,28 +83,30 @@ const Sobre = () => {
       </section>
 
       <section className='desenvolvedor'>
+        <h1>Quem Esta Por Trás</h1>
+        <p>Conheça o profissional que idealizou e desenvolveu toda a plataforma IntelliStudy.</p>
+        
         <div className='desenvolvedor-container'>
           <div className='desenvolvedor-foto'>
             <div className='img-criador'>
               <img src={Foto} alt='Foto do criador' className='foto-criador'></img>
             </div>
             <div className='desenvolvedor-header'>
-              <h1>Criador & Desenvolvedor Full Stack</h1>
+              <div className='criador'>
+                <p>IdeiaFish . Fundador & Desenvolvedor</p>
+              </div>
+              <h1>Criador & Desenvolvedor</h1>
 
               <p>
-                Sou estudante de Ciência da Computação e Desenvolvedor Full Stack. Trabalho com C# .NET e React, atuando no desenvolvimento e estruturação de aplicações completas e integradas.
+                Sou o criador e desenvolvedor da <strong>IntelliStudy</strong>, responsável por toda a arquitetura e implementação da plataforma usando C# .NET e React. Este projeto é uma iniciativa da <strong>IdeiaFish</strong>, empresa da qual sou CEO, e representa meu compromisso em transformar ideias em soluções digitais eficientes.
               </p>
 
               <p>
-                Comecei o <strong>IntelliStudy</strong> como um projeto comum, apenas explorando uma ideia que achei interessante. Com o tempo, fui aprimorando o sistema, adicionando recursos mais robustos e aplicando o que aprendia durante meus estudos.
+                O IntelliStudy nasceu como uma ideia inovadora e, atualmente, está em sua fase inicial. Ainda há muito a ser desenvolvido e aprimorado ao longo do tempo para que a plataforma atinja todo o seu potencial e se torne a solução completa que desejamos entregar aos estudantes.
               </p>
 
               <p>
-                O projeto acabou se tornando uma forma de aprendizado constante — onde posso testar novas tecnologias, aprimorar minhas habilidades e entender melhor o funcionamento de uma aplicação completa, desde o backend em .NET até o frontend em React.
-              </p>
-
-              <p>
-                Gosto de encarar cada projeto como um passo na minha evolução como desenvolvedor. Não busco apenas criar algo perfeito, mas aprender, experimentar e ver até onde posso chegar com minhas próprias ideias.
+                Cada funcionalidade implementada reflete meu foco em qualidade, aprendizado contínuo e inovação. Para mim, cada projeto é uma oportunidade de crescimento: testar novas tecnologias, experimentar abordagens diferentes e desenvolver uma aplicação completa, do backend ao frontend, com excelência.
               </p>
             </div>
           </div>

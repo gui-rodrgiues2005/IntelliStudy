@@ -14,6 +14,7 @@ public class GeminiService
 {
     private readonly HttpClient _http;
     private readonly string _apiKey;
+    private readonly ILogger<GeminiService> _logger;
     // URL base para os modelos Gemini mais recentes
     // private const string GeminiApiUrl = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-pro:generateContent";
     private const string GeminiApiUrl = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent";
@@ -35,12 +36,12 @@ public class GeminiService
     //     Console.WriteLine(result);
     // }
 
-    public GeminiService(HttpClient http, string apiKey)
+    public GeminiService(HttpClient http, string apiKey, ILogger<GeminiService> logger)
     {
         _http = http;
         _apiKey = apiKey;
+        _logger = logger;
     }
-
     private async Task<string> GenerateContentAsync(string prompt)
     {
         // Monta a URL completa com a chave de API
@@ -89,35 +90,56 @@ public class GeminiService
         }
     }
 
-    // Em Backend/Services/GeminiService.cs
-
-    public async Task<string> GerarResumoAsync(string conteudo)
+    public async Task<string> GerarConteudoAsync(string conteudo, string tipo)
     {
-        var prompt = $"""
-Você é um professor especialista em transformar textos complexos em **resumos didáticos, claros e envolventes**.
+        string prompt = tipo switch
+        {
+            "Resumo" => $"""
+Você é um professor especialista em transformar textos complexos em **resumos detalhados, claros e envolventes**, que realmente ajudem o estudante a compreender e aplicar o conteúdo.  
 
-**Objetivo:** Criar um resumo educativo que facilite a compreensão completa do tema, mesmo que o texto original seja longo.  
-O resumo deve ser **curto, direto e explicativo**, destacando apenas os pontos mais importantes, mas mantendo exemplos e analogias para facilitar o entendimento.
+**Objetivo:** Criar um resumo que:  
+- Destaque os pontos mais importantes de forma clara e estruturada;  
+- Explique conceitos difíceis com exemplos práticos ou analogias simples;  
+- Mostre aplicações do conhecimento na prática, quando possível;  
+- Seja direto e didático, mas sem perder profundidade.  
 
-**Instruções obrigatórias:**
-- Use linguagem natural, clara e fluida, adequada a estudantes brasileiros.
-- Reescreva com suas próprias palavras — nunca apenas copie.
-- Se o conteúdo for longo ou complexo, faça uma **síntese inteligente**, mantendo os conceitos essenciais e eliminando informações secundárias.
-- Sempre que houver conceitos abstratos, fórmulas, termos técnicos ou processos, explique com exemplos simples:
-  - Cálculos ilustrativos (ex: “Se o tempo de resposta for 2s e o limite for 1s, o desempenho é baixo.”)
-  - Mini fluxogramas ou diagramas descritos em texto (ex: “Entrada → Processamento → Saída”)
-  - Situações do dia a dia (ex: “Assim como revisar um texto várias vezes melhora a escrita, testar o código várias vezes melhora o software.”)
-  - Trechos de código curtos ou pseudocódigo (quando o tema for programação)
-- Evite inventar dados ou informações fora do tema.
-- Sempre que possível, inclua uma **pergunta ou mini-exercício** que ajude o aluno a testar o conhecimento aprendido.
-- Organize a resposta em **três seções fixas**, na ordem exata:
-  1. **Resumo Principal:** visão geral curta e objetiva, resumindo conceitos-chave do texto.
-  2. **Pontos-Chave:** lista de ideias explicadas com exemplos ilustrativos, mantendo clareza.
-  3. **Aplicação ou Exemplo Educativo:** um exemplo prático, analogia, mini-código ou situação do cotidiano que ajude a fixar o aprendizado.
+Não se limite a frases curtas; priorize clareza e compreensão completa.  
 
-**Texto a resumir:**
+Conteúdo a ser resumido:
 {conteudo}
-""";
+""",
+
+
+            "PerguntaDireta" => $"""
+Responda a seguinte pergunta de forma **curta, direta e objetiva**, sem rodeios ou explicações desnecessárias:  
+
+{conteudo}
+""",
+
+            "PesquisaCientifica" => $"""
+Produza uma resposta com **estilo científico**, usando termos técnicos precisos, linguagem formal e, se possível, referências ou citações curtas.  
+O texto deve ser informativo, detalhado e bem estruturado, mantendo clareza.  
+
+Conteúdo base:
+{conteudo}
+""",
+
+            "EstudarParaProva" => $"""
+Você é um professor dedicado a ajudar alunos a se prepararem para provas.  
+Cumprimente o aluno de forma amigável e motivadora, por exemplo: "Beleza, vou te ajudar a gabaritar a prova!".  
+
+**Objetivo:**  
+1. Revise o conteúdo abaixo de forma clara, resumida e didática, explicando os pontos mais importantes para facilitar a compreensão.  
+2. Mantenha uma linguagem motivadora e direta, preparando o aluno para estudar.  
+3. Oriente o aluno que **os simulados e perguntas práticas serão criados na seção abaixo**, então aqui apenas faça a revisão do conteúdo.  
+
+Conteúdo a ser revisado:
+{conteudo}
+""",
+
+            _ => conteudo
+        };
+
 
         int maxRetries = 3;
         int delayMs = 2000;
@@ -126,10 +148,14 @@ O resumo deve ser **curto, direto e explicativo**, destacando apenas os pontos m
         {
             try
             {
-                return await GenerateContentAsync(prompt);
+                var result = await GenerateContentAsync(prompt);
+                _logger.LogInformation("🧠 Gemini gerou conteúdo com sucesso. Tipo: {Tipo}, Tamanho: {Tamanho}", tipo, result?.Length ?? 0);
+                return result;
             }
             catch (HttpRequestException ex) when (ex.Message.Contains("503"))
             {
+                _logger.LogWarning("⚠️ Gemini temporariamente indisponível. Tentativa {Tentativa}/{Total}", i + 1, maxRetries);
+
                 if (i == maxRetries - 1)
                     throw;
 
@@ -137,7 +163,7 @@ O resumo deve ser **curto, direto e explicativo**, destacando apenas os pontos m
             }
         }
 
-        throw new InvalidOperationException("Falha inesperada ao gerar resumo.");
+        throw new InvalidOperationException("Falha inesperada ao gerar conteúdo.");
     }
 
 
@@ -286,20 +312,75 @@ O resumo deve ser **curto, direto e explicativo**, destacando apenas os pontos m
     // Em Services/GeminiService.cs
 
     // Em Services/GeminiService.cs
-
     public async Task<string> GerarSimuladoAsync(string conteudoDoResumo, int numQuestoes)
     {
-        // Prompt MUITO mais rígido e explícito
-        var prompt = $"Você é uma API. Sua única função é retornar dados no formato JSON. " +
-                     $"NÃO inclua nenhuma introdução, explicação, ou formatação Markdown como '```json'. " +
-                     $"Responda APENAS com o array JSON. " +
-                     $"Com base no seguinte resumo: \"{conteudoDoResumo}\"\n\n" +
-                     $"Crie um array JSON com exatamente {numQuestoes} objetos. Cada objeto deve ter a seguinte estrutura: " +
-                     $"{{ \"pergunta\": \"...\", \"alternativas\": [\"A\", \"B\", \"C\", \"D\"], \"respostaCorreta\": \"...\" }}. " +
-                     $"A 'respostaCorreta' deve ser um dos itens exatos do array 'alternativas'.";
+        var prompt = @$"
+Você é uma API de geração de simulados.
+⚠️ REGRAS ABSOLUTAS:
+1. Sua resposta deve conter SOMENTE um array JSON válido.
+2. NÃO use blocos de código markdown (como ```json ou ```).
+3. NÃO adicione texto antes ou depois do JSON.
+4. NÃO insira comentários, explicações, ou quebras de linha fora da estrutura JSON.
+5. O JSON DEVE SER PARSÁVEL — se não puder ser convertido com JsonDocument.Parse, sua resposta está errada.
 
-        return await GenerateContentAsync(prompt);
+Com base no resumo abaixo:
+""{conteudoDoResumo}""
+
+Gere exatamente {numQuestoes} questões de múltipla escolha em formato JSON.
+Cada item deve seguir esta estrutura EXATA (observe as chaves/colchetes):
+
+[
+  {{
+    ""pergunta"": ""Texto da pergunta"",
+    ""alternativas"": [""Alternativa A"", ""Alternativa B"", ""Alternativa C"", ""Alternativa D""],
+    ""respostaCorreta"": ""Texto da alternativa correta (uma das 4 acima)""
+  }}
+]
+
+Somente isso. Retorne apenas o array JSON, sem explicações.
+";
+
+        // envia o prompt para seu gerador (ajuste conforme sua implementação)
+        string resposta = await GenerateContentAsync(prompt);
+
+        // limpeza básica: remove blocos de código se vierem
+        if (!string.IsNullOrEmpty(resposta) && resposta.Contains("```"))
+        {
+            resposta = resposta.Replace("```json", "").Replace("```", "").Trim();
+        }
+
+        // tenta validar/parsear como JSON direto
+        try
+        {
+            // valida se é JSON bem formado
+            using var _ = JsonDocument.Parse(resposta);
+            return resposta;
+        }
+        catch
+        {
+            // tentativa de recuperação: pega do primeiro '[' até o último ']'
+            var start = resposta.IndexOf('[');
+            var end = resposta.LastIndexOf(']');
+            if (start >= 0 && end > start)
+            {
+                var candidate = resposta.Substring(start, end - start + 1);
+                try
+                {
+                    using var _2 = JsonDocument.Parse(candidate);
+                    return candidate;
+                }
+                catch
+                {
+                    // falhou em parsear o candidato
+                }
+            }
+
+            // fallback seguro: retorna array vazio e loga o problema (evita quebrar o fluxo)
+            _logger?.LogWarning("GerarSimuladoAsync: resposta da IA não pôde ser parseada como JSON. Retornando [] como fallback. Resposta bruta: {Resposta}", resposta);
+            return "[]";
+        }
     }
+
 
     public async Task<string> GerarCronogramaAsync(CriarPlanoRequestDto request)
     {

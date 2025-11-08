@@ -18,12 +18,13 @@ public class PlanoDeEstudoController : ControllerBase
     private readonly AppDbContext _context;
     private readonly GeminiService _geminiService; // Supondo que você o injete
     private readonly PlanoService _planoService;
-
-    public PlanoDeEstudoController(AppDbContext context, GeminiService geminiService, PlanoService planoService)
+    private readonly ConquistaService _conquistaService;
+    public PlanoDeEstudoController(AppDbContext context, GeminiService geminiService, PlanoService planoService, ConquistaService conquistaService)
     {
         _context = context;
         _geminiService = geminiService;
         _planoService = planoService;
+        _conquistaService = conquistaService;
     }
 
     // ENDPOINT 1: Gerar um novo plano de estudos
@@ -105,6 +106,8 @@ public class PlanoDeEstudoController : ControllerBase
 
         _context.GenerationRequests.Add(novoPedido);
         await _context.SaveChangesAsync();
+
+        await _conquistaService.CalcularConquistasAsync(userId, user.Plano == "Premium");
 
         return CreatedAtAction(
             actionName: "GetStatusDoPedido",

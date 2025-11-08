@@ -73,6 +73,10 @@
   }
 
   &__social {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
     h4 {
       font-size: 1rem;
       font-weight: 600;

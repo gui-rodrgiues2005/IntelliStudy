@@ -33,7 +33,5 @@ namespace Backend.Models
         public bool Ativo { get; set; } = false;
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-
-        public ICollection<Materia> Materias { get; set; } = new List<Materia>();
     }
 }

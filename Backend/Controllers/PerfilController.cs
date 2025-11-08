@@ -13,10 +13,12 @@ using Backend.Data;
 public class ProfileController : ControllerBase
 {
     private readonly AppDbContext _context;
+    private readonly ConquistaService _conquistaService;
 
-    public ProfileController(AppDbContext context)
+    public ProfileController(AppDbContext context, ConquistaService conquistaService)
     {
         _context = context;
+        _conquistaService = conquistaService;
     }
 
     [HttpGet]
@@ -27,16 +29,31 @@ public class ProfileController : ControllerBase
         var usuario = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId);
         if (usuario == null) return NotFound("Usuário não encontrado.");
 
-        var totalResumos = await _context.Resumos.CountAsync(r => r.UserId == userId);
+        var totalResumos = await _context.ConteudoIAs.CountAsync(r => r.UserId == userId);
         var resultados = await _context.ResultadosSimulados.Where(r => r.UserId == userId).ToListAsync();
         var totalSimulados = resultados.Count;
 
         var isPremium = string.Equals(usuario.Plano, "Premium", StringComparison.OrdinalIgnoreCase);
-        var conquistaService = new ConquistaService();
-        var conquistas = conquistaService.CalcularConquistas(totalResumos, totalSimulados, isPremium);
 
-            // 5. Buscar atividades recentes (seu código já estava correto)
-        var atividadesRecentes = await _context.Resumos
+        // Calcula e atualiza conquistas
+        await _conquistaService.CalcularConquistasAsync(userId, isPremium);
+
+        // Busca as conquistas do usuário
+        var conquistasUsuario = await _context.ConquistasUsuarios
+            .Where(c => c.UserId == userId)
+            .ToDictionaryAsync(c => c.CodigoConquista, c => c.DesbloqueadaEm);
+
+        // Monta lista completa de conquistas com status
+        var conquistas = ConquistasCatalogo.Todas.Select(c => new
+        {
+            Codigo = c.Codigo,
+            Nome = c.Nome,
+            Plano = c.Plano,
+            Desbloqueada = conquistasUsuario.ContainsKey(c.Codigo) && conquistasUsuario[c.Codigo].HasValue
+        }).ToList();
+
+        // Atividades recentes
+        var atividadesRecentes = await _context.ConteudoIAs
             .Where(r => r.UserId == userId)
             .OrderByDescending(r => r.CreatedAt)
             .Take(5)

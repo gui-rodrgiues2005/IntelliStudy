@@ -14,12 +14,13 @@
     padding: 0 20px;
 
     h1 {
-        font-size: 2.5rem;
+        font-size: 3rem;
         font-weight: 700;
         color: #111827;
+        margin-bottom: 20px;
 
         span {
-            background: linear-gradient(90deg, #6366f1, #8b5cf6);
+            background: linear-gradient(135deg, #1C2875 0%, #2D3B9B 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
@@ -94,6 +95,25 @@
             color: #4b5563;
             margin-bottom: 16px;
             font-size: 1.05rem;
+        }
+
+        .empresa {
+            margin-top: 24px;
+
+            button {
+                background: linear-gradient(90deg, #6366f1, #8b5cf6);
+                border: none;
+                color: #fff;
+                padding: 12px 24px;
+                border-radius: 8px;
+                font-size: 1rem;
+                cursor: pointer;
+                transition: 0.3s ease;
+
+                &:hover {
+                    opacity: 0.9;
+                }
+            }
         }
     }
 }
@@ -282,8 +302,32 @@
 
 .desenvolvedor {
     padding: 5rem 2rem;
-    background-color: #f8f9fa;
+    background-color: #f8f9fa; // Mantido neutro
     color: #333;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+
+    .criador {
+        margin-bottom: 1rem;
+        font-size: 1rem;
+        color: #6b7280; // Cinza médio
+    }
+
+    h1 {
+        font-size: 2.5rem;
+        margin-bottom: 1rem;
+        color: #111827;
+    }
+
+    p {
+        font-size: 1.1rem;
+        color: #4b5563;
+        max-width: 700px;
+        margin-bottom: 3rem;
+        line-height: 1.7;
+    }
 
     &-container {
         max-width: 1200px;
@@ -299,6 +343,11 @@
         display: flex;
         align-items: flex-start;
         gap: 2rem;
+        background-color: #fff; // Fundo branco para seção como um "card" corporativo
+        border-radius: 12px;
+        padding: 2rem;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05); // Sombra sutil
+        border: 1px solid #e5e7eb; // Borda leve para profissionalismo
 
         .img-criador {
             flex-shrink: 0;
@@ -309,9 +358,8 @@
                 width: 100%;
                 height: 100%;
                 border-radius: 50%;
-                box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
                 object-fit: cover;
-                border: 4px solid white;
+                border: 3px solid #d1d5db; // Borda neutra
             }
         }
 
@@ -322,92 +370,80 @@
             h1 {
                 font-size: 2.5rem;
                 margin-bottom: 1.5rem;
-                color: #2c3e50;
+                color: #1f2937; // Azul escuro corporativo
                 font-weight: 700;
             }
 
             p {
                 font-size: 1.1rem;
                 line-height: 1.7;
-                color: #555;
+                color: #4b5563; // Cinza médio
                 margin-bottom: 1.2rem;
             }
         }
-    }
-
-    &-stats {
-        display: flex;
-        justify-content: center;
-        gap: 4rem;
-        flex-wrap: wrap;
-    }
-
-    &-skills {
-        display: flex;
-        justify-content: center;
-        gap: 1.5rem;
-        flex-wrap: wrap;
     }
 
     &-quote {
         text-align: center;
         max-width: 800px;
         margin: 0 auto;
+        background-color: #fff;
+        border-radius: 12px;
+        padding: 2rem;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        border: 1px solid #e5e7eb;
+
+        blockquote {
+            font-size: 1.2rem;
+            font-style: italic;
+            color: #374151;
+            margin: 0;
+        }
     }
 
     .sociais {
         h3 {
             font-size: 1.3rem;
-            text-align: center;
+            color: #1f2937;
+            margin-bottom: 1rem;
         }
 
         &-links {
             display: flex;
             justify-content: center;
             align-items: center;
-            gap: 0.8rem;
-            flex-wrap: wrap; // 🔹 Mantém lado a lado, mas quebra se faltar espaço
+            gap: 1rem;
+            flex-wrap: wrap;
         }
 
         .social-link {
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 0.6rem 1.2rem;
+            padding: 0.8rem 1.5rem;
             font-size: 0.9rem;
-            border-radius: 50px;
-            background: white;
-            color: #2c3e50;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            background: #fff;
+            color: #374151;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            border: 1px solid #e5e7eb;
             transition: all 0.3s ease;
 
             &:hover {
-                color: #3498db;
-                transform: translateY(-3px);
+                background-color: #f3f4f6;
+                color: #1f2937;
+                transform: translateY(-2px);
             }
 
             .social-icon {
-                width: 18px;
-                height: 18px;
-            }
-        }
-
-        @media (max-width: 480px) {
-            &-links {
-                justify-content: center;
-                gap: 0.6rem;
-            }
-
-            .social-link {
-                padding: 0.5rem 1rem;
-                font-size: 0.85rem;
-                width: auto; // 🔹 deixa o botão ajustar ao tamanho do conteúdo
+                width: 20px;
+                height: 20px;
+                margin-right: 0.5rem;
             }
         }
     }
 
-
-    // 🔹 Responsividade
+    // Responsividade
     @media (max-width: 768px) {
         padding: 3rem 1rem;
 
@@ -416,6 +452,7 @@
             align-items: center;
             text-align: center;
             gap: 2rem;
+            padding: 1.5rem;
 
             .img-criador {
                 width: 140px;
@@ -435,12 +472,50 @@
                 }
             }
         }
+
+        &-quote {
+            padding: 1.5rem;
+        }
+
+        .sociais-links {
+            gap: 0.8rem;
+        }
+
+        .social-link {
+            padding: 0.7rem 1.2rem;
+            font-size: 0.85rem;
+        }
     }
 
     @media (max-width: 480px) {
-        &-foto .img-criador {
-            width: 120px;
-            height: 120px;
+        &-foto {
+            padding: 1rem;
+
+            .img-criador {
+                width: 120px;
+                height: 120px;
+            }
+
+            .desenvolvedor-header h1 {
+                font-size: 1.8rem;
+            }
+        }
+
+        &-quote {
+            padding: 1rem;
+
+            blockquote {
+                font-size: 1rem;
+            }
+        }
+
+        .sociais-links {
+            gap: 0.6rem;
+        }
+
+        .social-link {
+            padding: 0.6rem 1rem;
+            font-size: 0.8rem;
         }
     }
 }

@@ -402,11 +402,11 @@ namespace SaaS_Aluno.Controllers
                     return BadRequest(new { message = "Senha incorreta. Por favor, confirme sua senha." });
 
                 // Remove registros relacionados (ajuste conforme suas tabelas)
-                var resumos = await _context.Resumos.Where(r => r.UserId == user.Id).ToListAsync();
-                var simulados = await _context.Simulados.Where(s => s.Resumo.UserId == user.Id).ToListAsync();
+                var resumos = await _context.ConteudoIAs.Where(r => r.UserId == user.Id).ToListAsync();
+                var simulados = await _context.Simulados.Where(s => s.Conteudo.UserId == user.Id).ToListAsync();
                 var assinaturas = await _context.Assinaturas.Where(a => a.UserId == user.Id).ToListAsync();
 
-                _context.Resumos.RemoveRange(resumos);
+                _context.ConteudoIAs.RemoveRange(resumos);
                 _context.Simulados.RemoveRange(simulados);
                 _context.Assinaturas.RemoveRange(assinaturas);
                 _context.Users.Remove(user);
@@ -420,5 +420,32 @@ namespace SaaS_Aluno.Controllers
                 return BadRequest(new { message = "Erro ao excluir conta: " + ex.Message });
             }
         }
+
+        //     [Authorize]
+        //     [HttpGet("meu-desempenho")]
+        //     public async Task<IActionResult> GetDesempenho()
+        //     {
+        //         var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        //         if (string.IsNullOrEmpty(userIdStr))
+        //             return Unauthorized();
+
+        //         if (!int.TryParse(userIdStr, out var userId))
+        //             return BadRequest("Identificador de usuário inválido.");
+
+        //         var simulados = await _context.Simulados
+        //             .Where(s => s.Conteudo.UserId == userId)
+        //             .ToListAsync();
+
+        //         var totalSimulados = simulados.Count;
+        //         var mediaPontuacao = simulados.Any() ? simulados.Average(s => s.Pontuacao) : 0;
+
+        //         return Ok(new
+        //         {
+        //             TotalSimulados = totalSimulados,
+        //             MediaPontuacao = mediaPontuacao,
+        //             UltimoSimulado = simulados.OrderByDescending(s => s.Data).FirstOrDefault()?.Data
+        //         });
+        //     }
+        // }
     }
 }

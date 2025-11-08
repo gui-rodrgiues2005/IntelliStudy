@@ -96,13 +96,20 @@ function MainLayout({ children }) {
               </NavLink>
             </li>
 
+            <li className="nav-item">
+              <NavLink to="/desenvolvimento" className="nav-link" onClick={isMobile ? toggleSidebar : undefined}>
+                <CalendarDays className="nav-icon" />
+                <span className="nav-text">Analystics</span>
+              </NavLink>
+            </li>
+
             <li className="nav-category-title">
               <span className="nav-text">Sua Biblioteca</span>
             </li>
             <li className="nav-item">
               <NavLink to="/meus-resumos" className="nav-link" onClick={isMobile ? toggleSidebar : undefined}>
                 <FileText className="nav-icon" />
-                <span className="nav-text">Meus Resumos</span>
+                <span className="nav-text">Meus Chats</span>
               </NavLink>
             </li>
             {/* ... Repita o padrão de envolver o texto em <span className="nav-text"> para todos os itens ... */}

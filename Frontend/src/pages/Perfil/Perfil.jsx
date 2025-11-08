@@ -82,7 +82,7 @@ function Perfil() {
         });
         if (!res.ok) throw new Error("Falha ao buscar dados do perfil.");
         const data = await res.json();
-        console.log("📦 Dados do backend:", data);
+        // console.log("📦 Dados do backend:", data);
 
 
         // Ajuste de nomes de propriedades caso seu backend retorne diferente
@@ -323,7 +323,7 @@ function Perfil() {
         <div className="stat-card">
           <BookOpen />
           <div>
-            <span>Resumos</span>
+            <span>Conteudos</span>
             <strong>{profileData.totalResumos ?? 0}</strong>
           </div>
         </div>

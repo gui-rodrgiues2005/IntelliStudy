@@ -1,0 +1,982 @@
+// Variáveis de design system
+$primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+$secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+$success-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+$warning-gradient: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+
+$card-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+$card-shadow-hover: 0 16px 48px rgba(0, 0, 0, 0.15);
+$border-radius: 20px;
+
+// Mixins para reutilização
+@mixin glass-effect {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+@mixin gradient-text {
+  background: $primary-gradient;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+// 🔹 REMOVER BORDAS PRETAS DOS GRÁFICOS
+.recharts-wrapper {
+  outline: none !important;
+  border: none !important;
+
+  &:focus {
+    outline: none !important;
+    box-shadow: none !important;
+  }
+
+  .recharts-surface {
+    outline: none !important;
+    border: none !important;
+  }
+}
+
+.recharts-cartesian-grid {
+  line {
+    stroke: #e9ecef !important;
+    stroke-dasharray: 3 3 !important;
+  }
+
+  path {
+    stroke: transparent !important;
+  }
+}
+
+.recharts-cartesian-axis-line {
+  stroke: #dee2e6 !important;
+}
+
+.recharts-cartesian-axis-tick-line {
+  stroke: #dee2e6 !important;
+}
+
+.recharts-xAxis,
+.recharts-yAxis {
+  .recharts-cartesian-axis-tick-value {
+    fill: #6c757d;
+    font-size: 0.85rem;
+    font-weight: 600;
+  }
+
+  line {
+    stroke: #e9ecef;
+  }
+
+  path {
+    stroke: #dee2e6;
+  }
+}
+
+// 🔹 ESTILOS PRINCIPAIS DA PÁGINA
+.desempenho-page {
+  padding: 2rem 3rem;
+  min-height: 100vh;
+  position: relative;
+  overflow-x: hidden;
+
+  // Elementos decorativos de fundo
+  &::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -10%;
+    width: 600px;
+    height: 600px;
+    background: $primary-gradient;
+    border-radius: 50%;
+    opacity: 0.03;
+    z-index: 0;
+  }
+
+  .titulo {
+    font-size: 2.5rem;
+    font-weight: 800;
+    @include gradient-text;
+    margin-bottom: 0.5rem;
+    position: relative;
+    z-index: 1;
+    text-align: center;
+
+    &::after {
+      content: '';
+      position: absolute;
+      bottom: -10px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 60px;
+      height: 4px;
+      background: $primary-gradient;
+      border-radius: 2px;
+    }
+  }
+
+  .subtitulo {
+    color: #6c757d;
+    font-size: 1.1rem;
+    text-align: center;
+    margin-bottom: 3rem;
+    position: relative;
+    z-index: 1;
+    font-weight: 500;
+  }
+}
+
+// 🎯 SEÇÃO COACH IA
+.ai-coach-section {
+  @include glass-effect;
+  border-radius: $border-radius;
+  padding: 2rem;
+  margin-bottom: 2rem;
+  box-shadow: $card-shadow;
+  border-left: 4px solid #667eea;
+  position: relative;
+
+  .coach-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+
+    .coach-avatar {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 50px;
+      height: 50px;
+      background: $primary-gradient;
+      border-radius: 50%;
+      padding: 0.5rem;
+      color: white;
+      flex-shrink: 0;
+    }
+
+    .coach-content {
+      flex: 1;
+
+      h2 {
+        font-size: 1.4rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+        color: #2c3e50;
+      }
+
+      p {
+        color: #495057;
+        line-height: 1.6;
+        margin-bottom: 1rem;
+      }
+
+      .coach-tip {
+        background: rgba(102, 126, 234, 0.1);
+        border-radius: 8px;
+        padding: 0.8rem 1rem;
+        display: flex;
+        align-items: flex-start;
+        gap: 0.5rem;
+        font-size: 0.95rem;
+
+        svg {
+          color: #667eea;
+          flex-shrink: 0;
+          margin-top: 0.1rem;
+        }
+
+        strong {
+          color: #2c3e50;
+          font-weight: 700;
+        }
+      }
+    }
+
+    .close-coach {
+      background: none;
+      border: none;
+      font-size: 1.5rem;
+      color: #6c757d;
+      cursor: pointer;
+      padding: 0.2rem;
+      border-radius: 50%;
+      transition: all 0.2s ease;
+
+      &:hover {
+        background: rgba(0, 0, 0, 0.05);
+        color: #495057;
+      }
+    }
+  }
+}
+
+// 📋 CONTAINER DE INSIGHTS
+.insights-container {
+  h3 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    color: #2c3e50;
+  }
+
+  .insights-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1rem;
+  }
+
+  .insight-card {
+    @include glass-effect;
+    border-radius: 12px;
+    padding: 1.2rem;
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    transition: all 0.3s ease;
+
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    &.critico {
+      border-left: 4px solid #ff4757;
+      background: linear-gradient(135deg, rgba(255, 71, 87, 0.05) 0%, rgba(255, 255, 255, 0.9) 100%);
+    }
+
+    &.alerta {
+      border-left: 4px solid #ffa502;
+      background: linear-gradient(135deg, rgba(255, 165, 2, 0.05) 0%, rgba(255, 255, 255, 0.9) 100%);
+    }
+
+    &.positivo {
+      border-left: 4px solid #2ed573;
+      background: linear-gradient(135deg, rgba(46, 213, 115, 0.05) 0%, rgba(255, 255, 255, 0.9) 100%);
+    }
+
+    &.destaque {
+      border-left: 4px solid #3742fa;
+      background: linear-gradient(135deg, rgba(55, 66, 250, 0.05) 0%, rgba(255, 255, 255, 0.9) 100%);
+    }
+
+    .insight-icon {
+      padding: 0.5rem;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.8);
+      flex-shrink: 0;
+    }
+
+    .insight-content {
+      flex: 1;
+
+      h4 {
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        color: #2c3e50;
+      }
+
+      p {
+        color: #495057;
+        font-size: 0.9rem;
+        line-height: 1.5;
+        margin-bottom: 0.5rem;
+      }
+
+      .insight-action {
+        font-size: 0.85rem;
+        color: #667eea;
+        font-weight: 600;
+        background: rgba(102, 126, 234, 0.1);
+        padding: 0.3rem 0.6rem;
+        border-radius: 6px;
+        display: inline-block;
+      }
+    }
+  }
+}
+
+// 📊 SEÇÃO DE GRÁFICOS
+.graficos-section {
+  position: relative;
+  z-index: 1;
+}
+
+.graficos-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+  gap: 2rem;
+  position: relative;
+  z-index: 1;
+  max-width: 1400px;
+  margin: 0 auto;
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+}
+.grafico-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.45);
+  z-index: 1500;
+  backdrop-filter: blur(2px);
+}
+// 🔹 EFEITOS DE CLIQUE NOS GRÁFICOS
+.grafico-card {
+  @include glass-effect;
+  border-radius: $border-radius;
+  padding: 2rem;
+  box-shadow: $card-shadow;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: $primary-gradient;
+  }
+
+  &:nth-child(2)::before {
+    background: $secondary-gradient;
+  }
+
+  &:nth-child(3)::before {
+    background: $success-gradient;
+  }
+
+  &:nth-child(4)::before {
+    background: $warning-gradient;
+  }
+
+  // Estado normal
+  &:hover:not(.expandido) {
+    transform: translateY(-4px);
+    box-shadow: $card-shadow-hover;
+  }
+
+  // Efeito de clique
+  &.ativo {
+    animation: pulse-grafico 0.3s ease-out;
+  }
+
+  // Estado expandido
+  &.expandido {
+    position: relative;
+    z-index: 100;
+    grid-column: 1 / -1;
+    transform: scale(1.02);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
+    cursor: default;
+
+    .recharts-responsive-container {
+      background: rgba(255, 255, 255, 0.95);
+    }
+  }
+
+  // 🔹 ESTILOS PARA VERSÃO DONUT
+  .donut-main-value {
+    font-size: 1.8rem;
+    font-weight: 800;
+    fill: #2c3e50;
+    font-family: 'Segoe UI', system-ui, sans-serif;
+  }
+
+  .donut-main-label {
+    font-size: 0.9rem;
+    font-weight: 600;
+    fill: #6c757d;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-family: 'Segoe UI', system-ui, sans-serif;
+  }
+
+  .pie-legend {
+    .legend-text {
+      font-size: 0.8rem;
+      font-weight: 500;
+      fill: #495057;
+      font-family: 'Segoe UI', system-ui, sans-serif;
+    }
+  }
+
+  .grafico-card.expandido {
+    .donut-main-value {
+      font-size: 2.2rem;
+    }
+
+    .donut-main-label {
+      font-size: 1rem;
+    }
+
+    .legend-text {
+      font-size: 0.9rem;
+    }
+  }
+
+  .grafico-titulo {
+    font-weight: 700;
+    font-size: 1.3rem;
+    margin-bottom: 1.5rem;
+    color: #2c3e50;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+
+    &::before {
+      font-size: 1.2em;
+    }
+  }
+
+  // Container do gráfico
+  .recharts-responsive-container {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.8) 0%, rgba(248, 249, 250, 0.9) 100%);
+    border-radius: 12px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    transition: all 0.3s ease;
+  }
+
+  // Legendas personalizadas
+  .grafico-legenda {
+    display: flex;
+    justify-content: center;
+    gap: 1.5rem;
+    margin-top: 1rem;
+    flex-wrap: wrap;
+    padding: 1rem 0;
+
+    span {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: #495057;
+
+      .legenda-bullet {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        display: inline-block;
+
+        &.good {
+          background: linear-gradient(135deg, #28c76f, #20a85c);
+        }
+
+        &.ok {
+          background: linear-gradient(135deg, #ffc658, #ffb300);
+        }
+
+        &.bad {
+          background: linear-gradient(135deg, #ff4d4f, #d9363e);
+        }
+      }
+    }
+  }
+
+  // Mensagens de conselho
+  .grafico-advice {
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+    border-radius: 12px;
+    padding: 1.2rem;
+    margin-top: 1rem;
+    border-left: 4px solid #667eea;
+
+    strong {
+      color: #2c3e50;
+      font-weight: 700;
+    }
+
+    .advice-list {
+      margin-top: 0.8rem;
+      padding-left: 1.5rem;
+
+      li {
+        color: #495057;
+        margin-bottom: 0.4rem;
+        line-height: 1.4;
+        position: relative;
+
+        &::before {
+          content: '•';
+          color: #667eea;
+          font-weight: bold;
+          display: inline-block;
+          width: 1em;
+          margin-left: -1em;
+        }
+      }
+    }
+  }
+
+  // Overlay de bloqueio
+  .bloqueado-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.98);
+    backdrop-filter: blur(12px);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    border-radius: $border-radius;
+    z-index: 10;
+    padding: 2rem;
+    text-align: center;
+
+    .lock-icon {
+      color: #667eea;
+      margin-bottom: 1rem;
+      width: 48px;
+      height: 48px;
+    }
+
+    p {
+      color: #495057;
+      font-size: 1.1rem;
+      line-height: 1.6;
+      margin: 0;
+
+      strong {
+        color: #667eea;
+        font-weight: 700;
+      }
+    }
+  }
+
+  @media (max-width: 768px) {
+    padding: 1.5rem;
+
+    .grafico-titulo {
+      font-size: 1.1rem;
+      text-align: center;
+      justify-content: center;
+    }
+
+    .grafico-legenda {
+      gap: 1rem;
+
+      span {
+        font-size: 0.8rem;
+      }
+    }
+
+    .grafico-advice {
+      padding: 1rem;
+
+      .advice-list {
+        padding-left: 1.2rem;
+      }
+    }
+  }
+}
+
+// 🔹 CONTROLES DE EXPANSÃO
+.grafico-controles {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  z-index: 10;
+
+  .btn-expandir {
+    background: rgba(255, 255, 255, 0.9);
+    border: none;
+    border-radius: 8px;
+    padding: 0.5rem;
+    cursor: pointer;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    transition: all 0.2s ease;
+
+    &:hover {
+      background: white;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      transform: scale(1.1);
+    }
+
+    svg {
+      color: #667eea;
+    }
+  }
+}
+
+// 🔹 CONTAINER DO GRÁFICO COM SCROLL
+.grafico-container {
+  position: relative;
+  transition: all 0.3s ease;
+
+  &.com-scroll {
+    max-height: 500px;
+    overflow-y: auto;
+    overflow-x: hidden;
+
+    // 🔹 Custom scrollbar
+    &::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    &::-webkit-scrollbar-track {
+      background: rgba(0, 0, 0, 0.05);
+      border-radius: 3px;
+    }
+
+    &::-webkit-scrollbar-thumb {
+      background: rgba(102, 126, 234, 0.3);
+      border-radius: 3px;
+
+      &:hover {
+        background: rgba(102, 126, 234, 0.5);
+      }
+    }
+  }
+}
+
+// 🔹 HEADER DO GRÁFICO
+.grafico-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+
+  .grafico-titulo {
+    margin: 0;
+    font-weight: 700;
+    font-size: 1.3rem;
+    color: #2c3e50;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .btn-expandir {
+    background: rgba(102, 126, 234, 0.1);
+    border: none;
+    border-radius: 8px;
+    padding: 0.5rem;
+    cursor: pointer;
+    color: #667eea;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    &:hover {
+      background: rgba(102, 126, 234, 0.2);
+      transform: scale(1.1);
+    }
+
+    &:active {
+      transform: scale(0.95);
+    }
+  }
+}
+
+// 🔹 GRÁFICO EXPANDIDO OTIMIZADO
+.grafico-card.expandido {
+  grid-column: 1 / -1;
+  z-index: 100;
+  position: relative;
+
+  // 🔹 Remove transform que causa travamento
+  transform: none !important;
+
+  .grafico-container {
+    background: rgba(255, 255, 255, 0.8);
+    border-radius: 12px;
+    padding: 1rem;
+  }
+}
+
+// 🔹 OVERLAY QUANDO EXPANDIDO (SEM TRAVAR)
+body:has(.grafico-card.expandido) {
+  overflow: hidden; // 🔹 Previne scroll da página principal
+}
+
+.grafico-card.expandido~.grafico-card {
+  opacity: 0.3;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+
+  // 🔹 Remove filter que causa travamento
+  filter: none !important;
+}
+
+// 🔹 ANIMAÇÕES OTIMIZADAS
+.grafico-card {
+  // 🔹 Usa transform mais leve
+  transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+
+  &:hover:not(.expandido) {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.15);
+  }
+}
+
+// 🔹 EFICIENTE DE CLIQUE
+.grafico-card:active:not(.expandido) {
+  transform: scale(0.99);
+  transition: transform 0.1s ease;
+}
+
+// 🔹 RESPONSIVIDADE MELHORADA
+@media (max-width: 768px) {
+  .grafico-card.expandido {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    margin: 0;
+    border-radius: 0;
+    z-index: 1000;
+    overflow-y: auto;
+
+    .grafico-container {
+      max-height: calc(100vh - 120px);
+      height: auto;
+    }
+
+    .grafico-header {
+      position: sticky;
+      top: 0;
+      background: white;
+      padding: 1rem;
+      margin: -1rem -1rem 1rem -1rem;
+      z-index: 10;
+      border-bottom: 1px solid #e9ecef;
+    }
+  }
+
+  .btn-expandir {
+    padding: 0.6rem !important;
+
+    svg {
+      width: 20px;
+      height: 20px;
+    }
+  }
+}
+
+// 🔹 DEBOUNCE PARA PERFORMANCE
+.recharts-wrapper {
+  // 🔹 Força hardware acceleration
+  transform: translateZ(0);
+
+  // 🔹 Remove animações pesadas
+  .recharts-bar-rectangle {
+    transition: fill 0.2s ease;
+  }
+
+  .recharts-pie-sector {
+    transition: all 0.2s ease;
+  }
+}
+
+// 🔹 LOADING OTIMIZADO
+.grafico-card {
+  &.loading {
+    pointer-events: none;
+
+    .recharts-responsive-container {
+      opacity: 0.6;
+      transition: opacity 0.3s ease;
+    }
+  }
+}
+
+// 🔹 INFORMAÇÃO DE EXPANSÃO
+.expansao-info {
+  text-align: center;
+  margin-top: 1rem;
+  padding: 0.8rem;
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+  border-radius: 8px;
+
+  p {
+    margin: 0;
+    font-size: 0.9rem;
+    color: #667eea;
+    font-weight: 500;
+  }
+}
+
+// 🔹 ANIMAÇÃO DE PULSO NO CLIQUE
+@keyframes pulse-grafico {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+  }
+
+  50% {
+    transform: scale(0.98);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+  }
+
+  100% {
+    transform: scale(1);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+  }
+}
+
+// 🔹 OVERLAY QUANDO UM GRÁFICO ESTÁ EXPANDIDO
+.grafico-card.expandido~.grafico-card {
+  opacity: 0.3;
+  filter: blur(1px);
+  transition: all 0.3s ease;
+}
+
+// 🎯 BOTÃO FLUTUANTE DO COACH
+.floating-coach-btn {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  background: $primary-gradient;
+  color: white;
+  border: none;
+  border-radius: 50px;
+  padding: 0.8rem 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 600;
+  box-shadow: 0 8px 24px rgba(102, 126, 234, 0.3);
+  cursor: pointer;
+  z-index: 1000;
+  transition: all 0.3s ease;
+
+  &:hover {
+    box-shadow: 0 12px 32px rgba(102, 126, 234, 0.4);
+  }
+}
+
+// Loading states
+.loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 50vh;
+  font-size: 1.2rem;
+  font-weight: 600;
+  @include gradient-text;
+  position: relative;
+  z-index: 1;
+}
+
+// 🔹 MELHORAR VISUALIZAÇÃO DOS GRÁFICOS
+.recharts-tooltip-wrapper {
+  z-index: 1000;
+}
+
+.recharts-default-tooltip {
+  border-radius: 10px !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15) !important;
+  border: none !important;
+}
+
+// 🔹 RESPONSIVIDADE
+@media (max-width: 1024px) {
+  .desempenho-page {
+    padding: 1.5rem 2rem;
+
+    .titulo {
+      font-size: 2rem;
+    }
+
+    .graficos-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .ai-coach-section {
+    padding: 1.5rem;
+
+    .coach-header {
+      flex-direction: column;
+      text-align: center;
+
+      .coach-avatar {
+        align-self: center;
+      }
+
+      .close-coach {
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+      }
+    }
+
+    .insights-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .grafico-card.expandido {
+    grid-column: 1;
+    margin: 1rem 0;
+
+    .recharts-responsive-container {
+      height: 300px !important;
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .desempenho-page {
+    padding: 1rem;
+
+    .titulo {
+      font-size: 1.8rem;
+    }
+
+    .subtitulo {
+      font-size: 1rem;
+    }
+
+    .grafico-card {
+      padding: 1rem;
+    }
+
+    .graficos-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .floating-coach-btn {
+    bottom: 1rem;
+    right: 1rem;
+    padding: 0.7rem 1.2rem;
+    font-size: 0.9rem;
+  }
+}
+
+// Animações de entrada para os gráficos
+@keyframes chartEntrance {
+  from {
+    opacity: 0;
+    transform: translateY(30px) scale(0.95);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.grafico-card {
+  animation: chartEntrance 0.6s ease-out;
+}

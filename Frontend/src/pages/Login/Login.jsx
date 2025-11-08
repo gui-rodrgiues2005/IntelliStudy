@@ -97,11 +97,12 @@ const Login = () => {
       </div>
 
       <div className="auth-card">
-        <button className='voltar-site' onClick={handleNavigateSite}><MoveLeft/></button>
+        <button className='voltar-site' onClick={handleNavigateSite}><MoveLeft /></button>
         <div className="auth-header">
           <img src={Logo} alt='IntelliStudy Logo' className="brand-name"></img>
           <h2>Bem-vindo de volta!</h2>
           <p>Continue sua jornada de aprendizado.</p>
+          <p className="order-by">OrderBY <strong>IdeiaFish</strong></p>
         </div>
 
         <form onSubmit={handleLogin}>

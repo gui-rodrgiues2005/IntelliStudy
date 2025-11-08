@@ -119,21 +119,36 @@ function Ranking() {
 
                             {/* Redes sociais agora fora do rank-details e com própria grid column */}
                             <div className="rank-socials">
-                                {aluno.instagram && (
-                                    <a href={`https://instagram.com/${aluno.instagram.replace('@', '')}`} target="_blank" rel="noopener noreferrer">
+                                {(posicaoUsuario.usuario.instagram || posicaoUsuario.usuario.Instagram) && (
+                                    <a
+                                        href={`https://instagram.com/${(posicaoUsuario.usuario.instagram || posicaoUsuario.usuario.Instagram).replace('@', '')}`}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                    >
                                         <Instagram />
                                     </a>
                                 )}
-                                {aluno.linkedin && (
-                                    <a href={`https://linkedin.com/in/${aluno.linkedin.replace('@', '')}`} target="_blank" rel="noopener noreferrer">
-                                        <Linkedin />
-                                    </a>
-                                )}
-                                {aluno.gitHub && (
-                                    <a href={`https://github.com/${aluno.gitHub.replace('@', '')}`} target="_blank" rel="noopener noreferrer">
+
+                                {(posicaoUsuario.usuario.gitHub || posicaoUsuario.usuario.github) && (
+                                    <a
+                                        href={`https://github.com/${(posicaoUsuario.usuario.gitHub || posicaoUsuario.usuario.github).replace('@', '')}`}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                    >
                                         <Github />
                                     </a>
                                 )}
+
+                                {(aluno.gitHub || aluno.github) && (
+                                    <a
+                                        href={`https://github.com/${(aluno.gitHub || aluno.github).replace('@', '')}`}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                    >
+                                        <Github />
+                                    </a>
+                                )}
+
                             </div>
                         </div>
                     )

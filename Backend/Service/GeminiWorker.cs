@@ -56,43 +56,41 @@ namespace Backend.Services
 
                 object? resultadoFinal = null;
 
-                // ======= 1️⃣ GERAÇÃO DE RESUMO =======
-                if (pedidoParaProcessar.Tipo == GenerationType.Resumo)
+                // ======= 1️⃣ GERAÇÃO DE CONTEÚDO (Resumo, PerguntaDireta, PesquisaCientifica, EstudarParaProva) =======
+                if (pedidoParaProcessar.Tipo == GenerationType.Resumo ||
+                    pedidoParaProcessar.Tipo == GenerationType.PerguntaDireta ||
+                    pedidoParaProcessar.Tipo == GenerationType.PesquisaCientifica ||
+                    pedidoParaProcessar.Tipo == GenerationType.EstudarParaProva)
                 {
-                    string conteudoParaResumo;
-                    string topicoOriginal; // <- Variável para o tópico
+                    if (string.IsNullOrEmpty(pedidoParaProcessar.InputTexto))
+                        throw new InvalidOperationException("Nenhum conteúdo disponível para gerar.");
 
-                    if (!string.IsNullOrEmpty(pedidoParaProcessar.InputTexto))
+                    string tipoParaIA = pedidoParaProcessar.Tipo switch
                     {
-                        conteudoParaResumo = pedidoParaProcessar.InputTexto;
+                        GenerationType.Resumo => "Resumo",
+                        GenerationType.PerguntaDireta => "PerguntaDireta",
+                        GenerationType.PesquisaCientifica => "PesquisaCientifica",
+                        GenerationType.EstudarParaProva => "EstudarParaProva",
+                        _ => "Resumo"
+                    };
 
-                        // Se o InputContextoId foi fornecido (ex: nome do arquivo), use-o como tópico.
-                        // Se não, use o comportamento antigo (pegar o começo do texto).
-                        topicoOriginal = !string.IsNullOrEmpty(pedidoParaProcessar.InputContextoId)
-                            ? pedidoParaProcessar.InputContextoId
-                            : (conteudoParaResumo.Length > 100 ? conteudoParaResumo.Substring(0, 100) + "..." : conteudoParaResumo);
-                    }
-                    else
+                    string resultadoIA = await geminiService.GerarConteudoAsync(pedidoParaProcessar.InputTexto, tipoParaIA);
+
+                    var novoConteudo = new ConteudoIA
                     {
-                        throw new InvalidOperationException("Nenhum conteúdo disponível para gerar resumo.");
-                    }
-
-                    string resultadoIA = await geminiService.GerarResumoAsync(conteudoParaResumo);
-
-                    var novoResumo = new Resumo
-                    {
-                        TopicoOriginal = topicoOriginal, // <-- AQUI ESTÁ A MUDANÇA
-                        ResumoTexto = resultadoIA,
+                        TopicoOriginal = pedidoParaProcessar.InputTexto.Length > 100
+                            ? pedidoParaProcessar.InputTexto.Substring(0, 100) + "..."
+                            : pedidoParaProcessar.InputTexto,
+                        Tipo = tipoParaIA,
+                        TextoGerado = resultadoIA,
                         UserId = pedidoParaProcessar.UserId,
                         CreatedAt = DateTime.UtcNow
                     };
 
-                    dbContext.Resumos.Add(novoResumo);
-                    await dbContext.SaveChangesAsync(); // Salva para obter o ID
+                    dbContext.ConteudoIAs.Add(novoConteudo);
+                    await dbContext.SaveChangesAsync();
 
-                    // Seta OutputTexto diretamente para o JSON do Resumo, garantindo que o front receba o ID correto
-                    pedidoParaProcessar.OutputTexto = JsonSerializer.Serialize(novoResumo, new JsonSerializerOptions { ReferenceHandler = ReferenceHandler.IgnoreCycles });
-                    resultadoFinal = novoResumo;
+                    resultadoFinal = novoConteudo;
                 }
 
                 // ======= 2️⃣ GERAÇÃO DE SIMULADO =======
@@ -101,16 +99,48 @@ namespace Backend.Services
                     const int MAX_TRIES = 3;
                     bool sucesso = false;
 
-                    // 🔹 Loga informações iniciais do pedido
-                    _logger.LogInformation("📘 [Worker] Iniciando geração de simulado | RequestId: {Id} | ContextoId: {CtxId} | TextoEntrada: {Texto}",
-                        pedidoParaProcessar.Id, pedidoParaProcessar.InputContextoId, pedidoParaProcessar.InputTexto);
+                    _logger.LogInformation(
+                        "📘 [Worker] Iniciando geração de simulado | RequestId: {Id} | TextoEntrada: {Texto}",
+                        pedidoParaProcessar.Id, pedidoParaProcessar.InputTexto);
 
-                    var resumoPai = await dbContext.Resumos.FindAsync(int.Parse(pedidoParaProcessar.InputContextoId!));
-                    if (resumoPai == null)
-                        throw new InvalidOperationException("Resumo pai para o simulado não foi encontrado.");
+                    // 1️⃣ Buscar conteúdo base: pode ser ConteudoIA OU GenerationRequest
+                    string conteudoTexto = null;
 
-                    _logger.LogInformation("📄 [Worker] Texto do resumo pai encontrado (ID {Id}): {Texto}",
-                        resumoPai.Id, resumoPai.ResumoTexto);
+                    if (!string.IsNullOrEmpty(pedidoParaProcessar.InputContextoId))
+                    {
+                        // Primeiro tenta buscar em ConteudoIAs
+                        var conteudoIA = await dbContext.ConteudoIAs
+                            .AsNoTracking()
+                            .FirstOrDefaultAsync(c => c.Id.ToString() == pedidoParaProcessar.InputContextoId);
+
+                        if (conteudoIA != null)
+                        {
+                            conteudoTexto = conteudoIA.TextoGerado;
+                            _logger.LogInformation("🧾 [Worker] Conteúdo base encontrado em ConteudoIAs (ID={Id})", conteudoIA.Id);
+                        }
+                        else
+                        {
+                            // Caso o conteúdo base seja um GenerationRequest (ex: resumo direto)
+                            var baseRequest = await dbContext.GenerationRequests
+                                .AsNoTracking()
+                                .FirstOrDefaultAsync(g => g.Id.ToString() == pedidoParaProcessar.InputContextoId);
+
+                            if (baseRequest != null)
+                            {
+                                conteudoTexto = baseRequest.OutputTexto;
+                                _logger.LogInformation("📄 [Worker] Conteúdo base encontrado em GenerationRequests (ID={Id})", baseRequest.Id);
+                            }
+                        }
+                    }
+
+                    if (string.IsNullOrEmpty(conteudoTexto))
+                    {
+                        pedidoParaProcessar.Status = RequestStatus.Falhou;
+                        pedidoParaProcessar.MensagemErro = "Conteúdo base para o simulado não encontrado.";
+                        await dbContext.SaveChangesAsync();
+                        _logger.LogWarning("❌ [Worker] Falha: conteúdo base não encontrado para RequestId={Id}", pedidoParaProcessar.Id);
+                        return;
+                    }
 
                     int numeroDeQuestoes = int.TryParse(pedidoParaProcessar.InputTexto, out int n) ? n : 5;
 
@@ -118,72 +148,74 @@ namespace Backend.Services
                     {
                         try
                         {
-                            _logger.LogInformation("🚀 [Worker] Tentativa {Attempt}/{Max} - Chamando GeminiService.GerarSimuladoAsync...", attempt, MAX_TRIES);
+                            _logger.LogInformation(
+                                "🚀 [Worker] Tentativa {Attempt}/{Max} - Chamando GeminiService.GerarSimuladoAsync...",
+                                attempt, MAX_TRIES);
 
-                            // 1️⃣ CHAMA A API DO GEMINI
-                            string respostaBrutaDaIA = await geminiService.GerarSimuladoAsync(resumoPai.ResumoTexto, numeroDeQuestoes);
+                            string respostaBrutaDaIA = await geminiService.GerarSimuladoAsync(conteudoTexto, numeroDeQuestoes);
 
-                            // 🔍 Log da resposta bruta
-                            _logger.LogInformation("🧠 [Worker] Resposta bruta do Gemini (tentativa {Attempt}): {Resposta}", attempt, respostaBrutaDaIA);
+                            _logger.LogInformation(
+                                "🧠 [Worker] Resposta bruta do Gemini (tentativa {Attempt}): {Resposta}",
+                                attempt, respostaBrutaDaIA);
 
-                            // 2️⃣ LIMPEZA E VALIDAÇÃO DO JSON
+                            // Extrai apenas o JSON da resposta
                             var inicio = respostaBrutaDaIA.IndexOf('[');
                             var fim = respostaBrutaDaIA.LastIndexOf(']');
                             string jsonLimpo = (inicio != -1 && fim != -1)
                                 ? respostaBrutaDaIA.Substring(inicio, fim - inicio + 1)
                                 : "[]";
 
-                            // 🔍 Log do JSON limpo
-                            _logger.LogInformation("📦 [Worker] JSON limpo extraído (tentativa {Attempt}): {Json}", attempt, jsonLimpo);
+                            _logger.LogInformation(
+                                "📦 [Worker] JSON limpo extraído (tentativa {Attempt}): {Json}",
+                                attempt, jsonLimpo);
 
                             if (jsonLimpo.Length <= 5)
-                            {
                                 throw new InvalidOperationException($"API Gemini retornou resposta vazia ou inválida. Tentativa {attempt}.");
-                            }
 
-                            // 3️⃣ SALVA NO BANCO
+                            // Cria o simulado e persiste
                             var novoSimulado = new Simulado
                             {
-                                ResumoId = resumoPai.Id,
+                                ConteudoIAId = int.TryParse(pedidoParaProcessar.InputContextoId, out int conteudoId) ? conteudoId : (int?)null,
                                 QuestoesJson = jsonLimpo,
-                                CreatedAt = DateTime.UtcNow
+                                CreatedAt = DateTime.UtcNow,
+                                GenerationRequestId = pedidoParaProcessar.Id
                             };
 
                             dbContext.Simulados.Add(novoSimulado);
-                            await dbContext.SaveChangesAsync(); // ✅ SALVA no banco
+                            await dbContext.SaveChangesAsync();
 
-                            // 4️⃣ Atualiza status do pedido
+
+                            // ✅ Salva no pedido apenas os dados essenciais, num formato consistente pro front
                             pedidoParaProcessar.Status = RequestStatus.Concluido;
-                            pedidoParaProcessar.OutputTexto = JsonSerializer.Serialize(novoSimulado); // ✅ usa o campo correto
+                            pedidoParaProcessar.OutputTexto = jsonLimpo; // só as questões puras
+                            pedidoParaProcessar.OutputMetadata = JsonSerializer.Serialize(new
+                            {
+                                SimuladoId = novoSimulado.Id,
+                                RequestId = pedidoParaProcessar.Id
+                            });
                             pedidoParaProcessar.ProcessedAt = DateTime.UtcNow;
                             await dbContext.SaveChangesAsync();
 
-                            resultadoFinal = novoSimulado;
-                            sucesso = true;
+                            _logger.LogInformation("✅ [Worker] Simulado gerado com sucesso (SimuladoId={SimId}, RequestId={ReqId})",
+                                novoSimulado.Id, pedidoParaProcessar.Id);
 
-                            _logger.LogInformation("✅ [Worker] Simulado gerado e salvo com sucesso. ID: {Id}", novoSimulado.Id);
-                            break; // Sai do loop
+                            sucesso = true;
+                            break;
                         }
-                        catch (System.Net.Http.HttpRequestException ex)
+
+                        catch (HttpRequestException ex)
                         {
-                            // Falhas de rede (ex: erro 503)
                             pedidoParaProcessar.MensagemErro = $"Falha na Tentativa {attempt}: {ex.Message}";
                             await dbContext.SaveChangesAsync();
-
                             _logger.LogWarning("🌐 [Worker] Falha HTTP ({Attempt}/{Max}): {Erro}", attempt, MAX_TRIES, ex.Message);
 
                             if (attempt < MAX_TRIES)
-                            {
                                 await Task.Delay(TimeSpan.FromSeconds(5 * attempt));
-                            }
                             else
-                            {
                                 throw new Exception($"Geração de Simulado falhou após {MAX_TRIES} tentativas. Último erro: {ex.Message}", ex);
-                            }
                         }
                         catch (Exception ex)
                         {
-                            // Erros lógicos (JSON inválido, etc.)
                             _logger.LogError(ex, "❌ [Worker] Erro permanente ao gerar simulado (Tentativa {Attempt}/{Max})", attempt, MAX_TRIES);
                             pedidoParaProcessar.Status = RequestStatus.Falhou;
                             pedidoParaProcessar.MensagemErro = ex.Message;
@@ -194,11 +226,29 @@ namespace Backend.Services
                     }
 
                     if (!sucesso)
-                    {
                         throw new Exception("Lógica de repetição falhou inesperadamente.");
-                    }
                 }
 
+                // ======= FINALIZA O PEDIDO =======
+                pedidoParaProcessar.OutputTexto = JsonSerializer.Serialize(
+                    resultadoFinal,
+                    new JsonSerializerOptions { ReferenceHandler = ReferenceHandler.IgnoreCycles }
+                );
+                pedidoParaProcessar.Status = RequestStatus.Concluido;
+                pedidoParaProcessar.ProcessedAt = DateTime.UtcNow;
+
+                await dbContext.SaveChangesAsync();
+                _logger.LogInformation($"Pedido {pedidoParaProcessar.Id} concluído com sucesso.");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Erro ao processar pedido {pedidoPendente.Id}.");
+                if (pedidoParaProcessar != null)
+                {
+                    pedidoParaProcessar.Status = RequestStatus.Falhou;
+                    pedidoParaProcessar.MensagemErro = ex.ToString();
+                    await dbContext.SaveChangesAsync();
+                }
 
                 // ======= 3️⃣ GERAÇÃO DE PLANO DE ESTUDO =======
                 else if (pedidoParaProcessar.Tipo == GenerationType.PlanoDeEstudo)
@@ -216,21 +266,13 @@ namespace Backend.Services
                     var ultimoFechaChave = respostaBrutaDaIA.LastIndexOf('}');
 
                     if (primeiroAbreChave != -1 && ultimoFechaChave != -1 && ultimoFechaChave > primeiroAbreChave)
-                    {
                         jsonLimpo = respostaBrutaDaIA.Substring(primeiroAbreChave, ultimoFechaChave - primeiroAbreChave + 1).Trim();
-                        _logger.LogInformation($"JSON limpo e extraído: {jsonLimpo}");
-                    }
                     else
-                    {
-                        _logger.LogError("Não foi possível encontrar um objeto JSON válido na resposta da IA.");
                         throw new JsonException("A resposta da IA não continha um objeto JSON reconhecível.");
-                    }
 
                     var planoGeradoPelaIa = JsonSerializer.Deserialize<PlanoGeradoDto>(jsonLimpo, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
                     if (planoGeradoPelaIa?.CronogramaSemanal == null || !planoGeradoPelaIa.CronogramaSemanal.Any())
-                    {
                         throw new Exception("A IA retornou um plano sem cronograma ou o cronograma está vazio.");
-                    }
 
                     var novoPlano = new PlanoDeEstudo
                     {
@@ -247,65 +289,37 @@ namespace Backend.Services
 
                     foreach (var dia in planoGeradoPelaIa.CronogramaSemanal)
                     {
-                        if (dia.Sessoes != null)
-                        {
-                            foreach (var sessao in dia.Sessoes)
-                            {
-                                int duracaoEmMinutos = 0;
-                                if (sessao.Duracao is JsonElement duracaoElement)
-                                {
-                                    if (duracaoElement.ValueKind == JsonValueKind.Number)
-                                    {
-                                        duracaoEmMinutos = duracaoElement.GetInt32();
-                                    }
-                                    else if (duracaoElement.ValueKind == JsonValueKind.String)
-                                    {
-                                        string duracaoString = duracaoElement.GetString() ?? "";
-                                        var digitos = new string(duracaoString.Where(char.IsDigit).ToArray());
-                                        int.TryParse(digitos, out duracaoEmMinutos);
-                                    }
-                                }
+                        if (dia.Sessoes == null) continue;
 
-                                novoPlano.Sessoes.Add(new SessaoEstudo
+                        foreach (var sessao in dia.Sessoes)
+                        {
+                            int duracaoEmMinutos = 0;
+                            if (sessao.Duracao is JsonElement duracaoElement)
+                            {
+                                if (duracaoElement.ValueKind == JsonValueKind.Number)
+                                    duracaoEmMinutos = duracaoElement.GetInt32();
+                                else if (duracaoElement.ValueKind == JsonValueKind.String)
                                 {
-                                    Topico = sessao.Topico,
-                                    DiaDaSemana = dia.Dia,
-                                    DuracaoMinutos = duracaoEmMinutos,
-                                    Concluida = false
-                                });
+                                    var digitos = new string((duracaoElement.GetString() ?? "").Where(char.IsDigit).ToArray());
+                                    int.TryParse(digitos, out duracaoEmMinutos);
+                                }
                             }
+
+                            novoPlano.Sessoes.Add(new SessaoEstudo
+                            {
+                                Topico = sessao.Topico,
+                                DiaDaSemana = dia.Dia,
+                                DuracaoMinutos = duracaoEmMinutos,
+                                Concluida = false
+                            });
                         }
                     }
 
                     if (!novoPlano.Sessoes.Any())
-                    {
                         throw new Exception("Nenhuma sessão de estudo foi gerada pela IA.");
-                    }
 
-                    resultadoFinal = novoPlano;
-                }
-
-                // ======= FINALIZA O PEDIDO =======
-                pedidoParaProcessar.OutputTexto = JsonSerializer.Serialize(
-                    resultadoFinal,
-                    new JsonSerializerOptions { ReferenceHandler = ReferenceHandler.IgnoreCycles }
-                );
-
-                pedidoParaProcessar.Status = RequestStatus.Concluido;
-                pedidoParaProcessar.ProcessedAt = DateTime.UtcNow;
-
-                await dbContext.SaveChangesAsync();
-
-                _logger.LogInformation($"Pedido {pedidoParaProcessar.Id} concluído com sucesso.");
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, $"Erro ao processar pedido {pedidoPendente.Id}.");
-                if (pedidoParaProcessar != null)
-                {
-                    pedidoParaProcessar.Status = RequestStatus.Falhou;
-                    pedidoParaProcessar.MensagemErro = ex.ToString();
                     await dbContext.SaveChangesAsync();
+                    _logger.LogInformation($"Plano de estudo gerado com sucesso para o pedido {pedidoParaProcessar.Id}.");
                 }
             }
         }

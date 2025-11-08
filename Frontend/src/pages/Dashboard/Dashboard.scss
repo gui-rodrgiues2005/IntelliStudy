@@ -106,9 +106,6 @@ $transition: all 0.2s ease-in-out;
 
 }
 
-// Em Dashboard.scss
-
-
 .unified-search-bar {
   display: flex;
   align-items: center;
@@ -205,7 +202,7 @@ $transition: all 0.2s ease-in-out;
   padding: 0.5rem 0;
   color: var(--text-color);
   outline: none;
-  
+
   &:focus {
     outline: none;
   }
@@ -223,6 +220,238 @@ $transition: all 0.2s ease-in-out;
     opacity: 1;
   }
 }
+
+.options-dropdown {
+  position: relative;
+
+  .options-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    width: 40px;
+    height: 40px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+    border-radius: 50px;
+    color: white;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+
+    &:hover {
+      box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+    }
+
+    &:active {
+      transform: translateY(0);
+    }
+  }
+
+  .modern-menu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    margin-top: 8px;
+    background: rgba(23, 23, 23, 0.95);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    box-shadow:
+      0 20px 60px rgba(0, 0, 0, 0.4),
+      0 0 0 1px rgba(255, 255, 255, 0.05) inset,
+      0 1px 0 0 rgba(255, 255, 255, 0.1) inset;
+    padding: 1rem;
+    min-width: 280px;
+    z-index: 1000;
+    animation: slideDownFade 0.3s ease-out;
+
+    .menu-header {
+      padding: 0.5rem 0 1rem 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      margin-bottom: 0.5rem;
+
+      .menu-title {
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: #f8fafc;
+        display: block;
+      }
+
+      .menu-subtitle {
+        font-size: 0.75rem;
+        color: #94a3b8;
+        margin-top: 0.25rem;
+      }
+    }
+
+    .menu-items {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .menu-item {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.75rem;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      border: 1px solid transparent;
+
+      &:hover {
+        background: linear-gradient(135deg, rgba(102, 126, 234, 0.15), rgba(118, 75, 162, 0.15));
+        border-color: rgba(102, 126, 234, 0.3);
+        transform: translateX(4px);
+      }
+
+      &:active {
+        transform: translateX(4px) scale(0.98);
+      }
+
+      .item-icon {
+        font-size: 1.25rem;
+        width: 32px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 8px;
+        flex-shrink: 0;
+      }
+
+      .item-content {
+        display: flex;
+        flex-direction: column;
+        gap: 0.125rem;
+
+        .item-title {
+          font-size: 0.875rem;
+          font-weight: 600;
+          color: #f1f5f9;
+        }
+
+        .item-description {
+          font-size: 0.75rem;
+          color: #94a3b8;
+          line-height: 1.3;
+        }
+      }
+    }
+  }
+
+  // Animações
+  @keyframes slideDownFade {
+    from {
+      opacity: 0;
+      transform: translateY(-10px) scale(0.95);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  }
+}
+
+// Animações
+@keyframes slideDownFade {
+  from {
+    opacity: 0;
+    transform: translateY(-10px) scale(0.95);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+// Efeito de brilho no hover do botão
+.options-btn {
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg,
+        transparent,
+        rgba(255, 255, 255, 0.4),
+        transparent);
+    transition: left 0.5s ease;
+  }
+
+  &:hover::before {
+    left: 100%;
+  }
+}
+
+// Responsividade
+@media (max-width: 768px) {
+  .options-dropdown {
+    .modern-menu {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 90vw;
+      max-width: 320px;
+      margin-top: 0;
+      animation: modalAppear 0.3s ease-out;
+    }
+  }
+}
+
+@keyframes modalAppear {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.9);
+  }
+
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+
+.selected-option-indicator {
+  margin-top: 2px;
+  width: 100%;
+  max-width: 200px;
+  bottom: -30px;
+  background: white;
+  color: #374151;
+  padding: 6px 10px;
+  border-radius: 16px;
+  font-size: 10px;
+  font-weight: 500;
+  border: 1.5px solid #e5e7eb;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+
+  &::before {
+    content: '';
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #10b981;
+    animation: pulse 2s infinite;
+  }
+
+
+}
+
 
 
 .file-indicator {
@@ -273,6 +502,38 @@ $transition: all 0.2s ease-in-out;
 }
 
 @keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* From Uiverse.io by Fernando-sv */ 
+.loader {
+  border: 4px solid rgba(0, 0, 0, .1);
+  border-left-color: transparent;
+  border-radius: 50%;
+}
+
+.loader {
+  border: 4px solid rgba(0, 0, 0, .1);
+  border-left-color: transparent;
+  width: 36px;
+  height: 36px;
+}
+
+.loader {
+  border: 4px solid rgba(0, 0, 0, .1);
+  border-left-color: transparent;
+  width: 36px;
+  height: 36px;
+  animation: spin89345 1s linear infinite;
+}
+
+@keyframes spin89345 {
   0% {
     transform: rotate(0deg);
   }

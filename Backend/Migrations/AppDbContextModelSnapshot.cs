@@ -79,6 +79,96 @@ namespace Backend.Migrations
                     b.ToTable("Assinaturas");
                 });
 
+            modelBuilder.Entity("Backend.Models.AtividadeUsuario", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime?>("DataFim")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("DataInicio")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("DiaDaSemana")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("DuracaoSegundos")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Tipo")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("AtividadesUsuarios");
+                });
+
+            modelBuilder.Entity("Backend.Models.ConquistaUsuario", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("CodigoConquista")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("DesbloqueadaEm")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("ConquistasUsuarios");
+                });
+
+            modelBuilder.Entity("Backend.Models.ConteudoIA", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("TextoGerado")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Tipo")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("TopicoOriginal")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("ConteudoIAs");
+                });
+
             modelBuilder.Entity("Backend.Models.GenerationRequest", b =>
                 {
                     b.Property<int>("Id")
@@ -98,6 +188,9 @@ namespace Backend.Migrations
                         .HasColumnType("text");
 
                     b.Property<string>("MensagemErro")
+                        .HasColumnType("text");
+
+                    b.Property<string>("OutputMetadata")
                         .HasColumnType("text");
 
                     b.Property<string>("OutputTexto")
@@ -120,35 +213,6 @@ namespace Backend.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("GenerationRequests");
-                });
-
-            modelBuilder.Entity("Backend.Models.Materia", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Conteudo")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("Titulo")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<int>("UserId")
-                        .HasColumnType("integer");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("Materias");
                 });
 
             modelBuilder.Entity("Backend.Models.PlanoDeEstudo", b =>
@@ -218,39 +282,6 @@ namespace Backend.Migrations
                     b.ToTable("ResultadosSimulados");
                 });
 
-            modelBuilder.Entity("Backend.Models.Resumo", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<int?>("MateriaId")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("ResumoTexto")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("TopicoOriginal")
-                        .HasColumnType("text");
-
-                    b.Property<int>("UserId")
-                        .HasColumnType("integer");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("MateriaId");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("Resumos");
-                });
-
             modelBuilder.Entity("Backend.Models.SessaoEstudo", b =>
                 {
                     b.Property<int>("Id")
@@ -290,26 +321,48 @@ namespace Backend.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
+                    b.Property<int?>("ConteudoIAId")
+                        .HasColumnType("integer");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<int?>("MateriaId")
+                    b.Property<int?>("GenerationRequestId")
                         .HasColumnType("integer");
 
                     b.Property<string>("QuestoesJson")
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<int>("ResumoId")
+                    b.HasKey("Id");
+
+                    b.HasIndex("ConteudoIAId");
+
+                    b.ToTable("Simulados");
+                });
+
+            modelBuilder.Entity("Backend.Models.TempoEstudoUsuario", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("Dia")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("Minutos")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("UserId")
                         .HasColumnType("integer");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("MateriaId");
+                    b.HasIndex("UserId");
 
-                    b.HasIndex("ResumoId");
-
-                    b.ToTable("Simulados");
+                    b.ToTable("TempoEstudosUsuarios");
                 });
 
             modelBuilder.Entity("Backend.Models.User", b =>
@@ -445,7 +498,48 @@ namespace Backend.Migrations
                     b.ToTable("PagamentosCartao");
                 });
 
+            modelBuilder.Entity("UserAtividade", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("UltimaAtividade")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("UserAtividades");
+                });
+
             modelBuilder.Entity("Backend.Models.Assinatura", b =>
+                {
+                    b.HasOne("Backend.Models.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Backend.Models.AtividadeUsuario", b =>
+                {
+                    b.HasOne("Backend.Models.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Backend.Models.ConteudoIA", b =>
                 {
                     b.HasOne("Backend.Models.User", "User")
                         .WithMany()
@@ -460,17 +554,6 @@ namespace Backend.Migrations
                 {
                     b.HasOne("Backend.Models.User", "User")
                         .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("User");
-                });
-
-            modelBuilder.Entity("Backend.Models.Materia", b =>
-                {
-                    b.HasOne("Backend.Models.User", "User")
-                        .WithMany("Materias")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -508,21 +591,6 @@ namespace Backend.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("Backend.Models.Resumo", b =>
-                {
-                    b.HasOne("Backend.Models.Materia", null)
-                        .WithMany("Resumos")
-                        .HasForeignKey("MateriaId");
-
-                    b.HasOne("Backend.Models.User", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("Backend.Models.SessaoEstudo", b =>
                 {
                     b.HasOne("Backend.Models.PlanoDeEstudo", "PlanoDeEstudo")
@@ -536,17 +604,22 @@ namespace Backend.Migrations
 
             modelBuilder.Entity("Backend.Models.Simulado", b =>
                 {
-                    b.HasOne("Backend.Models.Materia", null)
-                        .WithMany("Simulados")
-                        .HasForeignKey("MateriaId");
-
-                    b.HasOne("Backend.Models.Resumo", "Resumo")
+                    b.HasOne("Backend.Models.ConteudoIA", "Conteudo")
                         .WithMany()
-                        .HasForeignKey("ResumoId")
+                        .HasForeignKey("ConteudoIAId");
+
+                    b.Navigation("Conteudo");
+                });
+
+            modelBuilder.Entity("Backend.Models.TempoEstudoUsuario", b =>
+                {
+                    b.HasOne("Backend.Models.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Resumo");
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Backend.Models.UserConquista", b =>
@@ -560,21 +633,9 @@ namespace Backend.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("Backend.Models.Materia", b =>
-                {
-                    b.Navigation("Resumos");
-
-                    b.Navigation("Simulados");
-                });
-
             modelBuilder.Entity("Backend.Models.PlanoDeEstudo", b =>
                 {
                     b.Navigation("Sessoes");
-                });
-
-            modelBuilder.Entity("Backend.Models.User", b =>
-                {
-                    b.Navigation("Materias");
                 });
 #pragma warning restore 612, 618
         }

@@ -58,7 +58,7 @@ const Footer = () => {
           </div>
 
           <p className="footer__email">
-            <Mail size={18} /> rodriguesguidev@gmail.com
+            <Mail size={18} /> ideiafish2025@gmail.com
           </p>
         </div>
       </div>

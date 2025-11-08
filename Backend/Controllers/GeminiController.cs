@@ -15,14 +15,35 @@ public class StudyController : ControllerBase
     [HttpPost("summary")]
     public async Task<IActionResult> GenerateSummary([FromBody] StudyRequest request)
     {
-        if (string.IsNullOrEmpty(request.Content))
-            return BadRequest("O conteúdo da matéria não pode ser vazio.");
+        if (string.IsNullOrWhiteSpace(request.Content))
+            return BadRequest(new
+            {
+                success = false,
+                message = "O conteúdo da matéria não pode ser vazio."
+            });
 
-        var resumo = await _gemini.GerarResumoAsync(request.Content);
-        return Ok(new { summary = resumo });
+        try
+        {
+            // Mantém o tipo "Resumo" interno no método para não quebrar a plataforma
+            string resumo = await _gemini.GerarConteudoAsync(request.Content, "Resumo");
+
+            return Ok(new
+            {
+                success = true,
+                summary = resumo
+            });
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError, new
+            {
+                success = false,
+                message = "Erro ao gerar resumo.",
+                detalhe = ex.Message
+            });
+        }
     }
 
-    // Endpoint para gerar simulado
     [HttpPost("quiz")]
     public async Task<IActionResult> GenerateQuiz([FromBody] StudyRequest request)
     {

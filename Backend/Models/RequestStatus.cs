@@ -18,7 +18,10 @@ namespace Backend.Models
     {
         Resumo,
         Simulado,
-        PlanoDeEstudo
+        PlanoDeEstudo,
+        PerguntaDireta,
+        PesquisaCientifica,
+        EstudarParaProva
     }
 
     public class GenerationRequest
@@ -40,6 +43,7 @@ namespace Backend.Models
         public string InputTexto { get; set; } // O texto/tópico que o usuário forneceu
 
         public string? InputContextoId { get; set; } // Opcional: ID do resumo para gerar um simulado
+        public string? OutputMetadata { get; set; }
 
         public string? OutputTexto { get; set; } // Onde o resultado (resumo ou JSON do quiz) será salvo
 

@@ -34,8 +34,8 @@ const PoliticaPrivacidade = () => {
                         <div className="info-category">
                             <h3>💳 Dados para Planos</h3>
                             <ul>
-                                <li>CPF (apenas para assinaturas)</li>
-                                <li>Telefone</li>
+                                <li>Número de cartão e dados essenciais</li>
+                                <li>Nome do titular</li>
                                 <li>Dados de pagamento (processados externamente)</li>
                             </ul>
                         </div>
@@ -74,7 +74,7 @@ const PoliticaPrivacidade = () => {
                             <span className="usage-icon">💳</span>
                             <div>
                                 <h4>Processamento de Pagamentos</h4>
-                                <p>Para gerenciar assinaturas através do serviço Efiback</p>
+                                <p>Para gerenciar assinaturas através do serviço da Stripe</p>
                             </div>
                         </div>
 
@@ -103,7 +103,7 @@ const PoliticaPrivacidade = () => {
 
                         <div className="security-item">
                             <h3>🔐 Pagamentos Seguros</h3>
-                            <p>As transações financeiras são processadas exclusivamente pela <strong>Efiback</strong>, empresa especializada e confiável em processamento de pagamentos. Não armazenamos dados de cartão de crédito em nossos servidores.</p>
+                            <p>As transações financeiras são processadas exclusivamente pela <strong>Stripe</strong>, empresa especializada e confiável em processamento de pagamentos. Não armazenamos dados de cartão de crédito em nossos servidores.</p>
                         </div>
                     </div>
                 </section>
@@ -115,7 +115,7 @@ const PoliticaPrivacidade = () => {
                         exceto quando necessário para:
                     </p>
                     <ul>
-                        <li>Processamento de pagamentos através da Efiback</li>
+                        <li>Processamento de pagamentos através da Stripe</li>
                         <li>Cumprimento de obrigações legais</li>
                         <li>Proteção dos direitos e segurança da plataforma</li>
                     </ul>
@@ -181,8 +181,8 @@ const PoliticaPrivacidade = () => {
                         de seus dados, entre em contato conosco:
                     </p>
                     <div className="contact-info">
-                        <p><strong>E-mail:</strong> rodriguesguidev@gmail.com</p>
-                        <p><strong>Responsável:</strong> Guilherme Rodrigues Costa</p>
+                        <p><strong>E-mail:</strong> ideiafish2025@gmail.com</p>
+                        <p><strong>Responsável:</strong> Guilherme Rodrigues Costa e Equipe</p>
                     </div>
                 </section>
 

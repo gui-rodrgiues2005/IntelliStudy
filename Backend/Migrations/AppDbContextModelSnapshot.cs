@@ -190,9 +190,8 @@ namespace Backend.Migrations
                     b.Property<string>("MensagemErro")
                         .HasColumnType("text");
 
-                    b.Property<string>("OutputMetadata")
-                        .HasColumnType("text")
-                        .HasColumnName("outputmetadata");
+                    b.Property<string>("OutputMetaData")
+                        .HasColumnType("text");
 
                     b.Property<string>("OutputTexto")
                         .HasColumnType("text");

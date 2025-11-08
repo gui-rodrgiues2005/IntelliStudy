@@ -40,7 +40,7 @@ namespace Backend.Controllers
                     .FirstOrDefaultAsync(s => s.GenerationRequestId == pedido.Id);
 
                 // Normaliza outputMetadata (pode estar salvo no pedido)
-                string outputMetadata = pedido.OutputMetadata ?? (simulado != null
+                string outputMetadata = pedido.OutputMetaData ?? (simulado != null
                     ? System.Text.Json.JsonSerializer.Serialize(new { SimuladoId = simulado.Id, RequestId = pedido.Id })
                     : null);
 

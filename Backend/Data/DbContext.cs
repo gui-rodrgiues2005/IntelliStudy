@@ -21,12 +21,5 @@ namespace Backend.Data
         public DbSet<TempoEstudoUsuario> TempoEstudosUsuarios { get; set; }
         public DbSet<UserAtividade> UserAtividades { get; set; }
         public DbSet<AtividadeUsuario> AtividadesUsuarios { get; set; }
-
-        protected override void OnModelCreating(ModelBuilder modelBuilder)
-        {
-            modelBuilder.Entity<GenerationRequest>()
-                .Property(g => g.OutputMetadata)
-                .HasColumnName("OutputMetadata"); // nome real da coluna no banco
-        }
     }
 }

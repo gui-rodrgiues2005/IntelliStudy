@@ -160,23 +160,23 @@ using (var scope = app.Services.CreateScope())
             var connection = dbContext.Database.GetDbConnection();
             connection.Open();
 
-            using var command3 = connection.CreateCommand();
-            command3.CommandText = @"
-DO $$
-BEGIN
-    IF EXISTS (
-        SELECT 1
-        FROM information_schema.columns
-        WHERE table_name = 'GenerationRequests'
-        AND column_name = 'outputmetadata'
-    ) THEN
-        ALTER TABLE ""GenerationRequests"" RENAME COLUMN outputmetadata TO ""OutputMetadata"";
-    END IF;
-END $$;
+            using var command = connection.CreateCommand();
+            command.CommandText = @"
+    DO $$
+    BEGIN
+        IF NOT EXISTS (
+            SELECT 1
+            FROM information_schema.columns
+            WHERE table_name = 'GenerationRequests'
+            AND column_name = 'OutputMetadata'
+        ) THEN
+            ALTER TABLE ""GenerationRequests"" ADD COLUMN ""OutputMetadata"" TEXT;
+        END IF;
+    END $$;
 ";
-            command3.ExecuteNonQuery();
-            Console.WriteLine("Coluna OutputMetadata renomeada corretamente.");
+            command.ExecuteNonQuery();
 
+            Console.WriteLine("Verificação da coluna OutputMetadata concluída.");
         }
         catch (Exception ex)
         {

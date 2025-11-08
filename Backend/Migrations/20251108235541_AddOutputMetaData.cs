@@ -5,7 +5,7 @@
 namespace Backend.Migrations
 {
     /// <inheritdoc />
-    public partial class AddOutputMetadataColumn : Migration
+    public partial class AddOutputMetaData : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -13,14 +13,14 @@ namespace Backend.Migrations
             migrationBuilder.RenameColumn(
                 name: "OutputMetadata",
                 table: "GenerationRequests",
-                newName: "outputmetadata");
+                newName: "OutputMetaData");
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.RenameColumn(
-                name: "outputmetadata",
+                name: "OutputMetaData",
                 table: "GenerationRequests",
                 newName: "OutputMetadata");
         }

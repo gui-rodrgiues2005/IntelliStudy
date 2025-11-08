@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Backend.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20251108213405_AddOutputMetadata")]
-    partial class AddOutputMetadata
+    [Migration("20251108235541_AddOutputMetaData")]
+    partial class AddOutputMetaData
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -193,7 +193,7 @@ namespace Backend.Migrations
                     b.Property<string>("MensagemErro")
                         .HasColumnType("text");
 
-                    b.Property<string>("OutputMetadata")
+                    b.Property<string>("OutputMetaData")
                         .HasColumnType("text");
 
                     b.Property<string>("OutputTexto")

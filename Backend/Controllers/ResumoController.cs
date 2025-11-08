@@ -32,6 +32,7 @@ namespace Backend.Controllers
         // POST: api/resumo/gerar
         // POST: api/resumo/gerar
         [HttpPost("gerar")]
+        [HttpPost("/api/resumo/gerar")]
         public async Task<IActionResult> EnfileirarGeracaoResumo([FromBody] GerarResumoRequestDto requestDto)
         {
             // 1️⃣ Validar usuário
@@ -216,13 +217,13 @@ namespace Backend.Controllers
         }
 
         // GET: api/resumo/por-id/5
-        [HttpGet("por-id/{conteudoId}")]
-        public async Task<IActionResult> GetResumo(int conteudoId)
+        [HttpGet("por-id/{resumoId}")]
+        public async Task<IActionResult> GetResumo(int resumoId)
         {
             var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
 
             var conteudo = await _context.ConteudoIAs
-                .Where(c => c.Id == conteudoId && c.UserId == userId)
+                .Where(c => c.Id == resumoId && c.UserId == userId)
                 .FirstOrDefaultAsync();
 
             if (conteudo == null)
@@ -237,7 +238,7 @@ namespace Backend.Controllers
         }
 
         // GET: api/resumo/meus-resumos/5
-        [HttpGet("meus-conteudos/{id}")]
+        [HttpGet("meus-resumos/{id}")]
         public async Task<IActionResult> GetConteudoPorId(int id)
         {
             var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));

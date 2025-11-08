@@ -38,7 +38,7 @@ function conteudos() {
     const fetchListaConteudo = async () => {
       try {
         const token = localStorage.getItem("token");
-        const res = await fetch(`${API_URL}/api/Conteudo`, {
+        const res = await fetch(`${API_URL}/api/Resumo`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
         if (!res.ok) throw new Error("Falha ao buscar lista de conteudos.");
@@ -57,13 +57,13 @@ function conteudos() {
   }, []); // O array vazio [] garante que isso só roda uma vez
 
   // Função para buscar um conteudo completo quando o usuário clica em um item da lista
-  const handleSelecionarConteudo = async (conteudoId) => {
+  const handleSelecionarConteudo = async (resumoId) => {
     setConteudoSelecionado(null); // Limpa o conteudo anterior
     setIsLoading(true);
 
     try {
       const token = localStorage.getItem("token");
-      const res = await fetch(`${API_URL}/api/Conteudo/meus-conteudos/${conteudoId}`, {
+      const res = await fetch(`${API_URL}/api/Resumo/meus-resumos/${resumoId}`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (!res.ok) throw new Error("Falha ao buscar o conteudo selecionado.");
@@ -82,7 +82,7 @@ function conteudos() {
     }
   };
 
-  const handleDeleteConteudo = async (conteudoId, event) => {
+  const handleDeleteConteudo = async (resumoId, event) => {
     event.stopPropagation(); // Impede que o clique no ícone também selecione o conteudo.
 
     if (!window.confirm("Tem certeza que deseja deletar este conteudo?")) {
@@ -91,7 +91,7 @@ function conteudos() {
 
     try {
       const token = localStorage.getItem("token");
-      const res = await fetch(`${API_URL}/api/Conteudo/${conteudoId}`, {
+      const res = await fetch(`${API_URL}/api/Resumo/${resumoId}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${token}` }
       });
@@ -101,9 +101,9 @@ function conteudos() {
       }
 
       // Se deletou com sucesso, remove o conteudo da lista no estado.
-      setListaConteudos(listaConteudos.filter(r => r.id !== conteudoId));
+      setListaConteudos(listaConteudos.filter(r => r.id !== resumoId));
       // Se o conteudo deletado era o que estava selecionado, limpa a tela.
-      if (conteudoSelecionado?.id === conteudoId) {
+      if (conteudoSelecionado?.id === resumoId) {
         setConteudoSelecionado(null);
       }
 
@@ -113,7 +113,7 @@ function conteudos() {
     }
   };
 
-  const handleDownloadConteudo = async (conteudoId, e) => {
+  const handleDownloadConteudo = async (resumoId, e) => {
     e.stopPropagation(); // ⬅️ Essencial: impede que o evento de clique suba e selecione o conteudo
 
     // Aqui você fará a chamada para a API do Backend que gera o PDF
@@ -124,7 +124,7 @@ function conteudos() {
     // Exemplo: window.open(`http://localhost:5051/api/conteudo/download/${conteudoId}?token=${token}`, '_blank');
     // Ou faça um fetch e crie o blob, como na Seção 3.
 
-    toast.info(`A função de download para o ID ${conteudoId} esta sendo criada.`);
+    toast.info(`A função de download para o ID ${resumoId} esta sendo criada.`);
   };
 
   return (

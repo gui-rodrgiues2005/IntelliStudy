@@ -518,23 +518,26 @@ function Dashboard() {
       });
 
       if (!res.ok) {
-        let errorMessage = "Erro ao gerar resumo.";
-        const body = await res.text();
+        let errorMessage = "Erro ao gerar resposta.";
+        let errorBody;
 
         try {
-          const data = JSON.parse(body);
+          // Guarda o texto em uma variável antes de tentar parsear
+          errorBody = await res.text();
+          // Tenta parsear como JSON
+          const data = JSON.parse(errorBody);
           errorMessage = data.mensagem || errorMessage;
           if (data.sugestao) safeToast("info", data.sugestao);
         } catch {
-          errorMessage = body || errorMessage;
+          // Se não for JSON válido, usa o texto puro
+          errorMessage = errorBody || errorMessage;
+        } finally {
+          stopAllIntervals();
+          if (isMountedRef.current) setIsGeneratingSummary(false);
+          safeToast("error", errorMessage);
         }
-
-        stopAllIntervals();
-        if (isMountedRef.current) setIsGeneratingSummary(false);
-        safeToast("error", errorMessage);
         return;
       }
-
 
       const { requestId, resumoId: resumoIdBackend } = await res.json();
       if (isMountedRef.current) setActiveRequestId(requestId);

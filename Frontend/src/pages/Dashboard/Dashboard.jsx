@@ -505,7 +505,7 @@ function Dashboard() {
       if (isMountedRef.current) setIsResumoDeArquivo(false);
       startMessageInterval(loadingMessages);
 
-      const res = await fetch(`${API_URL}/api/Conteudo/gerar`, {
+      const res = await fetch(`${API_URL}/api/resumo/gerar`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

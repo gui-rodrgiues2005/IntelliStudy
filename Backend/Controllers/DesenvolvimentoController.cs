@@ -6,10 +6,8 @@ using Backend.Services;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 
-
 [ApiController]
-[Route("api/[controller]")]
-[Route("api/Analytics")]
+[Route("api/analytics")]
 [Authorize]
 public class AnalyticsController : ControllerBase
 {

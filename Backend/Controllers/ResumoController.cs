@@ -13,14 +13,20 @@ namespace Backend.Controllers
     [Route("api/[controller]")]
     [ApiController]
     [Authorize]
-    public class ConteudoController : ControllerBase
+    public class ResumoController : ControllerBase
     {
         private readonly AppDbContext _context;
         private readonly GeminiService _geminiService;
         private readonly PlanoService _planoService;
         private readonly ConquistaService _conquistaService;
         private readonly TempoEstudoService _tempoEstudoService;
-        public ConteudoController(AppDbContext context, GeminiService geminiService, PlanoService planoService, ConquistaService conquistaService, TempoEstudoService tempoEstudoService)
+
+        public ResumoController(
+            AppDbContext context,
+            GeminiService geminiService,
+            PlanoService planoService,
+            ConquistaService conquistaService,
+            TempoEstudoService tempoEstudoService)
         {
             _context = context;
             _geminiService = geminiService;
@@ -30,9 +36,7 @@ namespace Backend.Controllers
         }
 
         // POST: api/resumo/gerar
-        // POST: api/resumo/gerar
         [HttpPost("gerar")]
-        [HttpPost("/api/resumo/gerar")]
         public async Task<IActionResult> EnfileirarGeracaoResumo([FromBody] GerarResumoRequestDto requestDto)
         {
             // 1️⃣ Validar usuário
@@ -63,9 +67,9 @@ namespace Backend.Controllers
                 {
                     success = false,
                     message = "Limite diário de resumos atingido para o plano atual.",
-                    sugestao = "Assine o plano Premium e gere conteudos ilimitados!",
+                    sugestao = "Assine o plano Premium e gere resumos ilimitados!",
                     planoAtual = user.Plano,
-                    limiteDiario = 5 // Esse valor poderia vir do serviço de plano para maior flexibilidade
+                    limiteDiario = 5
                 });
             }
 
@@ -81,8 +85,8 @@ namespace Backend.Controllers
 
             // 4️⃣ Criar pedido para a fila
             var tipo = Enum.TryParse<GenerationType>(requestDto.Tipo, ignoreCase: true, out var parsedTipo)
-             ? parsedTipo
-            : GenerationType.Resumo;
+                ? parsedTipo
+                : GenerationType.Resumo;
 
             var novoPedido = new GenerationRequest
             {
@@ -97,19 +101,9 @@ namespace Backend.Controllers
             await _context.SaveChangesAsync();
 
             await _conquistaService.CalcularConquistasAsync(userId, user.Plano == "Premium");
-            // Registrar início da atividade
-            var novaAtividade = new AtividadeUsuario
-            {
-                UserId = userId,
-                Tipo = tipo.ToString(),
-                DataInicio = DateTime.UtcNow,
-                DiaDaSemana = (int)DateTime.UtcNow.DayOfWeek
-            };
 
             await _tempoEstudoService.RegistrarAtividadeAsync(userId, tipo.ToString());
 
-
-            // 5️⃣ Retornar sucesso
             return CreatedAtAction(
                 actionName: "GetStatusDoPedido",
                 controllerName: "Generation",
@@ -123,7 +117,7 @@ namespace Backend.Controllers
             );
         }
 
-
+        // POST: api/resumo/resumo-file
         [HttpPost("resumo-file")]
         public async Task<IActionResult> ResumirArquivo(IFormFile file)
         {
@@ -131,32 +125,25 @@ namespace Backend.Controllers
                 return BadRequest("Arquivo inválido.");
 
             var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
-
-            // 🔹 Caminho temporário seguro
             var tempFileName = $"{Guid.NewGuid()}_{Path.GetFileName(file.FileName)}";
             var tempPath = Path.Combine(Path.GetTempPath(), tempFileName);
 
             try
             {
-                // 🔹 Salvar o arquivo temporariamente
                 await using (var writeStream = System.IO.File.Create(tempPath))
                 {
                     await file.CopyToAsync(writeStream);
                 }
 
-                // 🔹 Ler o arquivo novamente para extrair texto
                 await using var readStream = System.IO.File.OpenRead(tempPath);
                 var arquivoFake = new FormFile(readStream, 0, readStream.Length, null, file.FileName);
 
-                // 🔹 Extrair texto com o GeminiService
                 var textoExtraidoBruto = await _geminiService.ExtractTextAsync(arquivoFake);
                 if (string.IsNullOrWhiteSpace(textoExtraidoBruto))
                     return BadRequest("Não foi possível extrair texto do arquivo.");
 
-                // 🔹 Gerar resumo
                 var conteudoConciso = await _geminiService.GenerateSummaryAsync(textoExtraidoBruto);
 
-                // 🔹 Criar registro no banco
                 var novoResumo = new ConteudoIA
                 {
                     TopicoOriginal = Path.GetFileNameWithoutExtension(file.FileName),
@@ -168,13 +155,11 @@ namespace Backend.Controllers
                 _context.ConteudoIAs.Add(novoResumo);
                 await _context.SaveChangesAsync();
 
-                // 🔹 Registrar atividade e tempo de estudo
                 await _tempoEstudoService.RegistrarAtividadeAsync(userId, "Resumo");
 
-                // 🔹 Retornar JSON com o resumo
                 return Ok(new
                 {
-                    message = "Conteúdo gerado com sucesso!",
+                    message = "Conteudo gerado com sucesso!",
                     resumo = conteudoConciso,
                     titulo = Path.GetFileNameWithoutExtension(file.FileName),
                     resumoId = novoResumo.Id
@@ -186,7 +171,6 @@ namespace Backend.Controllers
             }
             finally
             {
-                // 🔹 Garante que o arquivo temporário seja apagado
                 if (System.IO.File.Exists(tempPath))
                     System.IO.File.Delete(tempPath);
             }
@@ -198,13 +182,9 @@ namespace Backend.Controllers
         {
             var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
 
-            // Busca no banco todos os resumos do usuário logado.
-            // Usamos .Select() para criar um DTO (Data Transfer Object).
-            // Isso é uma ótima prática para não expor o modelo completo do banco
-            // e para enviar apenas os dados necessários (otimização).
-            var conteudos = await _context.ConteudoIAs
+            var resumos = await _context.ConteudoIAs
                 .Where(r => r.UserId == userId)
-                .OrderByDescending(r => r.CreatedAt) // Mostra os mais recentes primeiro
+                .OrderByDescending(r => r.CreatedAt)
                 .Select(r => new
                 {
                     r.Id,
@@ -213,60 +193,59 @@ namespace Backend.Controllers
                 })
                 .ToListAsync();
 
-            return Ok(conteudos);
+            return Ok(resumos);
         }
 
-        // GET: api/resumo/por-id/5
+        // GET: api/resumo/por-id/{resumoId}
         [HttpGet("por-id/{resumoId}")]
         public async Task<IActionResult> GetResumo(int resumoId)
         {
             var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
 
-            var conteudo = await _context.ConteudoIAs
+            var resumo = await _context.ConteudoIAs
                 .Where(c => c.Id == resumoId && c.UserId == userId)
                 .FirstOrDefaultAsync();
 
-            if (conteudo == null)
+            if (resumo == null)
                 return NotFound("Conteudo não encontrado.");
 
             return Ok(new
             {
-                conteudo = conteudo.TextoGerado,
-                topico = conteudo.TopicoOriginal,
-                conteudoid = conteudo.Id
+                conteudo = resumo.TextoGerado,
+                topico = resumo.TopicoOriginal,
+                conteudoid = resumo.Id
             });
         }
 
-        // GET: api/resumo/meus-resumos/5
+        // GET: api/resumo/meus-resumos/{id}
         [HttpGet("meus-resumos/{id}")]
-        public async Task<IActionResult> GetConteudoPorId(int id)
+        public async Task<IActionResult> GetResumoPorId(int id)
         {
             var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
 
-            var conteudo = await _context.ConteudoIAs
+            var resumo = await _context.ConteudoIAs
                 .FirstOrDefaultAsync(c => c.Id == id && c.UserId == userId);
 
-            if (conteudo == null)
+            if (resumo == null)
                 return NotFound("Conteudo não encontrado ou não pertence ao usuário.");
 
-            return Ok(conteudo);
+            return Ok(resumo);
         }
 
-
-        // DELETE: api/resumo/5
+        // DELETE: api/resumo/{id}
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteResumo(int id)
         {
             var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
-            var conteudo = await _context.ConteudoIAs
+            var resumo = await _context.ConteudoIAs
                 .FirstOrDefaultAsync(c => c.Id == id && c.UserId == userId);
 
-            if (conteudo == null)
+            if (resumo == null)
             {
                 return NotFound("Conteudo não encontrado ou não pertence ao usuário.");
             }
 
-            _context.ConteudoIAs.Remove(conteudo);
+            _context.ConteudoIAs.Remove(resumo);
             await _context.SaveChangesAsync();
 
             return NoContent();

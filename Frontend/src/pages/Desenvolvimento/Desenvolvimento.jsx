@@ -11,25 +11,25 @@ import { API_URL } from "../../../config";
 import { createPortal } from "react-dom";
 
 function GraficoModal({ children, onClose }) {
-  useEffect(() => {
-    const onKey = (e) => e.key === "Escape" && onClose();
-    document.addEventListener("keydown", onKey);
-    document.body.classList.add("lock-scroll");
-    return () => {
-      document.removeEventListener("keydown", onKey);
-      document.body.classList.remove("lock-scroll");
-    };
-  }, [onClose]);
+    useEffect(() => {
+        const onKey = (e) => e.key === "Escape" && onClose();
+        document.addEventListener("keydown", onKey);
+        document.body.classList.add("lock-scroll");
+        return () => {
+            document.removeEventListener("keydown", onKey);
+            document.body.classList.remove("lock-scroll");
+        };
+    }, [onClose]);
 
-  return createPortal(
-    <div className="grafico-modal" role="dialog" aria-modal="true" onClick={onClose}>
-      <div className="grafico-modal-inner" onClick={(e) => e.stopPropagation()}>
-        <button className="modal-close" onClick={onClose} aria-label="Fechar">×</button>
-        {children}
-      </div>
-    </div>,
-    document.body
-  );
+    return createPortal(
+        <div className="grafico-modal" role="dialog" aria-modal="true" onClick={onClose}>
+            <div className="grafico-modal-inner" onClick={(e) => e.stopPropagation()}>
+                <button className="modal-close" onClick={onClose} aria-label="Fechar">×</button>
+                {children}
+            </div>
+        </div>,
+        document.body
+    );
 }
 
 export default function Desempenho() {
@@ -282,15 +282,14 @@ export default function Desempenho() {
                 const resUser = await fetch(`${API_URL}/api/User/meus-dados`, {
                     headers: { Authorization: `Bearer ${token}` },
                 });
-
                 if (!resUser.ok) throw new Error("Erro ao carregar dados do usuário");
-
                 const userData = await resUser.json();
+
                 setUserPlano(userData.plano);
-                setUserName(userName);
+                setUserName(userData.nome);
 
                 if (["pro", "mestre"].includes(userData.plano?.toLowerCase())) {
-                    const resAnalytics = await fetch(`${API_URL}/api/Analytics/user`, {
+                    const resAnalytics = await fetch(`${API_URL}/api/analytics/user`, {
                         headers: { Authorization: `Bearer ${token}` },
                     });
 
@@ -324,9 +323,8 @@ export default function Desempenho() {
                 setLoading(false);
             }
         };
-
-        carregarDados();
-    }, [token, userName]);
+        if (token) carregarDados();
+    }, [token]);
 
     if (loading) return <div className="loading">Analisando seu desempenho...</div>;
     if (!analyticsData && !bloqueado) return <div className="loading">Nenhum dado encontrado.</div>;
@@ -597,7 +595,7 @@ export default function Desempenho() {
                                     <XAxis dataKey="tema" />
                                     <YAxis />
                                     <Tooltip />
-                                    <Bar dataKey="valor" radius={[8,8,0,0]}>
+                                    <Bar dataKey="valor" radius={[8, 8, 0, 0]}>
                                         {graficoSelecionado.dados?.map((entry, i) => {
                                             let cor = "#28c76f";
                                             if (entry.valor < 50) cor = "#ff4d4f";

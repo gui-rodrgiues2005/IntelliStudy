@@ -6,7 +6,7 @@ import { Trash2, Download, Menu, X, AlignStartVertical, ArrowRight, List, AlignH
 import { API_URL } from '../../../config';
 import './Resumos.scss';
 
-function conteudos() {
+function Resumos() {
   const [listaResumos, setListaResumos] = useState([]);
   const [resumoSelecionado, setResumoSelecionado] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -31,14 +31,12 @@ function conteudos() {
     setIsMobileOpen(!isMobileOpen);
   };
 
-
-
   // Efeito que busca a lista de conteudos quando a página carrega
   useEffect(() => {
     const fetchListaResumo = async () => {
       try {
         const token = localStorage.getItem("token");
-        const res = await fetch(`${API_URL}/api/Resumo`, {
+        const res = await fetch(`${API_URL}/api/resumo`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
         if (!res.ok) throw new Error("Falha ao buscar lista de conteudos.");
@@ -63,7 +61,7 @@ function conteudos() {
 
     try {
       const token = localStorage.getItem("token");
-      const res = await fetch(`${API_URL}/api/Resumo/meus-resumos/${resumoId}`, {
+      const res = await fetch(`${API_URL}/api/resumo/meus-resumos/${resumoId}`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (!res.ok) throw new Error("Falha ao buscar o conteudo selecionado.");
@@ -91,7 +89,7 @@ function conteudos() {
 
     try {
       const token = localStorage.getItem("token");
-      const res = await fetch(`${API_URL}/api/Resumo/${resumoId}`, {
+      const res = await fetch(`${API_URL}/api/resumo/${resumoId}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${token}` }
       });
@@ -113,7 +111,7 @@ function conteudos() {
     }
   };
 
-  const handleDownloadConteudo = async (resumoId, e) => {
+  const handleDownloadResumo = async (resumoId, e) => {
     e.stopPropagation(); // ⬅️ Essencial: impede que o evento de clique suba e selecione o conteudo
 
     // Aqui você fará a chamada para a API do Backend que gera o PDF
@@ -159,7 +157,7 @@ function conteudos() {
                 {/* Botão de DOWNLOAD */}
                 <button
                   className="download-btn"
-                  onClick={(e) => handleDownloadConteudo(resumo.id, e)}
+                  onClick={(e) => handleDownloadResumo(resumo.id, e)}
                 >
                   <Download size={18} />
                 </button>
@@ -181,7 +179,7 @@ function conteudos() {
       <main className="conteudo-content">
         {isLoading && <p>Carregando...</p>}
 
-        {!isLoading && !conteudoSelecionado && (
+        {!isLoading && !resumoSelecionado && (
           <div className="placeholder-content">
             <h2>Selecione um conteudo da lista para visualizar.</h2>
           </div>
@@ -197,4 +195,4 @@ function conteudos() {
   );
 }
 
-export default conteudos;
+export default Resumos;

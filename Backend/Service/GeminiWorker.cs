@@ -188,7 +188,7 @@ namespace Backend.Services
                             // ✅ Salva no pedido apenas os dados essenciais, num formato consistente pro front
                             pedidoParaProcessar.Status = RequestStatus.Concluido;
                             pedidoParaProcessar.OutputTexto = jsonLimpo; // só as questões puras
-                            pedidoParaProcessar.OutputMetaData = JsonSerializer.Serialize(new
+                            pedidoParaProcessar.OutputMetadata = JsonSerializer.Serialize(new
                             {
                                 SimuladoId = novoSimulado.Id,
                                 RequestId = pedidoParaProcessar.Id

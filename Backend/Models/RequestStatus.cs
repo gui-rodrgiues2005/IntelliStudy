@@ -43,7 +43,7 @@ namespace Backend.Models
         public string InputTexto { get; set; } // O texto/tópico que o usuário forneceu
 
         public string? InputContextoId { get; set; } // Opcional: ID do resumo para gerar um simulado
-        public string? OutputMetaData { get; set; }
+        public string? OutputMetadata { get; set; }
 
         public string? OutputTexto { get; set; } // Onde o resultado (resumo ou JSON do quiz) será salvo
 

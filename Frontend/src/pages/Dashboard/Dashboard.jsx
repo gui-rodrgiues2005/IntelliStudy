@@ -353,7 +353,7 @@ function Dashboard() {
         resumo = await response.json();
       } else {
         const text = await response.text();
-        console.warn("Resposta não é JSON:", text);
+        // console.warn("Resposta não é JSON:", text);
         // Se não for JSON, talvez seja só uma mensagem de sucesso
         resumo = { mensagem: text || "Upload realizado com sucesso" };
       }
@@ -399,6 +399,7 @@ function Dashboard() {
     // Reset e flags iniciais
     if (isMountedRef?.current) {
       setIsGeneratingSummary(true);
+      setResumoGerado(null);
       setQuiz([]);
       setScore(null);
     }
@@ -462,7 +463,6 @@ function Dashboard() {
         formData.append("file", fileToSend);
         formData.append("tipo", text || selectedTipo || "Resumo");
 
-        console.log("Tipo enviado:", text, selectedTipo);
         const fileRes = await fetch(`${API_URL}/api/resumo/resumo-file`, {
           method: "POST",
           headers: {
@@ -483,8 +483,8 @@ function Dashboard() {
           headers: { Authorization: `Bearer ${token}` }
         });
 
-        // console.log("Resposta do Data:", data);
-        // console.log("Resposta do resumoRes:", resumoRes);
+        console.log("Resposta do Data:", data);
+        console.log("Resposta do resumoRes:", resumoRes);
 
         if (!resumoRes.ok) {
           const errText = await resumoRes.text();
@@ -506,7 +506,7 @@ function Dashboard() {
           resumoData.Id ||
           resumoData.id ||
           data.resumoId ||
-          null;
+          null;y
 
         if (isMountedRef.current) {
           setResumoGerado({ texto: textoResumo, id: resumoIdFinal });
@@ -744,7 +744,7 @@ function Dashboard() {
           })
         });
 
-        // console.log("📨 Resposta recebida do backend (gerar-direto):", res.status);
+        console.log("📨 Resposta recebida do backend (gerar-direto):", res.status);
 
         data = await res.json().catch(() => ({}));
         console.log("📦 Dados retornados:", data);
@@ -795,10 +795,10 @@ function Dashboard() {
       }
 
       const { requestId } = await response.json();
-      // console.log("🧩 Simulado enviado para fila. Request ID:", requestId);
+      console.log("🧩 Simulado enviado para fila. Request ID:", requestId);
 
-      // // --- POLLING ---
-      // console.log("🔁 Iniciando polling para verificar status da geração...");
+      // --- POLLING ---
+      console.log("🔁 Iniciando polling para verificar status da geração...");
 
       const pollInterval = setInterval(async () => {
         try {
@@ -820,7 +820,7 @@ function Dashboard() {
           if (statusData.status === 2) {
             clearInterval(pollInterval);
             if (!statusData.resultado) throw new Error("Simulado gerado mas resultado vazio");
-            // console.log("✅ Simulado gerado com sucesso. Processando resultado...");
+            console.log("✅ Simulado gerado com sucesso. Processando resultado...");
 
             if (!statusData.resultado) throw new Error("Resultado vazio");
 
@@ -895,7 +895,7 @@ function Dashboard() {
               rawResult: resultadoParsed
             };
 
-            // console.log("🔎 simuladoId determinado:", simuladoId, "parsedOutputMetadata:", parsedOutputMetadata);
+            console.log("🔎 simuladoId determinado:", simuladoId, "parsedOutputMetadata:", parsedOutputMetadata);
             setQuiz(Array.isArray(questoesArray) ? questoesArray : []);
             setSimuladoGerado(novoSimulado);
             toast.success("Simulado gerado com sucesso!");
@@ -907,7 +907,7 @@ function Dashboard() {
             toast.error(`Erro ao gerar simulado: ${statusData.mensagemErro}`);
             setIsGeneratingQuiz(false);
           } else {
-            // console.log("⏳ Status ainda em andamento...");
+            console.log("⏳ Status ainda em andamento...");
           }
         } catch (pollError) {
           console.error("🚨 Erro durante o polling:", pollError);

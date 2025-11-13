@@ -124,7 +124,7 @@ namespace Backend.Controllers
         public async Task<IActionResult> GerarConteudoDeArquivo([FromForm] UploadRequest request)
         {
             var file = request.File;
-            var tipo = request.Tipo;
+            var tipo = string.IsNullOrWhiteSpace(request.Tipo) ? "resumo" : request.Tipo.Trim().ToLower();
 
             if (file == null || file.Length == 0)
                 return BadRequest("Arquivo inválido.");
@@ -187,7 +187,7 @@ namespace Backend.Controllers
                     System.IO.File.Delete(tempPath);
             }
 
-            return Ok();    
+            return Ok();
         }
 
 

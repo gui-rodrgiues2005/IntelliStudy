@@ -358,7 +358,7 @@ function Dashboard() {
         resumo = { mensagem: text || "Upload realizado com sucesso" };
       }
 
-      console.log("Upload bem-sucedido:", resumo);
+      // console.log("Upload bem-sucedido:", resumo);
 
     } catch (err) {
       console.error("Erro no upload:", err);
@@ -462,6 +462,7 @@ function Dashboard() {
         formData.append("file", fileToSend);
         formData.append("tipo", text || selectedTipo || "Resumo");
 
+        console.log("Tipo enviado:", text, selectedTipo);
         const fileRes = await fetch(`${API_URL}/api/resumo/resumo-file`, {
           method: "POST",
           headers: {
@@ -743,7 +744,7 @@ function Dashboard() {
           })
         });
 
-        console.log("📨 Resposta recebida do backend (gerar-direto):", res.status);
+        // console.log("📨 Resposta recebida do backend (gerar-direto):", res.status);
 
         data = await res.json().catch(() => ({}));
         console.log("📦 Dados retornados:", data);
@@ -794,10 +795,10 @@ function Dashboard() {
       }
 
       const { requestId } = await response.json();
-      console.log("🧩 Simulado enviado para fila. Request ID:", requestId);
+      // console.log("🧩 Simulado enviado para fila. Request ID:", requestId);
 
-      // --- POLLING ---
-      console.log("🔁 Iniciando polling para verificar status da geração...");
+      // // --- POLLING ---
+      // console.log("🔁 Iniciando polling para verificar status da geração...");
 
       const pollInterval = setInterval(async () => {
         try {
@@ -819,7 +820,7 @@ function Dashboard() {
           if (statusData.status === 2) {
             clearInterval(pollInterval);
             if (!statusData.resultado) throw new Error("Simulado gerado mas resultado vazio");
-            console.log("✅ Simulado gerado com sucesso. Processando resultado...");
+            // console.log("✅ Simulado gerado com sucesso. Processando resultado...");
 
             if (!statusData.resultado) throw new Error("Resultado vazio");
 
@@ -894,7 +895,7 @@ function Dashboard() {
               rawResult: resultadoParsed
             };
 
-            console.log("🔎 simuladoId determinado:", simuladoId, "parsedOutputMetadata:", parsedOutputMetadata);
+            // console.log("🔎 simuladoId determinado:", simuladoId, "parsedOutputMetadata:", parsedOutputMetadata);
             setQuiz(Array.isArray(questoesArray) ? questoesArray : []);
             setSimuladoGerado(novoSimulado);
             toast.success("Simulado gerado com sucesso!");
@@ -906,7 +907,7 @@ function Dashboard() {
             toast.error(`Erro ao gerar simulado: ${statusData.mensagemErro}`);
             setIsGeneratingQuiz(false);
           } else {
-            console.log("⏳ Status ainda em andamento...");
+            // console.log("⏳ Status ainda em andamento...");
           }
         } catch (pollError) {
           console.error("🚨 Erro durante o polling:", pollError);

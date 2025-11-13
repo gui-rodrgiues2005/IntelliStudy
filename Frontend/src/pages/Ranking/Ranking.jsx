@@ -49,110 +49,79 @@ function Ranking() {
         <div className="ranking-page">
             <div className="ranking-header">
                 <h1>Hall da Fama</h1>
-                <p>Veja quem se destacou e inspire-se para chegar ao topo do Hall da Fama!</p>
+                <p>Veja quem se destacou e inspire-se para chegar ao topo!</p>
             </div>
 
+            {/* Botão para rolar até a posição do usuário */}
             {posicaoUsuario && (
-                <div className="rank-item user-highlight">
-                    <div className="rank-position">
-                        <span className="rank-number">{posicaoUsuario.posicao}</span>
-                    </div>
-                    <div className="rank-avatar">
-                        {posicaoUsuario.usuario.nome.substring(0, 2).toUpperCase()}
-                    </div>
-                    <div className="rank-details">
-                        <span className="rank-name">Você</span>
-                        <span className="rank-points">{posicaoUsuario.usuario.pontos.toLocaleString()} Pontos</span>
-                    </div>
-                    <div className="user-tag">Sua Posição</div>
-
-                    {/* Redes sociais do usuário logado */}
-                    <div className="rank-socials">
-                        {posicaoUsuario.usuario.instagram && (
-                            <a
-                                href={`https://instagram.com/${posicaoUsuario.usuario.instagram.replace('@', '')}`}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                            >
-                                <Instagram />
-                            </a>
-                        )}
-                        {posicaoUsuario.usuario.linkedin && (
-                            <a
-                                href={`https://linkedin.com/in/${posicaoUsuario.usuario.linkedin.replace('@', '')}`}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                            >
-                                <Linkedin />
-                            </a>
-                        )}
-                        {posicaoUsuario.usuario.gitHub && (
-                            <a
-                                href={`https://github.com/${posicaoUsuario.usuario.gitHub.replace('@', '')}`}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                            >
-                                <Github />
-                            </a>
-                        )}
-                    </div>
-                </div>
+                <button
+                    className="btn-sua-posicao"
+                    onClick={() => {
+                        const el = document.getElementById(`rank-${posicaoUsuario.usuario.id}`);
+                        if (el) el.scrollIntoView({ behavior: "smooth", block: "center" });
+                    }}
+                >
+                    Sua Posição
+                </button>
             )}
 
-
+            {/* Lista completa (inclui o próprio usuário) */}
             <div className="ranking-list">
-                {ranking.map((aluno, index) => (
-                    // 4. Não renderizar o usuário logado na lista principal para evitar duplicatas
-                    posicaoUsuario?.usuario.id !== aluno.id && (
-                        <div key={aluno.id} className="rank-item">
-                            <div className="rank-position">
-                                {getRankIcon(index)}
-                            </div>
+                {ranking.map((aluno, index) => {
+                    const isUser = posicaoUsuario?.usuario?.id === aluno.id;
+                    return (
+                        <div
+                            key={aluno.id}
+                            id={`rank-${aluno.id}`}
+                            className={`rank-item ${isUser ? "user-highlight" : ""}`}
+                        >
+                            <div className="rank-position">{getRankIcon(index)}</div>
                             <div className="rank-avatar">
                                 {aluno.nome.substring(0, 2).toUpperCase()}
                             </div>
-
                             <div className="rank-details">
-                                <span className="rank-name">{aluno.nome}</span>
-                                <span className="rank-points">{aluno.pontos.toLocaleString()} Pontos</span>
+                                <span className="rank-name">
+                                    {isUser ? "Você" : aluno.nome}
+                                </span>
+                                <span className="rank-points">
+                                    {aluno.pontos.toLocaleString()} Pontos
+                                </span>
                             </div>
 
-                            {/* Redes sociais agora fora do rank-details e com própria grid column */}
                             <div className="rank-socials">
-                                {(posicaoUsuario.usuario.instagram || posicaoUsuario.usuario.Instagram) && (
+                                {(aluno.instagram || aluno.Instagram) && (
                                     <a
-                                        href={`https://instagram.com/${(posicaoUsuario.usuario.instagram || posicaoUsuario.usuario.Instagram).replace('@', '')}`}
+                                        href={`https://instagram.com/${(aluno.instagram || aluno.Instagram).replace('@', '')}`}
                                         target="_blank"
                                         rel="noopener noreferrer"
                                     >
-                                        <Instagram />
+                                        <Instagram size={18} />
                                     </a>
                                 )}
 
-                                {(posicaoUsuario.usuario.gitHub || posicaoUsuario.usuario.github) && (
+                                {(aluno.github || aluno.gitHub || aluno.Github) && (
                                     <a
-                                        href={`https://github.com/${(posicaoUsuario.usuario.gitHub || posicaoUsuario.usuario.github).replace('@', '')}`}
+                                        href={`https://github.com/${(aluno.github || aluno.gitHub || aluno.Github).replace('@', '')}`}
                                         target="_blank"
                                         rel="noopener noreferrer"
                                     >
-                                        <Github />
+                                        <Github size={18} />
                                     </a>
                                 )}
 
-                                {(aluno.gitHub || aluno.github) && (
+                                {(aluno.linkedin || aluno.Linkedin) && (
                                     <a
-                                        href={`https://github.com/${(aluno.gitHub || aluno.github).replace('@', '')}`}
+                                        href={`https://linkedin.com/in/${(aluno.linkedin || aluno.Linkedin).replace('@', '')}`}
                                         target="_blank"
                                         rel="noopener noreferrer"
                                     >
-                                        <Github />
+                                        <Linkedin size={18} />
                                     </a>
                                 )}
-
                             </div>
                         </div>
-                    )
-                ))}
+                    );
+                })}
             </div>
         </div>
     );

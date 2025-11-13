@@ -11,8 +11,8 @@ const Footer = () => {
         <div className="footer__brand">
           <img src={Logo} alt="IntelliStudy Logo" className="footer__logo" />
           <p>
-            Sua plataforma de estudos com IA. Resumos inteligentes, simulados
-            personalizados e planos de estudo otimizados.
+            Sua plataforma de estudos com IA. Conteudos inteligentes, simulados
+            personalizados e planos de estudo otimizados e direto ao ponto.
           </p>
         </div>
 
@@ -58,7 +58,7 @@ const Footer = () => {
           </div>
 
           <p className="footer__email">
-            <Mail size={18} /> ideiafish2025@gmail.com
+            <Mail size={18} /> rodriguesguidev@gmail.com
           </p>
         </div>
       </div>

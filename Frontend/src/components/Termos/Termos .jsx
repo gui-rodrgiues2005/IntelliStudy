@@ -22,10 +22,11 @@ const TermosDeUso = () => {
         <section>
           <h2>2. Sobre a Plataforma</h2>
           <p>
-            O IntelliStudy é uma plataforma digital desenvolvida com o objetivo de oferecer
-            ferramentas para apoio aos estudos, como tipos de pesquisas diretas, simulados e
-            planos de estudo otimizados. A plataforma é mantida pela <strong>IdeiaFish</strong>,
-            empresa de tecnologia e desenvolvimento de software.
+            O <strong>IntelliStudy</strong> é uma plataforma digital criada com o objetivo de
+            oferecer ferramentas inteligentes para apoio aos estudos — como resumos
+            automáticos, simulados, pesquisas e planos personalizados. Toda a
+            infraestrutura, design e código são desenvolvidos e mantidos pelo
+            criador da plataforma.
           </p>
         </section>
 
@@ -52,7 +53,7 @@ const TermosDeUso = () => {
         <section>
           <h2>5. Privacidade e Dados</h2>
           <p>
-            As informações coletadas são utilizadas apenas para funcionamento da plataforma
+            As informações coletadas são utilizadas apenas para o funcionamento da plataforma
             e melhoria da experiência do usuário. Nenhum dado é vendido, compartilhado ou
             divulgado a terceiros sem autorização. Para mais detalhes, consulte nossa
             <a href="/privacidade"> Política de Privacidade</a>.
@@ -62,9 +63,9 @@ const TermosDeUso = () => {
         <section>
           <h2>6. Propriedade Intelectual</h2>
           <p>
-            Todo o conteúdo, design, código e marca IntelliStudy são de propriedade do
-            desenvolvedor e protegidos por direitos autorais. O uso indevido pode resultar
-            em medidas legais cabíveis.
+            Todo o conteúdo, design, código e marca <strong>IntelliStudy</strong> são de propriedade
+            exclusiva de seu desenvolvedor e estão protegidos por direitos autorais.
+            O uso indevido pode resultar em medidas legais cabíveis.
           </p>
         </section>
 
@@ -91,8 +92,8 @@ const TermosDeUso = () => {
           <h2>9. Contato</h2>
           <p>
             Em caso de dúvidas sobre estes Termos, entre em contato através do e-mail:{" "}
-            <a href="mailto:ideiafish2025@gmail.com">
-              ideiafish2025@gmail.com
+            <a href="mailto:rodriguesguidev@gmail.com">
+              rodriguesguidev@gmail.com
             </a>
           </p>
         </section>

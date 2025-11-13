@@ -102,7 +102,6 @@ const Login = () => {
           <img src={Logo} alt='IntelliStudy Logo' className="brand-name"></img>
           <h2>Bem-vindo de volta!</h2>
           <p>Continue sua jornada de aprendizado.</p>
-          <p className="order-by">OrderBY <strong>IdeiaFish</strong></p>
         </div>
 
         <form onSubmit={handleLogin}>

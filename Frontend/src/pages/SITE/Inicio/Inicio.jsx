@@ -75,7 +75,7 @@ const Inicio = () => {
                         <div className='tec'><SunSnow /> Tecnologia de ponta em educação digital</div>
                         <h1>IntelliStudy</h1>
                         <h2>A plataforma corporativa de educação digital</h2>
-                        <p>Revolucione seus estudos com inteligência artificial. Estudos automatizados, simulados personalizados e planejamento inteligente em uma única plataforma profissional.</p>
+                        <p>Revolucione seus estudos com inteligência artificial. Estudos automatizados, simulados personalizados e planejamento inteligente em uma única plataforma profissional e direta ao ponto.</p>
                         <div className='buttons-action'>
                             <button className='btn-primary' onClick={handlePlataform}>Comece Agora</button>
                             <button className='btn-secondary' onClick={handleSobre}>Quem somos nós ?</button>

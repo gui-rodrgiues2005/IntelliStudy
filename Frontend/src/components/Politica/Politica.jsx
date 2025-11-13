@@ -181,8 +181,8 @@ const PoliticaPrivacidade = () => {
                         de seus dados, entre em contato conosco:
                     </p>
                     <div className="contact-info">
-                        <p><strong>E-mail:</strong> ideiafish2025@gmail.com</p>
-                        <p><strong>Responsável:</strong> Guilherme Rodrigues Costa e Equipe</p>
+                        <p><strong>E-mail:</strong> rodriguesguidev@gmail.com</p>
+                        <p><strong>Responsável:</strong> Guilherme Rodrigues Costa</p>
                     </div>
                 </section>
 

@@ -330,7 +330,7 @@ function Dashboard() {
 
     try {
       const token = localStorage.getItem("token"); // ← ADICIONE ESTA LINHA
-      const response = await fetch(`${API_URL}/api/Conteudo/resumo-file`, {
+      const response = await fetch(`${API_URL}/api/Resumo/resumo-file`, {
         method: "POST",
         headers: {
           'Authorization': `Bearer ${token}` // ← ADICIONE ESTE HEADER
@@ -399,7 +399,6 @@ function Dashboard() {
     // Reset e flags iniciais
     if (isMountedRef?.current) {
       setIsGeneratingSummary(true);
-      setResumoGerado(null);
       setQuiz([]);
       setScore(null);
     }
@@ -461,11 +460,14 @@ function Dashboard() {
 
         const formData = new FormData();
         formData.append("file", fileToSend);
+        formData.append("tipo", text || selectedTipo || "Resumo");
 
-        const fileRes = await fetch(`${API_URL}/api/Conteudo/resumo-file`, {
+        const fileRes = await fetch(`${API_URL}/api/resumo/resumo-file`, {
           method: "POST",
-          headers: { Authorization: `Bearer ${token}` },
-          body: formData
+          headers: {
+            Authorization: `Bearer ${token}`
+          },
+          body: formData,
         });
 
         if (!fileRes.ok) {
@@ -476,9 +478,12 @@ function Dashboard() {
         const data = await fileRes.json();
 
         // Busca o resumo final (por id)
-        const resumoRes = await fetch(`${API_URL}/api/Conteudo/por-id/${data.resumoId}`, {
+        const resumoRes = await fetch(`${API_URL}/api/resumo/por-id/${data.conteudoId}`, {
           headers: { Authorization: `Bearer ${token}` }
         });
+
+        // console.log("Resposta do Data:", data);
+        // console.log("Resposta do resumoRes:", resumoRes);
 
         if (!resumoRes.ok) {
           const errText = await resumoRes.text();
@@ -487,8 +492,20 @@ function Dashboard() {
 
         const resumoData = await resumoRes.json();
 
-        const textoResumo = resumoData.ResumoTexto || data.resumo || "";
-        const resumoIdFinal = data.resumoId || resumoData.Id || resumoData.id || null;
+        const textoResumo =
+          resumoData.conteudo ||
+          resumoData.ResumoTexto ||
+          resumoData.texto ||
+          data.conteudo ||
+          data.resumo ||
+          "";
+
+        const resumoIdFinal =
+          resumoData.conteudoId ||
+          resumoData.Id ||
+          resumoData.id ||
+          data.resumoId ||
+          null;
 
         if (isMountedRef.current) {
           setResumoGerado({ texto: textoResumo, id: resumoIdFinal });

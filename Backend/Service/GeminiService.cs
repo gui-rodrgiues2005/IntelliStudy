@@ -91,80 +91,59 @@ public class GeminiService
     }
 
     public async Task<string> GerarConteudoAsync(string conteudo, string tipo)
+{
+    string prompt = tipo switch
     {
-        string prompt = tipo switch
+        "Resumo" => $"""
+        Você é um professor especialista em transformar textos complexos em **resumos claros, explicativos e didáticos**.
+
+        Gere um **resumo detalhado** do conteúdo abaixo:
+        {conteudo}
+        """,
+
+        "PerguntaDireta" => $"""
+        Responda a pergunta abaixo de forma **curta, direta e objetiva**, sem rodeios:
+        {conteudo}
+        """,
+
+        "PesquisaCientifica" => $"""
+        Elabore um texto com **linguagem científica formal**, com base no conteúdo:
+        {conteudo}
+        """,
+
+        "EstudarParaProva" => $"""
+        Você é um professor motivador e vai ajudar o aluno a revisar o conteúdo para a prova.
+
+        Gere uma revisão explicativa e motivadora do conteúdo abaixo:
+        {conteudo}
+        """,
+
+        _ => conteudo
+    };
+
+    int maxRetries = 3;
+    int delayMs = 2000;
+
+    for (int i = 0; i < maxRetries; i++)
+    {
+        try
         {
-            "Resumo" => $"""
-Você é um professor especialista em transformar textos complexos em **resumos detalhados, claros e envolventes**, que realmente ajudem o estudante a compreender e aplicar o conteúdo.  
-
-**Objetivo:** Criar um resumo que:  
-- Destaque os pontos mais importantes de forma clara e estruturada;  
-- Explique conceitos difíceis com exemplos práticos ou analogias simples;  
-- Mostre aplicações do conhecimento na prática, quando possível;  
-- Seja direto e didático, mas sem perder profundidade.  
-
-Não se limite a frases curtas; priorize clareza e compreensão completa.  
-
-Conteúdo a ser resumido:
-{conteudo}
-""",
-
-
-            "PerguntaDireta" => $"""
-Responda a seguinte pergunta de forma **curta, direta e objetiva**, sem rodeios ou explicações desnecessárias:  
-
-{conteudo}
-""",
-
-            "PesquisaCientifica" => $"""
-Produza uma resposta com **estilo científico**, usando termos técnicos precisos, linguagem formal e, se possível, referências ou citações curtas.  
-O texto deve ser informativo, detalhado e bem estruturado, mantendo clareza.  
-
-Conteúdo base:
-{conteudo}
-""",
-
-            "EstudarParaProva" => $"""
-Você é um professor dedicado a ajudar alunos a se prepararem para provas.  
-Cumprimente o aluno de forma amigável e motivadora, por exemplo: "Beleza, vou te ajudar a gabaritar a prova!".  
-
-**Objetivo:**  
-1. Revise o conteúdo abaixo de forma clara, resumida e didática, explicando os pontos mais importantes para facilitar a compreensão.  
-2. Mantenha uma linguagem motivadora e direta, preparando o aluno para estudar.  
-3. Oriente o aluno que **os simulados e perguntas práticas serão criados na seção abaixo**, então aqui apenas faça a revisão do conteúdo.  
-
-Conteúdo a ser revisado:
-{conteudo}
-""",
-
-            _ => conteudo
-        };
-
-
-        int maxRetries = 3;
-        int delayMs = 2000;
-
-        for (int i = 0; i < maxRetries; i++)
-        {
-            try
-            {
-                var result = await GenerateContentAsync(prompt);
-                _logger.LogInformation("🧠 Gemini gerou conteúdo com sucesso. Tipo: {Tipo}, Tamanho: {Tamanho}", tipo, result?.Length ?? 0);
-                return result;
-            }
-            catch (HttpRequestException ex) when (ex.Message.Contains("503"))
-            {
-                _logger.LogWarning("⚠️ Gemini temporariamente indisponível. Tentativa {Tentativa}/{Total}", i + 1, maxRetries);
-
-                if (i == maxRetries - 1)
-                    throw;
-
-                await Task.Delay(delayMs);
-            }
+            var result = await GenerateContentAsync(prompt);
+            _logger.LogInformation("🧠 Conteúdo gerado com sucesso. Tipo: {Tipo}, Tamanho: {Tamanho}", tipo, result?.Length ?? 0);
+            return result;
         }
+        catch (HttpRequestException ex) when (ex.Message.Contains("503"))
+        {
+            _logger.LogWarning("⚠️ Gemini temporariamente indisponível. Tentativa {Tentativa}/{Total}", i + 1, maxRetries);
+            if (i == maxRetries - 1)
+                throw;
 
-        throw new InvalidOperationException("Falha inesperada ao gerar conteúdo.");
+            await Task.Delay(delayMs);
+        }
     }
+
+    throw new InvalidOperationException("Falha inesperada ao gerar conteúdo.");
+}
 
 
     public async Task<string> ExtractTextAsync(IFormFile file)

@@ -20,19 +20,22 @@ namespace Backend.Controllers
         private readonly PlanoService _planoService;
         private readonly ConquistaService _conquistaService;
         private readonly TempoEstudoService _tempoEstudoService;
-
+        private readonly ILogger<ResumoController> _logger;
         public ResumoController(
             AppDbContext context,
             GeminiService geminiService,
             PlanoService planoService,
             ConquistaService conquistaService,
-            TempoEstudoService tempoEstudoService)
+            TempoEstudoService tempoEstudoService,
+            ILogger<ResumoController> logger
+            )
         {
             _context = context;
             _geminiService = geminiService;
             _planoService = planoService;
             _conquistaService = conquistaService;
             _tempoEstudoService = tempoEstudoService;
+            _logger = logger;
         }
 
         // POST: api/resumo/gerar
@@ -101,7 +104,6 @@ namespace Backend.Controllers
             await _context.SaveChangesAsync();
 
             await _conquistaService.CalcularConquistasAsync(userId, user.Plano == "Premium");
-
             await _tempoEstudoService.RegistrarAtividadeAsync(userId, tipo.ToString());
 
             return CreatedAtAction(
@@ -119,12 +121,18 @@ namespace Backend.Controllers
 
         // POST: api/resumo/resumo-file
         [HttpPost("resumo-file")]
-        public async Task<IActionResult> ResumirArquivo(IFormFile file)
+        public async Task<IActionResult> GerarConteudoDeArquivo([FromForm] UploadRequest request)
         {
+            var file = request.File;
+            var tipo = request.Tipo;
+
             if (file == null || file.Length == 0)
                 return BadRequest("Arquivo inválido.");
 
-            var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+            var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (!int.TryParse(userIdClaim, out var userId))
+                return Unauthorized("Usuário não autenticado.");
+
             var tempFileName = $"{Guid.NewGuid()}_{Path.GetFileName(file.FileName)}";
             var tempPath = Path.Combine(Path.GetTempPath(), tempFileName);
 
@@ -138,35 +146,39 @@ namespace Backend.Controllers
                 await using var readStream = System.IO.File.OpenRead(tempPath);
                 var arquivoFake = new FormFile(readStream, 0, readStream.Length, null, file.FileName);
 
-                var textoExtraidoBruto = await _geminiService.ExtractTextAsync(arquivoFake);
-                if (string.IsNullOrWhiteSpace(textoExtraidoBruto))
+                var textoExtraido = await _geminiService.ExtractTextAsync(arquivoFake);
+
+                if (string.IsNullOrWhiteSpace(textoExtraido))
                     return BadRequest("Não foi possível extrair texto do arquivo.");
 
-                var conteudoConciso = await _geminiService.GenerateSummaryAsync(textoExtraidoBruto);
+                // 🔹 Agora usa a função genérica
+                var conteudoGerado = await _geminiService.GerarConteudoAsync(textoExtraido, tipo);
 
-                var novoResumo = new ConteudoIA
+                var novoConteudo = new ConteudoIA
                 {
+                    Tipo = tipo,
                     TopicoOriginal = Path.GetFileNameWithoutExtension(file.FileName),
-                    TextoGerado = conteudoConciso,
+                    TextoGerado = conteudoGerado,
                     CreatedAt = DateTime.UtcNow,
                     UserId = userId
                 };
 
-                _context.ConteudoIAs.Add(novoResumo);
+                _context.ConteudoIAs.Add(novoConteudo);
                 await _context.SaveChangesAsync();
 
-                await _tempoEstudoService.RegistrarAtividadeAsync(userId, "Resumo");
+                await _tempoEstudoService.RegistrarAtividadeAsync(userId, tipo);
 
                 return Ok(new
                 {
-                    message = "Conteudo gerado com sucesso!",
-                    resumo = conteudoConciso,
+                    message = "Conteúdo gerado com sucesso!",
+                    conteudo = conteudoGerado,
                     titulo = Path.GetFileNameWithoutExtension(file.FileName),
-                    resumoId = novoResumo.Id
+                    conteudoId = novoConteudo.Id
                 });
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Erro ao gerar conteúdo de arquivo.");
                 return StatusCode(500, new { message = $"Erro ao processar arquivo: {ex.Message}" });
             }
             finally
@@ -174,7 +186,10 @@ namespace Backend.Controllers
                 if (System.IO.File.Exists(tempPath))
                     System.IO.File.Delete(tempPath);
             }
+
+            return Ok();    
         }
+
 
         // GET: api/resumo
         [HttpGet]

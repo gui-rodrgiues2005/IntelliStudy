@@ -79,11 +79,11 @@ public class SimuladoController : ControllerBase
             });
         }
 
-        // 🔍 Tenta encontrar primeiro na tabela de ConteudoIA
+        // Tenta encontrar primeiro na tabela de ConteudoIA
         var resumo = await _context.ConteudoIAs
             .FirstOrDefaultAsync(r => r.Id == requestDto.ConteudoId && r.UserId == userId);
 
-        // 🔍 Se não achar, tenta buscar na GenerationRequests (conteúdos diretos)
+        // Se não achar, tenta buscar na GenerationRequests (conteúdos diretos)
         GenerationRequest baseRequest = null;
         if (resumo == null)
         {
@@ -94,7 +94,7 @@ public class SimuladoController : ControllerBase
                 return NotFound("Conteúdo não encontrado ou não pertence ao usuário.");
         }
 
-        // ✅ Cria o pedido de geração do simulado
+        //Cria o pedido de geração do simulado
         var novoPedido = new GenerationRequest
         {
             UserId = userId,
@@ -112,7 +112,7 @@ public class SimuladoController : ControllerBase
 
         await _conquistaService.CalcularConquistasAsync(userId, user.Plano == "Premium");
 
-        // ✅ Registrar tempo de estudo
+        // Registrar tempo de estudo
         await _tempoEstudoService.RegistrarAtividadeAsync(userId, "Simulado");
 
         return CreatedAtAction(
@@ -136,10 +136,10 @@ public class SimuladoController : ControllerBase
             if (conteudo == null)
                 return NotFound(new { message = "Conteúdo não encontrado." });
 
-            // ✅ Registrar tempo de estudo antes de iniciar
+            //Registrar tempo de estudo antes de iniciar
             await _tempoEstudoService.RegistrarAtividadeAsync(userId, "Simulado");
 
-            // 🔹 Gerar conteúdo resumido e simulado
+            // Gerar conteúdo resumido e simulado
             string textoResumidoPelaIA = await _geminiService.GerarConteudoAsync(conteudo.TextoGerado, "Conteudo");
             var respostaBrutaDaIA = await _geminiService.GerarSimuladoAsync(textoResumidoPelaIA, request.NumeroDeQuestoes);
 
@@ -273,5 +273,26 @@ public class SimuladoController : ControllerBase
         await _context.SaveChangesAsync();
 
         return Ok(new { Acertos = acertos, TotalQuestoes = questoes.Count });
+    }
+
+    [HttpGet("por-request/{requestId}")]
+    public async Task<IActionResult> BuscarPorRequestId(int requestId)
+    {
+        var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+
+        var simulado = await _context.Simulados
+            .Where(s => s.GenerationRequestId == requestId)
+            .Select(s => new
+            {
+                id = s.Id,
+                s.ConteudoIAId,
+                s.GenerationRequestId
+            })
+            .FirstOrDefaultAsync();
+
+        if (simulado == null)
+            return NotFound("Simulado não encontrado para esse request.");
+
+        return Ok(simulado);
     }
 }

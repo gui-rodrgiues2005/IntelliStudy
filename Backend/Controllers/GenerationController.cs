@@ -46,14 +46,14 @@ namespace Backend.Controllers
 
                 // Resultado: prioriza questões do Simulado salvo, senão usa OutputTexto do pedido
                 var resultado = simulado != null ? simulado.QuestoesJson : pedido.OutputTexto;
-
                 return Ok(new
                 {
                     id = pedido.Id,
                     status = (int)pedido.Status,
                     tipo = (int)pedido.Tipo,
-                    resultado = resultado, // já em formato JSON/string conforme salvo
-                    outputMetadata = outputMetadata
+                    resultado = resultado,
+                    outputMetadata = pedido.OutputMetadata,
+                    mensagemErro = pedido.MensagemErro
                 });
             }
 

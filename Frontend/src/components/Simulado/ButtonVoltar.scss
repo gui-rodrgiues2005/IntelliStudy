@@ -1,0 +1,66 @@
+@import '../../styles.scss';
+
+.btn-voltar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: linear-gradient(135deg, $primaria 0%, darken($primaria, 8%) 100%);
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 500;
+  color: white;
+  border: none;
+  box-shadow:
+    0 2px 8px rgba(0, 0, 0, 0.15),
+    0 1px 3px rgba(0, 0, 0, 0.1);
+  animation: fadeInScale 0.3s ease;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  
+  span {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+
+    svg {
+      width: 16px;
+      height: 16px;
+      opacity: 0.9;
+    }
+  }
+
+  &:hover {
+    box-shadow:
+      0 4px 12px rgba(0, 0, 0, 0.2),
+      0 2px 6px rgba(0, 0, 0, 0.15);
+  }
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+  .btn-voltar {
+    right: 10px;
+    padding: 10px 14px;
+
+    .btn-text {
+      max-width: 100px;
+      font-size: 14px;
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .btn-voltar {
+    right: 8px;
+    justify-content: center;
+
+    .btn-text {
+      display: none;
+    }
+
+    &:hover .btn-text {
+      display: none;
+    }
+  }
+}

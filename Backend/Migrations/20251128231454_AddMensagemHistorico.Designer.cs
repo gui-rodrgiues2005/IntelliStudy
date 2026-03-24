@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Backend.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20251109000509_AjustesGenerationRequestSimulados")]
-    partial class AjustesGenerationRequestSimulados
+    [Migration("20251128231454_AddMensagemHistorico")]
+    partial class AddMensagemHistorico
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -193,7 +193,7 @@ namespace Backend.Migrations
                     b.Property<string>("MensagemErro")
                         .HasColumnType("text");
 
-                    b.Property<string>("OutputMetaData")
+                    b.Property<string>("OutputMetadata")
                         .HasColumnType("text");
 
                     b.Property<string>("OutputTexto")
@@ -213,9 +213,36 @@ namespace Backend.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("UserId");
-
                     b.ToTable("GenerationRequests");
+                });
+
+            modelBuilder.Entity("Backend.Models.MensagemHistorico", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("ConteudoId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("Data")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Mensagem")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Origem")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ConteudoId");
+
+                    b.ToTable("MensagensHistorico");
                 });
 
             modelBuilder.Entity("Backend.Models.PlanoDeEstudo", b =>
@@ -553,15 +580,15 @@ namespace Backend.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("Backend.Models.GenerationRequest", b =>
+            modelBuilder.Entity("Backend.Models.MensagemHistorico", b =>
                 {
-                    b.HasOne("Backend.Models.User", "User")
+                    b.HasOne("Backend.Models.ConteudoIA", "Conteudo")
                         .WithMany()
-                        .HasForeignKey("UserId")
+                        .HasForeignKey("ConteudoId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("User");
+                    b.Navigation("Conteudo");
                 });
 
             modelBuilder.Entity("Backend.Models.PlanoDeEstudo", b =>

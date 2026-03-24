@@ -56,11 +56,10 @@ namespace Backend.Services
 
                 object? resultadoFinal = null;
 
-                // ======= 1️⃣ GERAÇÃO DE CONTEÚDO (Resumo, PerguntaDireta, PesquisaCientifica, EstudarParaProva) =======
                 if (pedidoParaProcessar.Tipo == GenerationType.Resumo ||
-                    pedidoParaProcessar.Tipo == GenerationType.PerguntaDireta ||
-                    pedidoParaProcessar.Tipo == GenerationType.PesquisaCientifica ||
-                    pedidoParaProcessar.Tipo == GenerationType.EstudarParaProva)
+     pedidoParaProcessar.Tipo == GenerationType.PerguntaDireta ||
+     pedidoParaProcessar.Tipo == GenerationType.PesquisaCientifica ||
+     pedidoParaProcessar.Tipo == GenerationType.EstudarParaProva)
                 {
                     if (string.IsNullOrEmpty(pedidoParaProcessar.InputTexto))
                         throw new InvalidOperationException("Nenhum conteúdo disponível para gerar.");
@@ -74,8 +73,12 @@ namespace Backend.Services
                         _ => "Resumo"
                     };
 
-                    string resultadoIA = await geminiService.GerarConteudoAsync(pedidoParaProcessar.InputTexto, tipoParaIA);
+                    string resultadoIA = await geminiService.GerarConteudoAsync(
+                        pedidoParaProcessar.InputTexto,
+                        tipoParaIA
+                    );
 
+                    // 1️⃣ Salvar no ConteudoIA (igual antes)
                     var novoConteudo = new ConteudoIA
                     {
                         TopicoOriginal = pedidoParaProcessar.InputTexto.Length > 100
@@ -89,6 +92,21 @@ namespace Backend.Services
 
                     dbContext.ConteudoIAs.Add(novoConteudo);
                     await dbContext.SaveChangesAsync();
+
+                    // 2️⃣ Registrar a RESPOSTA na conversa (NOVO)
+                    if (pedidoParaProcessar.ConversaId != null)
+                    {
+                        var msgResposta = new ChatMensagem
+                        {
+                            ConversaId = pedidoParaProcessar.ConversaId.Value,
+                            Role = "ia",
+                            Conteudo = resultadoIA,
+                            CreatedAt = DateTime.UtcNow
+                        };
+
+                        dbContext.ChatMensagens.Add(msgResposta);
+                        await dbContext.SaveChangesAsync();
+                    }
 
                     resultadoFinal = novoConteudo;
                 }
@@ -175,15 +193,34 @@ namespace Backend.Services
                             // Cria o simulado e persiste
                             var novoSimulado = new Simulado
                             {
-                                ConteudoIAId = int.TryParse(pedidoParaProcessar.InputContextoId, out int conteudoId) ? conteudoId : (int?)null,
+                                // Só preenche ConteudoIAId se o conteúdo veio de ConteudoIAs
+                                ConteudoIAId = null, // Inicia como null
                                 QuestoesJson = jsonLimpo,
                                 CreatedAt = DateTime.UtcNow,
                                 GenerationRequestId = pedidoParaProcessar.Id
                             };
 
+                            // Verifica de onde veio o conteúdo e preenche o ID apropriado
+                            if (!string.IsNullOrEmpty(pedidoParaProcessar.InputContextoId))
+                            {
+                                // Tenta buscar em ConteudoIAs primeiro
+                                var conteudoIA = await dbContext.ConteudoIAs
+                                    .AsNoTracking()
+                                    .FirstOrDefaultAsync(c => c.Id.ToString() == pedidoParaProcessar.InputContextoId);
+
+                                if (conteudoIA != null)
+                                {
+                                    novoSimulado.ConteudoIAId = conteudoIA.Id;
+                                    _logger.LogInformation("🔗 [Worker] Simulado vinculado ao ConteudoIA ID: {Id}", conteudoIA.Id);
+                                }
+                                else
+                                {
+                                    _logger.LogInformation("🔗 [Worker] Simulado vinculado apenas ao GenerationRequest (conteudo base era outro request)");
+                                }
+                            }
+
                             dbContext.Simulados.Add(novoSimulado);
                             await dbContext.SaveChangesAsync();
-
 
                             // ✅ Salva no pedido apenas os dados essenciais, num formato consistente pro front
                             pedidoParaProcessar.Status = RequestStatus.Concluido;

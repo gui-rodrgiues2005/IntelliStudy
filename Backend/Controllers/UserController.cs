@@ -42,11 +42,11 @@ namespace SaaS_Aluno.Controllers
 
             string nomeNormalizado = nome.Trim().ToLower();
 
-            // 1️⃣ Verifica nomes proibidos
+            //Verifica nomes proibidos
             if (NomesProibidos.Contains(nomeNormalizado))
                 return (false, "Nome não permitido.");
 
-            // 2️⃣ Verifica duplicação
+            //Verifica duplicação
             bool existe = await _context.Users
                 .AnyAsync(u => u.Name.ToLower() == nomeNormalizado && u.Id != usuarioId);
 

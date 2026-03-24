@@ -26,7 +26,7 @@ namespace Backend.Middleware
 
                     if (user != null && user.PlanoExpiraEm.HasValue)
                     {
-                        // 🕒 Verifica se já passou da data de expiração
+                        //Verifica se já passou da data de expiração
                         if (user.PlanoExpiraEm.Value < DateTime.UtcNow && user.Ativo)
                         {
                             user.Plano = "Gratuito";

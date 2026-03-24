@@ -18,22 +18,12 @@ var configuration = builder.Configuration;
 var databaseUrl = Environment.GetEnvironmentVariable("DATABASE_URL");
 string finalConnectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? "";
 
-if (!string.IsNullOrEmpty(databaseUrl))
-{
-    // Lógica para converter a URL de conexão do Railway/Heroku para o formato Npgsql
-    // O Npgsql não consegue parsear diretamente o esquema "postgresql://", então o substituímos por "http://"
-    // para que a classe Uri do .NET possa fazer o parsing correto dos componentes (Host, Port, UserInfo, Path ).
-    var uri = new Uri(databaseUrl.Replace("postgresql://", "http://"));
-    var userInfo = uri.UserInfo.Split(':');
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
-    // Monta a string de conexão no formato chave-valor esperado pelo Npgsql
-    finalConnectionString = $"Host={uri.Host};Port={uri.Port};Username={userInfo[0]};Password={userInfo[1]};Database={uri.LocalPath.Substring(1)};SSL Mode=Prefer;Trust Server Certificate=true";
-    Console.WriteLine("Usando string de conexão de ambiente (DATABASE_URL).");
-}
-else
-{
-    Console.WriteLine("Usando string de conexão local (DefaultConnection).");
-}
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseNpgsql(connectionString)
+);
+
 
 // Se finalConnectionString for nula ou vazia, lance uma exceção
 if (string.IsNullOrEmpty(finalConnectionString))
@@ -54,6 +44,8 @@ builder.Services.AddHostedService<GeminiWorker>();
 builder.Services.AddScoped<PlanoService>();
 builder.Services.AddScoped<ConquistaService>();
 builder.Services.AddScoped<TempoEstudoService>();
+builder.Services.AddSingleton<GenerationManager>();
+builder.Services.AddTransient<StreamingService>();
 
 StripeConfiguration.ApiKey = configuration["Stripe:SecretKey"];
 builder.Services.AddHttpClient();
@@ -64,12 +56,12 @@ builder.Services.AddScoped<GeminiService>(sp =>
     var http = sp.GetRequiredService<HttpClient>();
     var logger = sp.GetRequiredService<ILogger<GeminiService>>();
     var config = sp.GetRequiredService<IConfiguration>();
+    var context = sp.GetRequiredService<AppDbContext>();
 
     var apiKey = config["Gemini:ApiKey"];
 
-    return new GeminiService(http, apiKey, logger);
+    return new GeminiService(http, apiKey, logger, context);
 });
-
 // --- JWT ---
 var jwtSettings = builder.Configuration.GetSection("Jwt");
 var key = Encoding.ASCII.GetBytes(jwtSettings["Key"] ?? throw new InvalidOperationException("JWT Key not configured."));
@@ -146,34 +138,34 @@ builder.Services.AddHealthChecks();
 var app = builder.Build();
 
 using (var scope = app.Services.CreateScope())
-{
-    var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    if (dbContext.Database.IsRelational())
+    // {
+    //     var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    //     if (dbContext.Database.IsRelational())
+    //     {
+    //         Console.WriteLine("Aplicando migrações...");
+    //         try
+    //         {
+    //             // Aplica todas as migrations pendentes
+    //             dbContext.Database.Migrate();
+    //             Console.WriteLine("Migrações aplicadas com sucesso.");
+    //         }
+    //         catch (Exception ex)
+    //         {
+    //             Console.WriteLine($"Erro ao aplicar migrações: {ex.Message}");
+    //         }
+    //     }
+    // }
+
+
+    // --- Middleware ---
+    if (app.Environment.IsDevelopment())
     {
-        Console.WriteLine("Aplicando migrações...");
-        try
-        {
-            // Aplica todas as migrations pendentes
-            dbContext.Database.Migrate();
-            Console.WriteLine("Migrações aplicadas com sucesso.");
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Erro ao aplicar migrações: {ex.Message}");
-        }
+        app.UseDeveloperExceptionPage();
     }
-}
-
-
-// --- Middleware ---
-if (app.Environment.IsDevelopment())
-{
-    app.UseDeveloperExceptionPage();
-}
-else
-{
-    app.UseHsts();
-}
+    else
+    {
+        app.UseHsts();
+    }
 
 app.UseSwagger();
 app.UseSwaggerUI();

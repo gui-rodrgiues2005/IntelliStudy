@@ -1,31 +1,30 @@
-import React, { useState, useEffect } from 'react'; // Importe o useState
-import { NavLink, useNavigate } from 'react-router-dom';
-import Logo from '../../assets/logo.png';
-import Logo_icon from '../../assets/logo_icon.svg';
-
-// Ícones: Adicionei ChevronsLeft para o botão de recolher
+import React, { useState, useEffect } from 'react';
+import { NavLink, useNavigate, useLocation } from 'react-router-dom';
+import Logo from '../../../assets/logo.png';
+import Logo_icon from '../../../assets/logo_icon.svg';
 import {
   BookOpen, FileText, Target, User, Award, CalendarDays,
-  CheckCheck, Star, LogOut, ChevronsLeft, Menu, X
+  CheckCheck, Star, LogOut, ChevronsLeft, Menu, X, MessageCircle
 } from 'lucide-react';
-
 import './MainLayout.scss';
 
 function MainLayout({ children }) {
   const navigate = useNavigate();
+  const location = useLocation();
 
-  // --- MUDANÇA 1: Adicionar estado para controlar a sidebar ---
+  // Estados existentes
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
 
-  // Detectar se é mobile
-  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+  // NOVO: Estado para o menu de chats
+  const [isChatsOpen, setIsChatsOpen] = useState(false);
 
   useEffect(() => {
     const handleResize = () => {
       setIsMobile(window.innerWidth < 768);
       if (window.innerWidth >= 768) {
-        setIsMobileOpen(false); // Fechar sidebar mobile em telas grandes
+        setIsMobileOpen(false);
       }
     };
 
@@ -33,12 +32,19 @@ function MainLayout({ children }) {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
+  // Fechar menus mobile quando mudar de rota
+  useEffect(() => {
+    if (isMobile) {
+      setIsMobileOpen(false);
+      setIsChatsOpen(false);
+    }
+  }, [location.pathname, isMobile]);
+
   const handleLogout = () => {
     localStorage.removeItem("token");
     navigate("/login");
   };
 
-  // Função para alternar o estado da sidebar
   const toggleSidebar = () => {
     if (isMobile) {
       setIsMobileOpen(!isMobileOpen);
@@ -47,9 +53,12 @@ function MainLayout({ children }) {
     }
   };
 
+  const toggleChats = () => {
+    setIsChatsOpen(!isChatsOpen);
+  };
+
   return (
-    // --- MUDANÇA 2: Adicionar classe dinâmica ao container principal ---
-    <div className={`layout-container ${isCollapsed ? 'sidebar-collapsed' : ''} ${isMobile ? 'mobile' : ''} ${isMobileOpen ? 'mobile-open' : ''}`}>
+    <div className={`layout-container ${isCollapsed ? 'sidebar-collapsed' : ''} ${isMobile ? 'mobile' : ''} ${isMobileOpen ? 'mobile-open' : ''} ${isChatsOpen ? 'chats-open' : ''}`}>
 
       {/* Botão hamburger para mobile */}
       {isMobile && (
@@ -58,12 +67,22 @@ function MainLayout({ children }) {
         </button>
       )}
 
-      {/* Overlay para mobile */}
-      {isMobile && isMobileOpen && (
-        <div className="mobile-overlay" onClick={toggleSidebar}></div>
+      {/* Botão para abrir chats em mobile */}
+      {isMobile && (
+        <button onClick={toggleChats} className="mobile-chats-btn">
+          <MessageCircle size={15} />
+        </button>
       )}
 
-      {/* --- MUDANÇA 3: Adicionar classe dinâmica à sidebar --- */}
+      {/* Overlay para mobile */}
+      {isMobile && (isMobileOpen || isChatsOpen) && (
+        <div className="mobile-overlay" onClick={() => {
+          setIsMobileOpen(false);
+          setIsChatsOpen(false);
+        }}></div>
+      )}
+
+      {/* Sidebar Principal */}
       <aside className="main-sidebar">
         <div className="sidebar-header">
           <div className="logo-container">
@@ -74,12 +93,14 @@ function MainLayout({ children }) {
             )}
           </div>
 
-          {/* --- MUDANÇA 4: Adicionar o botão de toggle --- */}
-          {!isMobile && (
-            <button onClick={toggleSidebar} className="sidebar-toggle-btn">
-              <ChevronsLeft size={20} />
-            </button>
-          )}
+          <div className="sidebar-header-actions">
+            {/* Botão existente de toggle */}
+            {!isMobile && (
+              <button onClick={toggleSidebar} className="sidebar-toggle-btn">
+                <ChevronsLeft size={20} />
+              </button>
+            )}
+          </div>
         </div>
 
         <nav className="sidebar-nav">
@@ -106,13 +127,7 @@ function MainLayout({ children }) {
             <li className="nav-category-title">
               <span className="nav-text">Sua Biblioteca</span>
             </li>
-            <li className="nav-item">
-              <NavLink to="/meus-resumos" className="nav-link" onClick={isMobile ? toggleSidebar : undefined}>
-                <FileText className="nav-icon" />
-                <span className="nav-text">Meus Chats</span>
-              </NavLink>
-            </li>
-            {/* ... Repita o padrão de envolver o texto em <span className="nav-text"> para todos os itens ... */}
+
             <li className="nav-item">
               <NavLink to="/meus-simulados" className="nav-link" onClick={isMobile ? toggleSidebar : undefined}>
                 <Target className="nav-icon" />

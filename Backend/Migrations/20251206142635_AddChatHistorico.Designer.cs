@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Backend.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20251108235541_AddOutputMetaData")]
-    partial class AddOutputMetaData
+    [Migration("20251206142635_AddChatHistorico")]
+    partial class AddChatHistorico
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -180,6 +180,9 @@ namespace Backend.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
+                    b.Property<int?>("ConversaId")
+                        .HasColumnType("integer");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
@@ -193,7 +196,7 @@ namespace Backend.Migrations
                     b.Property<string>("MensagemErro")
                         .HasColumnType("text");
 
-                    b.Property<string>("OutputMetaData")
+                    b.Property<string>("OutputMetadata")
                         .HasColumnType("text");
 
                     b.Property<string>("OutputTexto")
@@ -213,7 +216,7 @@ namespace Backend.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("UserId");
+                    b.HasIndex("ConversaId");
 
                     b.ToTable("GenerationRequests");
                 });
@@ -465,6 +468,56 @@ namespace Backend.Migrations
                     b.ToTable("UserConquistas");
                 });
 
+            modelBuilder.Entity("ChatConversa", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Tema")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("ChatConversas");
+                });
+
+            modelBuilder.Entity("ChatMensagem", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Conteudo")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("ConversaId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("User")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("ChatMensagens");
+                });
+
             modelBuilder.Entity("PagamentoCartao", b =>
                 {
                     b.Property<int>("Id")
@@ -555,13 +608,11 @@ namespace Backend.Migrations
 
             modelBuilder.Entity("Backend.Models.GenerationRequest", b =>
                 {
-                    b.HasOne("Backend.Models.User", "User")
+                    b.HasOne("ChatConversa", "Conversa")
                         .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("ConversaId");
 
-                    b.Navigation("User");
+                    b.Navigation("Conversa");
                 });
 
             modelBuilder.Entity("Backend.Models.PlanoDeEstudo", b =>

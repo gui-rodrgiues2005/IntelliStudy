@@ -4,7 +4,6 @@ import Dashboard from "./pages/Dashboard/Dashboard";
 import Registro from "./pages/Registro/Registro";
 import Login from "./pages/Login/Login";
 import PrivateRoute from "../src/pages/Service/PrivateRoute";
-import Resumos from "./pages/Resumos/Resumos";
 import Simulados from "./pages/Simulados/Simulados";
 import Perfil from "./pages/Perfil/Perfil";
 import Ranking from "./pages/Ranking/Ranking";
@@ -12,8 +11,9 @@ import PlanoDeEstudo from "./pages/PlanoDeEstudo/PlanoDeEstudo";
 import HistoricoDePlanos from "./pages/HistoricoDePlanos/HistoricoDePlanos";
 import PricingPage from "./pages/PricingPage/PricingPage";
 import PixPage from "./pages/Agradecimento/Agradecimento";
-import MainLayout from "./components/Layout/MainLayout";
+import MainLayout from "./components/Layout/MainLayout/MainLayout";
 import Desenvolvimento from "./pages/Desenvolvimento/Desenvolvimento";
+import CriarSimulado from "./pages/CriarSimulado/CriarSimulado"
 
 import Inicio from "./pages/SITE/Inicio/Inicio";
 import Contato from "./pages/SITE/Contato/Contato";
@@ -53,11 +53,11 @@ function App() {
             }
           />
           <Route
-            path="/meus-resumos"
+            path="/configurar-simulado"
             element={
               <PrivateRoute>
                 <MainLayout>
-                  <Resumos />
+                  <CriarSimulado />
                 </MainLayout>
               </PrivateRoute>
             }

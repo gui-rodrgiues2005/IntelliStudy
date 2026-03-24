@@ -26,9 +26,7 @@ public class PagamentoController : ControllerBase
         public string Plano { get; set; } = string.Empty;
     }
 
-    // -----------------------------
-    // 🟢 Criar sessão de pagamento
-    // -----------------------------
+    //Criar sessão de pagamento
     [HttpPost("criar-checkout")]
     public IActionResult CriarCheckout([FromBody] CriarCheckoutDto dto)
     {
@@ -89,9 +87,7 @@ public class PagamentoController : ControllerBase
         }
     }
 
-    // -----------------------------
-    // 🟣 Webhook do Stripe
-    // -----------------------------
+    // Webhook do Stripe
     [HttpPost("webhook-stripe")]
     [AllowAnonymous]
     public async Task<IActionResult> WebhookStripe()
@@ -161,9 +157,7 @@ public class PagamentoController : ControllerBase
         }
     }
 
-    // -----------------------------
-    // 🟡 Confirmação manual (callback)
-    // -----------------------------
+    //Confirmação manual (callback)
     [HttpPost("confirmar-session")]
     [AllowAnonymous]
     public IActionResult ConfirmarSession([FromBody] dynamic body)

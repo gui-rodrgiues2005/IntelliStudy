@@ -64,9 +64,8 @@ public class PlanoDeEstudoController : ControllerBase
             p.Concluido = true;
         }
 
-        // ================================
+
         // Validação de conteúdos proibidos
-        // ================================
         var termosProibidos = new List<string>
     {
         "sexo", "pornografia", "violência", "drogas", "golpes",
@@ -90,9 +89,7 @@ public class PlanoDeEstudoController : ControllerBase
             });
         }
 
-        // ================================
         // Criar o pedido para a fila
-        // ================================
         var inputJson = JsonSerializer.Serialize(request);
 
         var novoPedido = new GenerationRequest
@@ -118,7 +115,7 @@ public class PlanoDeEstudoController : ControllerBase
     }
 
 
-    // ENDPOINT 2: Buscar o plano de estudos ativo do usuário
+    //Buscar o plano de estudos ativo do usuário
     [HttpGet("ativo")]
     public async Task<IActionResult> GetPlanoAtivo()
     {
@@ -141,7 +138,7 @@ public class PlanoDeEstudoController : ControllerBase
         return Ok(planoDto);
     }
 
-    // ENDPOINT 3: Marcar uma sessão como concluída
+    //Marcar uma sessão como concluída
     [HttpPost("sessao/{sessaoId}/concluir")]
     public async Task<IActionResult> ConcluirSessao(int sessaoId)
     {
@@ -162,7 +159,7 @@ public class PlanoDeEstudoController : ControllerBase
         return Ok();
     }
 
-    // ENDPOINT: Excluir uma sessão de um plano atual
+    //Excluir uma sessão de um plano atual
     [HttpDelete("sessao/{sessaoId}")]
     public async Task<IActionResult> ExcluirSessaoPlanoAtual(int sessaoId)
     {
@@ -189,29 +186,24 @@ public class PlanoDeEstudoController : ControllerBase
     {
         try
         {
-            // 1. Identifica o usuário logado
             var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
 
-            // 2. Busca o plano junto com todas as sessões (usando Include)
             var plano = await _context.PlanosDeEstudo
-                .Include(p => p.Sessoes) // ← AQUI ESTÁ A CHAVE: Inclui as sessões relacionadas
+                .Include(p => p.Sessoes) 
                 .FirstOrDefaultAsync(p => p.Id == planoId && p.UserId == userId);
 
             if (plano == null)
             {
                 return NotFound(new { erro = "Plano não encontrado ou não pertence ao usuário." });
             }
-
-            // 3. Se houver sessões, remove elas primeiro
+            
             if (plano.Sessoes != null && plano.Sessoes.Any())
             {
                 _context.SessoesDeEstudo.RemoveRange(plano.Sessoes);
             }
 
-            // 4. Remove o plano
             _context.PlanosDeEstudo.Remove(plano);
 
-            // 5. Salva as mudanças
             await _context.SaveChangesAsync();
 
             return Ok(new { mensagem = "Plano e todas as sessões foram excluídos com sucesso." });
@@ -255,7 +247,7 @@ public class PlanoDeEstudoController : ControllerBase
             CronogramaSemanal = cronograma
         };
     }
-    // POST: api/plano-de-estudo/{id}/concluir-plano
+
     [HttpPost("{id}/concluir-plano")]
     public async Task<IActionResult> MarcarPlanoComoConcluido(int id)
     {
@@ -276,9 +268,6 @@ public class PlanoDeEstudoController : ControllerBase
 
     // GET: api/plano-de-estudo/concluidos
     // Em Backend/Controllers/PlanoDeEstudoController.cs
-
-
-
 
     [HttpGet("concluidos")]
     public async Task<IActionResult> GetPlanosConcluidos()

@@ -1,0 +1,51 @@
+@import "../../styles.scss";
+
+
+.profile-header-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+
+.profile-header-title {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    font-size: 3rem;
+    color: $secundaria;
+    font-weight: bold;
+    letter-spacing: 1px;
+    margin-top: 10rem;
+}
+
+.profile-header-icon {
+    font-size: 2.8rem;
+}
+
+.profile-header-subtitle {
+    color: $cinza-claro;
+}
+
+@media (max-width: 380px) {
+   .profile-header-title {
+    font-size: 2.2rem;
+    margin-bottom: 2px;
+   }
+
+   .profile-header-subtitle {
+    font-size: 13px;
+   }
+}
+
+@media (max-width: 340px) {
+   .profile-header-title {
+    font-size: 2rem;
+    margin-bottom: 2px;
+   }
+
+   .profile-header-subtitle {
+    font-size: 13px;
+   }
+}

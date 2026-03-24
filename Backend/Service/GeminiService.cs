@@ -7,11 +7,15 @@ using Backend.DTO;
 using iText.Kernel.Pdf;
 using iText.Kernel.Pdf.Canvas.Parser;
 using DocumentFormat.OpenXml.Packaging;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Http;
 using System.IO;
+using Backend.Models;
+using Backend.Data;
 
 public class GeminiService
 {
+    private readonly AppDbContext _context;
     private readonly HttpClient _http;
     private readonly string _apiKey;
     private readonly ILogger<GeminiService> _logger;
@@ -36,13 +40,15 @@ public class GeminiService
     //     Console.WriteLine(result);
     // }
 
-    public GeminiService(HttpClient http, string apiKey, ILogger<GeminiService> logger)
+    public GeminiService(HttpClient http, string apiKey, ILogger<GeminiService> logger, AppDbContext context)
     {
         _http = http;
         _apiKey = apiKey;
         _logger = logger;
+        _context = context;
     }
-    private async Task<string> GenerateContentAsync(string prompt)
+
+    public async Task<string> GenerateContentAsync(string prompt)
     {
         // Monta a URL completa com a chave de API
         var requestUrl = $"{GeminiApiUrl}?key={_apiKey}";
@@ -91,60 +97,153 @@ public class GeminiService
     }
 
     public async Task<string> GerarConteudoAsync(string conteudo, string tipo)
-{
-    string prompt = tipo switch
     {
-        "Resumo" => $"""
-        Você é um professor especialista em transformar textos complexos em **resumos claros, explicativos e didáticos**.
-
-        Gere um **resumo detalhado** do conteúdo abaixo:
-        {conteudo}
-        """,
-
-        "PerguntaDireta" => $"""
-        Responda a pergunta abaixo de forma **curta, direta e objetiva**, sem rodeios:
-        {conteudo}
-        """,
-
-        "PesquisaCientifica" => $"""
-        Elabore um texto com **linguagem científica formal**, com base no conteúdo:
-        {conteudo}
-        """,
-
-        "EstudarParaProva" => $"""
-        Você é um professor motivador e vai ajudar o aluno a revisar o conteúdo para a prova.
-
-        Gere uma revisão explicativa e motivadora do conteúdo abaixo:
-        {conteudo}
-        """,
-
-        _ => conteudo
-    };
-
-    int maxRetries = 3;
-    int delayMs = 2000;
-
-    for (int i = 0; i < maxRetries; i++)
-    {
-        try
+        string prompt = tipo switch
         {
-            var result = await GenerateContentAsync(prompt);
-            _logger.LogInformation("🧠 Conteúdo gerado com sucesso. Tipo: {Tipo}, Tamanho: {Tamanho}", tipo, result?.Length ?? 0);
-            return result;
-        }
-        catch (HttpRequestException ex) when (ex.Message.Contains("503"))
-        {
-            _logger.LogWarning("⚠️ Gemini temporariamente indisponível. Tentativa {Tentativa}/{Total}", i + 1, maxRetries);
-            if (i == maxRetries - 1)
-                throw;
+            "Resumo" => $"""
+        VOCÊ É: Um professor universitário especialista em didática e design instrucional.
 
-            await Task.Delay(delayMs);
+        META: Transformar conteúdos complexos em materiais **altamente organizados, visuais e memoráveis**.
+
+        CONTEÚDO A SER RESUMIDO:
+        {conteudo}
+
+        FORMATO OBRIGATÓRIO:
+        • Use EMOJIS relevantes para cada seção
+        • Estruture em TÓPICOS claros com subtítulos
+        • Use **negrito** para conceitos-chave
+        • Inclua exemplos práticos quando possível
+        • Adicione analogias para facilitar compreensão
+        • Crie listas visuais com ☑️ para itens importantes
+        • Use setas → para mostrar sequências lógicas
+
+        EXEMPLO DE SAÍDA IDEAL:
+        
+        🎯 **CONCEITO PRINCIPAL**
+        • Definição clara com analogia
+        • Exemplo prático do dia a dia
+        
+        📊 **CARACTERÍSTICAS-CHAVE**
+        ☑️ Item importante 1 → explicação
+        ☑️ Item importante 2 → exemplo
+        ⚠️ Cuidado comum → erro típico
+        
+        💡 **APLICAÇÃO PRÁTICA**
+        Como usar isso no mundo real?
+        - Cenário A: explicação
+        - Cenário B: exemplo
+
+        NÃO USE: Texto contínuo e denso
+        PRIORIZE: Organização visual e clareza
+        """,
+
+            "EstudarParaProva" => $"""
+        🚀 **MODO REVISÃO PARA PROVA** - Seu Professor Motivador Aqui!
+
+        CONTEÚDO:
+        {conteudo}
+
+        VAMOS TRANSFORMAR ISSO EM UMA REVISÃO INESQUECÍVEL:
+
+        🎯 **FOCO NA PROVA** - O que mais cai:
+        ⭐ Tópico ESSENCIAL 1: (explicação super simples)
+        ⭐ Toco ESSENCIAL 2: (macete para lembrar)
+
+        💪 **GARANTINDO OS PONTOS**:
+        ✅ [Conceito-chave] → "Pense assim: [analogia]"
+        ✅ [Fórmula importante] → "Lembre-se: [mnemônico]"
+
+        🚨 **CUIDADO COM ESTES DETALHES**:
+        ❌ Erro comum 1: por que acontece e como evitar
+        ❌ Pegadinha frequente: como identificar
+
+        🔥 **DICA DO PROFESSOR**:
+        "Na hora da prova, lembre-se: [dica motivacional]"
+
+        FORMATO: Use emojis, listas visuais e linguagem motivadora!
+        """,
+
+            "PerguntaDireta" => $"""
+        🎯 **RESPOSTA DIRETA E PRÁTICA**
+
+        PERGUNTA: {conteudo}
+
+        💡 Resposta principal: [resposta mais curta possível]
+        
+        🎯 Explicação rápida: [1-2 frases]
+        
+        🌟 Exemplo prático: [caso concreto]
+        
+        ⚠️ Observação importante: [se aplicável]
+
+        MÁXIMO: 150 palavras. Foco na objetividade.
+        """,
+
+            "PesquisaCientifica" => $"""
+        📚 **FORMATAÇÃO ACADÊMICA AVANÇADA**
+
+        CONTEÚDO: {conteudo}
+
+        ESTRUTURA CIENTÍFICA:
+        
+        1. **INTRODUÇÃO CONCEITUAL**
+           • Definição técnica precisa
+           • Contexto acadêmico
+
+        2. **FUNDAMENTAÇÃO TEÓRICA**
+           • Principais teorias relacionadas
+           • Pressupostos fundamentais
+
+        3. **METODOLOGIA E APLICAÇÃO**
+           → Abordagens metodológicas
+           → Casos de estudo relevantes
+
+        4. **CONCLUSÕES E IMPLICAÇÕES**
+           • Síntese dos principais achados
+           • Direções futuras de pesquisa
+
+        PADRÃO: Linguagem formal, citações implícitas, rigor acadêmico.
+        """,
+
+            _ => $"""
+        🎯 **ANÁLISE E ORGANIZAÇÃO DO CONTEÚDO**
+
+        {conteudo}
+
+        📋 **ESTRUTURA SUGERIDA:**
+        • Ideia Principal: [síntese]
+        • Pontos-Chave: [lista organizada]
+        • Aplicações: [casos práticos]
+        • Observações: [detalhes relevantes]
+
+        FORMATO: Claro, visual e direto ao ponto.
+        """
+        };
+
+        // Seu código de retry permanece o mesmo...
+        int maxRetries = 3;
+        int delayMs = 2000;
+
+        for (int i = 0; i < maxRetries; i++)
+        {
+            try
+            {
+                var result = await GenerateContentAsync(prompt);
+                _logger.LogInformation("🧠 Conteúdo gerado com sucesso. Tipo: {Tipo}, Tamanho: {Tamanho}", tipo, result?.Length ?? 0);
+                return result;
+            }
+            catch (HttpRequestException ex) when (ex.Message.Contains("503"))
+            {
+                _logger.LogWarning("⚠️ Gemini temporariamente indisponível. Tentativa {Tentativa}/{Total}", i + 1, maxRetries);
+                if (i == maxRetries - 1)
+                    throw;
+
+                await Task.Delay(delayMs);
+            }
         }
+
+        throw new InvalidOperationException("Falha inesperada ao gerar conteúdo.");
     }
-
-    throw new InvalidOperationException("Falha inesperada ao gerar conteúdo.");
-}
-
 
     public async Task<string> ExtractTextAsync(IFormFile file)
     {

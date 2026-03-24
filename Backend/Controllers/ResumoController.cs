@@ -20,14 +20,18 @@ namespace Backend.Controllers
         private readonly PlanoService _planoService;
         private readonly ConquistaService _conquistaService;
         private readonly TempoEstudoService _tempoEstudoService;
+        private readonly StreamingService _streamingService;
         private readonly ILogger<ResumoController> _logger;
+        private readonly GenerationManager _manager;
         public ResumoController(
             AppDbContext context,
             GeminiService geminiService,
             PlanoService planoService,
             ConquistaService conquistaService,
             TempoEstudoService tempoEstudoService,
-            ILogger<ResumoController> logger
+            ILogger<ResumoController> logger,
+            StreamingService streamingService,
+            GenerationManager manager
             )
         {
             _context = context;
@@ -35,14 +39,16 @@ namespace Backend.Controllers
             _planoService = planoService;
             _conquistaService = conquistaService;
             _tempoEstudoService = tempoEstudoService;
+            _streamingService = streamingService;
             _logger = logger;
+            _manager = manager;
         }
 
         // POST: api/resumo/gerar
         [HttpPost("gerar")]
         public async Task<IActionResult> EnfileirarGeracaoResumo([FromBody] GerarResumoRequestDto requestDto)
         {
-            // 1️⃣ Validar usuário
+            //Validar usuário
             var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (!int.TryParse(userIdClaim, out var userId))
             {
@@ -63,7 +69,7 @@ namespace Backend.Controllers
                 });
             }
 
-            // 2️⃣ Verificar limite do plano
+            //Verificar limite do plano
             if (!_planoService.PodeGerarResumo(user))
             {
                 return StatusCode(StatusCodes.Status403Forbidden, new
@@ -76,7 +82,7 @@ namespace Backend.Controllers
                 });
             }
 
-            // 3️⃣ Validar entrada
+            //Validar entrada
             if (string.IsNullOrWhiteSpace(requestDto.Topico))
             {
                 return BadRequest(new
@@ -86,7 +92,42 @@ namespace Backend.Controllers
                 });
             }
 
-            // 4️⃣ Criar pedido para a fila
+            //Carregar ou criar conversa
+            int conversaId;
+
+            if (requestDto.ConversaId == null)
+            {
+                var novaConversa = new ChatConversa
+                {
+                    UserId = userId,
+                    Tema = requestDto.Topico.Length > 60 ?
+                           requestDto.Topico.Substring(0, 60) + "..." : requestDto.Topico,
+                    CreatedAt = DateTime.UtcNow
+                };
+
+                _context.ChatConversas.Add(novaConversa);
+                await _context.SaveChangesAsync();
+
+                conversaId = novaConversa.Id;
+            }
+            else
+            {
+                conversaId = requestDto.ConversaId.Value;
+            }
+
+            //Registrar mensagem do usuário
+            var msgUser = new ChatMensagem
+            {
+                ConversaId = conversaId,
+                Role = "user",
+                Conteudo = requestDto.Topico.Trim(),
+                CreatedAt = DateTime.UtcNow
+            };
+
+            _context.ChatMensagens.Add(msgUser);
+            await _context.SaveChangesAsync();
+
+            //Criar pedido para a fila
             var tipo = Enum.TryParse<GenerationType>(requestDto.Tipo, ignoreCase: true, out var parsedTipo)
                 ? parsedTipo
                 : GenerationType.Resumo;
@@ -97,6 +138,7 @@ namespace Backend.Controllers
                 Tipo = tipo,
                 Status = RequestStatus.Pendente,
                 InputTexto = requestDto.Topico.Trim(),
+                ConversaId = conversaId,
                 CreatedAt = DateTime.UtcNow
             };
 
@@ -113,10 +155,88 @@ namespace Backend.Controllers
                 value: new
                 {
                     success = true,
-                    message = "Conteudo adicionado à fila com sucesso!",
-                    requestId = novoPedido.Id
+                    message = "Conteúdo adicionado à fila com sucesso!",
+                    requestId = novoPedido.Id,
+                    conversaId = conversaId
                 }
             );
+        }
+
+        [HttpGet("lista-conversas")]
+        public async Task<IActionResult> GetListaConversas()
+        {
+            var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (userIdClaim == null || !int.TryParse(userIdClaim, out int userId))
+            {
+                return Unauthorized(new { message = "Token inválido ou ausente." });
+            }
+
+            var conversas = await _context.ChatConversas
+                .Where(c => c.UserId == userId)
+                .OrderByDescending(c => c.CreatedAt)
+                .Select(c => new
+                {
+                    c.Id,
+                    c.Tema,
+                    c.CreatedAt
+                })
+                .ToListAsync();
+
+            return Ok(conversas);
+        }
+
+        [HttpPost("conversas")]
+        public async Task<ActionResult<ChatConversa>> CriarConversa()
+        {
+            var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (userIdClaim == null || !int.TryParse(userIdClaim, out int userId))
+            {
+                return Unauthorized(new { message = "Token inválido ou ausente." });
+            }
+
+            var conversa = new ChatConversa
+            {
+                UserId = userId,
+                CreatedAt = DateTime.UtcNow
+            };
+
+            _context.ChatConversas.Add(conversa);
+            await _context.SaveChangesAsync();
+
+            return Ok(conversa);
+        }
+
+        [HttpGet("conversas/{conversaId}")]
+        public async Task<ActionResult> GetConversaCompleta(int conversaId)
+        {
+            Console.WriteLine("Fetching conversation with ID: " + conversaId);
+            var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (userIdClaim == null || !int.TryParse(userIdClaim, out int userId))
+            {
+                return Unauthorized(new { message = "Token inválido ou ausente." });
+            }
+
+            // Buscar conversa garantindo que pertence ao usuário
+            var conversa = await _context.ChatConversas
+                .FirstOrDefaultAsync(c => c.Id == conversaId && c.UserId == userId);
+
+            if (conversa == null)
+                return NotFound(new { message = "Conversa não encontrada." });
+
+            // Buscar mensagens da conversa
+            var mensagens = await _context.ChatMensagens
+                .Where(m => m.ConversaId == conversaId)
+                .OrderBy(m => m.CreatedAt)
+                .ToListAsync();
+
+            return Ok(new
+            {
+                conversa,
+                mensagens
+            });
         }
 
         // POST: api/resumo/resumo-file
@@ -190,6 +310,19 @@ namespace Backend.Controllers
             return Ok();
         }
 
+        [HttpPost("pause/{id}")]
+        public IActionResult Pause(string id)
+        {
+            _manager.Pause(id);
+            return Ok(new { message = "Pausado." });
+        }
+
+        [HttpPost("resume/{id}")]
+        public IActionResult Resume(string id)
+        {
+            _manager.Resume(id);
+            return Ok(new { message = "Continuação iniciada." });
+        }
 
         // GET: api/resumo
         [HttpGet]
@@ -211,26 +344,26 @@ namespace Backend.Controllers
             return Ok(resumos);
         }
 
-        // GET: api/resumo/por-id/{resumoId}
-        [HttpGet("por-id/{resumoId}")]
-        public async Task<IActionResult> GetResumo(int resumoId)
-        {
-            var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+        // // GET: api/resumo/por-id/{resumoId}
+        // [HttpGet("por-id/{resumoId}")]
+        // public async Task<IActionResult> GetResumo(int resumoId)
+        // {
+        //     var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
 
-            var resumo = await _context.ConteudoIAs
-                .Where(c => c.Id == resumoId && c.UserId == userId)
-                .FirstOrDefaultAsync();
+        //     var resumo = await _context.ConteudoIAs
+        //         .Where(c => c.Id == resumoId && c.UserId == userId)
+        //         .FirstOrDefaultAsync();
 
-            if (resumo == null)
-                return NotFound("Conteudo não encontrado.");
+        //     if (resumo == null)
+        //         return NotFound("Conteudo não encontrado.");
 
-            return Ok(new
-            {
-                conteudo = resumo.TextoGerado,
-                topico = resumo.TopicoOriginal,
-                conteudoid = resumo.Id
-            });
-        }
+        //     return Ok(new
+        //     {
+        //         conteudo = resumo.TextoGerado,
+        //         topico = resumo.TopicoOriginal,
+        //         conteudoid = resumo.Id
+        //     });
+        // }
 
         // GET: api/resumo/meus-resumos/{id}
         [HttpGet("meus-resumos/{resumoid}")]
@@ -264,6 +397,59 @@ namespace Backend.Controllers
             await _context.SaveChangesAsync();
 
             return NoContent();
+        }
+
+        [HttpPost("chat/enviar")]
+        public async Task<IActionResult> EnviarPergunta([FromBody] ChatPerguntaDto dto)
+        {
+            var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+
+            if (string.IsNullOrWhiteSpace(dto.Pergunta))
+                return BadRequest("Pergunta não pode ser vazia.");
+
+            // Envia para a IA
+            var resposta = await _geminiService.GerarConteudoAsync(dto.Pergunta, "chat");
+
+            // Salva registro no ConteudoIA
+            var registro = new ConteudoIA
+            {
+                Tipo = "chat",
+                TopicoOriginal = dto.Pergunta,
+                TextoGerado = resposta,
+                CreatedAt = DateTime.UtcNow,
+                UserId = userId
+            };
+
+            _context.ConteudoIAs.Add(registro);
+            await _context.SaveChangesAsync();
+
+            return Ok(new
+            {
+                registro.Id,
+                pergunta = registro.TopicoOriginal,
+                resposta = registro.TextoGerado,
+                createdAt = registro.CreatedAt
+            });
+        }
+
+        [HttpGet("chat/historico")]
+        public async Task<IActionResult> GetHistoricoChat()
+        {
+            var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+
+            var mensagens = await _context.ConteudoIAs
+                .Where(c => c.UserId == userId && c.Tipo == "chat")
+                .OrderBy(c => c.CreatedAt)
+                .Select(c => new
+                {
+                    id = c.Id,
+                    pergunta = c.TopicoOriginal,
+                    resposta = c.TextoGerado,
+                    createdAt = c.CreatedAt
+                })
+                .ToListAsync();
+
+            return Ok(mensagens);
         }
     }
 }

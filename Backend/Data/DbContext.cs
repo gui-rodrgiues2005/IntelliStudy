@@ -21,5 +21,7 @@ namespace Backend.Data
         public DbSet<TempoEstudoUsuario> TempoEstudosUsuarios { get; set; }
         public DbSet<UserAtividade> UserAtividades { get; set; }
         public DbSet<AtividadeUsuario> AtividadesUsuarios { get; set; }
+        public DbSet<ChatConversa> ChatConversas { get; set; }
+        public DbSet<ChatMensagem> ChatMensagens { get; set; }
     }
 }
